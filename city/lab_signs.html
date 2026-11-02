@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Lab</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d10; font: 13px/1.35 system-ui, "Segoe UI", Arial, sans-serif; color: #e8eaed; }
+  canvas { display: block; }
+  #ui { position: fixed; top: 10px; left: 10px; background: rgba(10, 12, 16, 0.72); padding: 8px 10px; border-radius: 8px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; max-width: calc(100vw - 40px); z-index: 2; }
+  #ui label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+  #ui button, #ui select { font: inherit; }
+  #stats { position: fixed; bottom: 10px; left: 10px; background: rgba(10, 12, 16, 0.72); padding: 6px 10px; border-radius: 8px; white-space: pre; font: 12px/1.35 Consolas, monospace; z-index: 2; }
+  #atlasBox { position: fixed; top: 60px; right: 10px; width: 512px; height: 512px; display: none; z-index: 2; border: 1px solid #555;
+    background: repeating-conic-gradient(#444 0 25%, #666 0 50%) 0 0 / 16px 16px; }
+  #atlasBox canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+  body.clean #ui, body.clean #stats { display: none; }
+</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="ui">
+  <label><input type="checkbox" id="night"> Night</label>
+  <label>View <select id="view"></select></label>
+  <label><input type="checkbox" id="atlas"> Atlas</label>
+  <button id="dropB">Drop tile B</button>
+</div>
+<div id="stats"></div>
+<div id="atlasBox"></div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Sky } from "three/addons/objects/Sky.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { FXAAPass } from "three/addons/postprocessing/FXAAPass.js";
+import { U, makeBuildingMaterial, makeGroundMaterial } from "./materials.js";
+import { SignLayer, TextAtlas, makeGuideSign } from "./signs.js";
+
+const DEG = Math.PI / 180;
+const Q = new URLSearchParams(location.search);
+if (Q.get("clean") === "1") document.body.classList.add("clean");
+
+// ---------------------------------------------------------------- renderer (as in main.js)
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", reversedDepthBuffer: true, stencil: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0xd5dde2, 0.00015);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.3, 60000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// post: bloom at half resolution, tone mapping, FXAA (same chain as city/fx.js)
+const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 0 });
+rt.depthTexture = new THREE.DepthTexture(size.x, size.y, THREE.FloatType);
+const composer = new EffectComposer(renderer, rt);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.25, 0.55, 0.9);
+const bloomSize = bloom.setSize.bind(bloom);
+bloom.setSize = (w, h) => bloomSize(Math.max(64, Math.round(w / 2)), Math.max(64, Math.round(h / 2)));
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+composer.addPass(new FXAAPass());
+
+// ---------------------------------------------------------------- sky and lights (as in city/sky.js)
+function hazeSky(mat) {
+  mat.uniforms.uHaze = { value: new THREE.Color(0xd5dde2) };
+  mat.uniforms.uScale = { value: 0.1 };
+  mat.fragmentShader = mat.fragmentShader
+    .replace("uniform float mieDirectionalG;", "uniform float mieDirectionalG;\nuniform vec3 uHaze;\nuniform float uScale;")
+    .replace("gl_FragColor = vec4( texColor, 1.0 );", `
+      texColor = max( texColor * uScale, vec3( 0.004, 0.006, 0.016 ) );
+      float hz = smoothstep( -0.02, 0.22, direction.y );
+      texColor = mix( uHaze, min( texColor, vec3( 6.0 ) ), hz );
+      gl_FragColor = vec4( texColor, 1.0 );`);
+  mat.needsUpdate = true;
+}
+const sky = new Sky(); sky.scale.setScalar(25000); sky.material.fog = false; hazeSky(sky.material); scene.add(sky);
+const su = sky.material.uniforms;
+const hemi = new THREE.HemisphereLight(0xcfe3ff, 0xc9b08a, 0.16); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 3.1);
+sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.05;
+Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 90, bottom: -90, near: 1, far: 600 });
+scene.add(sun, sun.target);
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envScene = new THREE.Scene(); const envSky = new Sky(); envSky.scale.setScalar(1000); hazeSky(envSky.material); envScene.add(envSky);
+const cubeRT = new THREE.WebGLCubeRenderTarget(8, { type: THREE.FloatType }); const cubeCam = new THREE.CubeCamera(0.1, 2000, cubeRT);
+const px = new Float32Array(8 * 8 * 4);
+let envRT = null, isNight = false;
+function setNight(on) {
+  isNight = !!on; document.getElementById("night").checked = isNight;
+  U.uNight.value = isNight ? 1 : 0;
+  const az = 215, el = isNight ? -12 : 36;
+  const dir = new THREE.Vector3(Math.sin(az * DEG) * Math.cos(el * DEG), Math.sin(el * DEG), -Math.cos(az * DEG) * Math.cos(el * DEG));
+  const golden = isNight ? 0 : 1 - THREE.MathUtils.smoothstep(el, 4, 22);
+  const fogC = new THREE.Color(isNight ? 0x1b1f2e : 0xd5dde2);
+  for (const u of [su, envSky.material.uniforms]) {
+    u.sunPosition.value.copy(dir); u.turbidity.value = 10 + 2 * golden; u.rayleigh.value = isNight ? 0.75 : 0.75 + 1.8 * golden;
+    u.mieCoefficient.value = 0.012; u.mieDirectionalG.value = 0.86; u.uHaze.value.copy(fogC);
+  }
+  const e = envSky.material.uniforms; e.uScale.value = 1;
+  let L = 0, n = 0; cubeCam.update(renderer, envScene);
+  for (const f of [0, 1, 2, 4, 5]) { renderer.readRenderTargetPixels(cubeRT, 0, 0, 8, 8, px, f); for (let i = 0; i < 64; i++) { const v = 0.2126 * px[4 * i] + 0.7152 * px[4 * i + 1] + 0.0722 * px[4 * i + 2]; if (isFinite(v)) { L += v; n++; } } }
+  const scale = THREE.MathUtils.clamp(0.35 / Math.max(n ? L / n : 4, 1e-4), 0.08, 0.25);
+  e.uScale.value = scale; su.uScale.value = scale;
+  if (envRT) envRT.dispose(); envRT = pmrem.fromScene(envScene, 0, 0.1, 2000); scene.environment = envRT.texture;
+  scene.fog.color.copy(fogC);
+  const ldir = isNight ? new THREE.Vector3(-0.4, 0.75, 0.3).normalize() : dir;
+  sun.target.position.set(0, 0, -20); sun.position.copy(sun.target.position).addScaledVector(ldir, 300);
+  if (isNight) {
+    sun.color.setRGB(0.55, 0.65, 0.95); sun.intensity = 0.35;
+    hemi.intensity = 0.06; hemi.color.setRGB(0.18, 0.22, 0.38); hemi.groundColor.setRGB(0.12, 0.1, 0.1);
+    scene.fog.density = 0.00023; renderer.toneMappingExposure = 0.9;
+    bloom.enabled = true; bloom.strength = 0.48; bloom.threshold = 0.9; bloom.radius = 0.55;
+  } else {
+    sun.color.setRGB(1, 0.94 - 0.28 * golden, 0.86 - 0.5 * golden); sun.intensity = 3.1;
+    hemi.intensity = 0.16; hemi.color.setRGB(0.75, 0.84, 1.0); hemi.groundColor.setRGB(0.78, 0.66, 0.5);
+    scene.fog.density = 0.00015; renderer.toneMappingExposure = 0.72;
+    bloom.enabled = false;
+  }
+}
+
+// ---------------------------------------------------------------- street scene
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), makeGroundMaterial());
+ground.rotation.x = -Math.PI / 2; ground.scale.set(6000, 6000, 1); ground.position.y = -0.02; ground.receiveShadow = true; scene.add(ground);
+const asphalt = new THREE.MeshStandardMaterial({ color: 0x38393b, roughness: 0.93, metalness: 0 });
+const paving = new THREE.MeshStandardMaterial({ color: 0xbdb5a8, roughness: 0.9, metalness: 0 });
+const white = new THREE.MeshStandardMaterial({ color: 0xe8e8e2, roughness: 0.7 });
+const yellow = new THREE.MeshStandardMaterial({ color: 0xe0b52a, roughness: 0.7 });
+const steel = new THREE.MeshStandardMaterial({ color: 0x9aa1a8, roughness: 0.45, metalness: 0.6 });
+function flat(w, d, x, z, y, mat) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.receiveShadow = true; scene.add(m); return m; }
+function box(x0, x1, y0, y1, z0, z1, mat, cast = false) { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); m.receiveShadow = true; m.castShadow = cast; scene.add(m); return m; }
+// Al Wasl Road along X (z -10..10), cross street along Z (x -7..7)
+flat(700, 20, 0, 0, 0.0, asphalt);
+flat(14, 400, 0, 0, 0.004, asphalt);
+for (const zl of [-5, 5]) for (let x = -340; x < 340; x += 12) if (Math.abs(x) > 12) flat(3, 0.15, x, zl, 0.012, white);
+for (const zl of [-0.25, 0.25]) { flat(330, 0.15, -176, zl, 0.012, yellow); flat(330, 0.15, 176, zl, 0.012, yellow); }
+for (const zl of [-9.6, 9.6]) { flat(330, 0.15, -176, zl, 0.012, white); flat(330, 0.15, 176, zl, 0.012, white); }
+box(-350, -7, 0, 0.15, -14, -10, paving); box(7, 350, 0, 0.15, -14, -10, paving);
+box(-350, -7, 0, 0.15, 10, 14, paving); box(7, 350, 0, 0.15, 10, 14, paving);
+box(-11, -7, 0, 0.15, -200, -14, paving); box(7, 11, 0, 0.15, -200, -14, paving);
+box(-11, -7, 0, 0.15, 14, 200, paving); box(7, 11, 0, 0.15, 14, 200, paving);
+
+// Buildings with the engine's facade shader (facade = type, seed, floor height, height).
+const bMat = makeBuildingMaterial();
+function building(x0, z0, x1, z1, h, type, seed, floorH, hex) {
+  const P = [], N = [], UV = [], C = [], F = [], I = [];
+  const col = new THREE.Color(hex);
+  const ring = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+  let u = 0;
+  for (let i = 0; i < 4; i++) {
+    const [ax, az] = ring[i], [bx, bz] = ring[(i + 1) % 4], len = Math.hypot(bx - ax, bz - az);
+    const nx = (bz - az) / len, nz = -(bx - ax) / len, v0 = P.length / 3;
+    P.push(ax, 0, az, bx, 0, bz, bx, h, bz, ax, h, az);
+    for (let k = 0; k < 4; k++) { N.push(nx, 0, nz); C.push(col.r, col.g, col.b); F.push(type, seed, floorH, h); }
+    UV.push(u, 0, u + len, 0, u + len, h, u, h);
+    I.push(v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2);
+    u += len;
+  }
+  const v0 = P.length / 3, rt = type === 0 ? 9.2 : 9;
+  for (const [x, z] of ring) { P.push(x, h, z); N.push(0, 1, 0); UV.push(x, z); C.push(col.r, col.g, col.b); F.push(rt, seed, floorH, h); }
+  I.push(v0, v0 + 2, v0 + 1, v0, v0 + 3, v0 + 2);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(UV, 2)); g.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
+  g.setAttribute("facade", new THREE.Float32BufferAttribute(F, 4)); g.setIndex(I);
+  const m = new THREE.Mesh(g, bMat); m.castShadow = true; m.receiveShadow = true; scene.add(m); return m;
+}
+building(12, -44, 62, -15, 24, 1, 0.37, 3.6, "#d9cbb3");     // shops on the south and west faces
+building(14, 15, 52, 40, 18, 1, 0.71, 3.6, "#e4dccd");       // shops on the north face
+building(-62, -42, -12, -15, 30, 2, 0.52, 3.8, "#c9c3b8");
+building(-60, 16, -14, 44, 14, 1, 0.18, 3.5, "#e8dfcf");
+building(-80, -200, -40, -160, 170, 0, 0.12, 3.9, "#6f8fa6"); // JW Marriott tower
+building(10, -235, 45, -195, 140, 0, 0.64, 3.9, "#8a9aa3");  // Millennium Plaza
+
+// ---------------------------------------------------------------- sign data, in the tile worker's formats
+const PI = Math.PI;
+const tileA = {
+  texts: [
+    { en: "Al Wasl Road", ar: "شارع الوصل", ref: "D 92" },                 // 0
+    { en: "Al Safa Street", ar: "شارع الصفا" },                              // 1
+    { en: "2nd December Street", ar: "شارع الثاني من ديسمبر" },              // 2
+    { en: "Al Satwa Road", ar: "شارع السطوة" },                             // 3
+    { en: "", ar: "شارع الجافلية" },                                        // 4 Arabic only
+    { en: "Al Maya Supermarket", ar: "المايا سوبرماركت", cls: "supermarket" },   // 5
+    { en: "Life Pharmacy", ar: "صيدلية لايف", cls: "pharmacy" },
+    { en: "Emirates NBD", ar: "الإمارات دبي الوطني", cls: "bank" },
+    { en: "Karak House", ar: "كرك هاوس", cls: "cafe" },
+    { en: "Nesto Hypermarket", ar: "نستو هايبرماركت", cls: "supermarket" },
+    { en: "Tasheel", ar: "تسهيل", cls: "government" },                      // 10
+    { en: "Al Ansari Exchange", ar: "الأنصاري للصرافة", cls: "bureau_de_change" },
+    { en: "Ravi Restaurant", ar: "مطعم رافي", cls: "restaurant" },
+    { en: "Fresh Look Gents Salon", ar: "صالون فريش لوك للرجال", cls: "hairdresser" },
+    { en: "Clean & Clear Laundry", ar: "مغسلة كلين آند كلير", cls: "laundry" },
+    { en: "Max Fashion", ar: "ماكس فاشن", cls: "clothing_store" },          // 15
+    { en: "Rove Downtown", ar: "روف داون تاون", cls: "lodging" },
+    { en: "Al Reef Bakery", ar: "مخبز الريف", cls: "fast_food" },
+    { en: "Lulu Express", ar: "لولو إكسبرس", cls: "supermarket" },
+    { en: "Golden Fork Restaurant", cls: "fast_food" },                     // 19 English only
+  ],
+  // [x, z, y, rotA, idA, rotB, idB]; rot = atan2(-dz, dx) of the street direction the plate runs
+  street: new Float32Array([
+    9.5, -12.5, 0.15, 0, 0, PI / 2, 1,          // NE corner: Al Wasl Rd runs east, Al Safa St north
+    -9.5, 12.5, 0.15, PI, 2, -PI / 2, 3,        // SW corner: 2nd December St west, Al Satwa Rd south
+    9.5, 12.5, 0.15, -PI / 2, 4, 0, -1,         // SE corner: one Arabic-only plate
+  ]),
+  // [x, y, z, rotY, w, h, id, lit]
+  shop: new Float32Array([
+    16.5, 3.3, -15, 0, 6.6, 1.3, 5, 1,
+    24.0, 3.3, -15, 0, 5.4, 1.2, 6, 1,
+    31.5, 3.3, -15, 0, 6.4, 1.25, 7, 1,
+    39.0, 3.3, -15, 0, 4.6, 1.3, 8, 1,
+    46.5, 3.3, -15, 0, 7.0, 1.3, 9, 1,
+    54.0, 3.3, -15, 0, 4.2, 1.2, 10, 0,
+    12, 3.3, -19.0, -PI / 2, 4.8, 1.15, 11, 1,
+    12, 3.3, -24.6, -PI / 2, 4.8, 1.15, 12, 1,
+    12, 3.3, -30.2, -PI / 2, 4.8, 1.15, 13, 1,
+    12, 3.3, -35.8, -PI / 2, 4.8, 1.15, 14, 1,
+    12, 3.3, -41.4, -PI / 2, 4.8, 1.15, 15, 0,
+    19, 3.3, 15, PI, 6.0, 1.3, 16, 1,
+    28, 3.3, 15, PI, 5.0, 1.2, 17, 1,
+    37, 3.3, 15, PI, 5.5, 1.25, 18, 1,
+    46, 3.3, 15, PI, 4.2, 1.2, 19, 1,
+  ]),
+  // [x, z, y, rotY, kmh]; eastbound traffic (z > 0) meets signs facing west, westbound facing east
+  speed: new Float32Array([
+    -40, 11.8, 0.15, -PI / 2, 60,
+    -75, 11.8, 0.15, -PI / 2, 80,
+    -160, 11.8, 0.15, -PI / 2, 140,
+    70, -11.8, 0.15, PI / 2, 100,
+    105, -11.8, 0.15, PI / 2, 120,
+    150, -11.8, 0.15, PI / 2, 40,
+  ]),
+};
+// tile B sits at a different world offset, so the floating-origin path is exercised
+const OFF_B = { x: -200, z: -300 };
+const tileB = {
+  texts: [{ en: "JW MARRIOTT" }, { en: "Millennium Plaza" }],
+  tower: new Float32Array([
+    -60 - OFF_B.x, 150, -160 - OFF_B.z, 0, 32, 5.2, 0, 1,
+    27.5 - OFF_B.x, 121, -195 - OFF_B.z, 0, 26, 4.6, 1, 1,
+  ]),
+};
+const OFFS = new Map([["A", { x: 0, z: 0 }], ["B", OFF_B]]);
+const layer = new SignLayer(scene);
+layer.setTile("A", tileA);
+layer.setTile("B", tileB);
+let dropped = false;
+document.getElementById("dropB").onclick = () => { dropped = !dropped; if (dropped) layer.dropTile("B"); else layer.setTile("B", tileB); document.getElementById("dropB").textContent = dropped ? "Add tile B" : "Drop tile B"; };
+
+// Gantry over the eastbound lanes with the exit sign facing approaching (westward-looking) traffic
+box(-120.25, -119.75, 0, 7.8, -12.8, -12.2, steel, true);
+box(-120.25, -119.75, 0, 7.8, 12.2, 12.8, steel, true);
+box(-120.3, -119.7, 6.9, 7.5, -12.8, 12.8, steel, true);
+const guide = makeGuideSign({ lines: ["Al Barsha", "Mall of the Emirates"], ar: ["البرشاء", "مول الإمارات"], exit: "43", arrow: "exitright", ref: "E11" });
+guide.rotation.y = -PI / 2; guide.position.set(-120.42, 5.9, 5.2); scene.add(guide);
+const guide2 = makeGuideSign({ lines: ["Abu Dhabi", "Jebel Ali"], ar: ["أبوظبي", "جبل علي"], arrow: "up", ref: "E11" });
+guide2.rotation.y = -PI / 2; guide2.position.set(-120.42, 5.9, -4.6); scene.add(guide2);
+guide2.visible = Q.get("guide2") !== "0";
+// every arrow kind, in a row out in the sand (view "arrows")
+const kinds = ["up", "left", "right", "upleft", "upright", "exitleft", "exitright"];
+kinds.forEach((a, i) => {
+  const g = makeGuideSign({ lines: [a === "up" ? "Deira" : "Jumeirah", "Dubai Marina"], ar: [a === "up" ? "ديرة" : "جميرا", "دبي مارينا"], arrow: a, exit: /exit/.test(a) ? "12" : "", ref: i % 2 ? "D 94" : "" });
+  g.position.set(-66 + i * 22, 1, 150); scene.add(g);
+});
+
+// ---------------------------------------------------------------- views
+const VIEWS = {
+  street: { pos: [-18, 1.7, 21], tgt: [18, 3.4, -14] },
+  shops: { pos: [34, 1.7, 5], tgt: [35, 4.2, -15] },
+  shopsnear: { pos: [23, 1.7, -4.5], tgt: [22, 4.3, -15] },
+  shopsfar: { pos: [36, 1.7, 55], tgt: [35, 4.2, -15] },
+  west: { pos: [-3, 1.7, -24], tgt: [12, 4.2, -30] },
+  south: { pos: [32, 1.7, 3], tgt: [32, 4.2, 15] },
+  corner: { pos: [2.5, 1.8, -3.5], tgt: [10.5, 2.6, -13] },
+  pole: { pos: [7.2, 1.7, -7.2], tgt: [10.4, 2.55, -12.5] },
+  pole2: { pos: [-6.2, 1.7, 7.4], tgt: [-10.6, 2.5, 12.5] },
+  poleback: { pos: [-13, 1.7, 18.6], tgt: [-10.6, 2.55, 12.5] },
+  pole3: { pos: [4.2, 1.7, 15.5], tgt: [9.5, 2.75, 14] },
+  speed: { pos: [-90, 1.5, 7.2], tgt: [-75, 2.2, 11.8] },
+  speedfar: { pos: [-110, 1.4, 6], tgt: [-55, 2.2, 11.8] },
+  speed2: { pos: [150, 1.4, -6], tgt: [85, 2.2, -11.8] },
+  speedback: { pos: [-15, 1.4, 6], tgt: [-45, 2.2, 11.8] },
+  guide: { pos: [-175, 1.5, 3], tgt: [-120, 7.4, 0.5] },
+  guidenear: { pos: [-145, 2, 3], tgt: [-120, 7.6, 3] },
+  guideclose: { pos: [-134, 3, 3.5], tgt: [-120, 7.4, 2.5] },
+  arrows: { pos: [-33, 2.8, 176], tgt: [-33, 2.6, 150] },
+  arrows2: { pos: [33, 2.8, 176], tgt: [33, 2.6, 150] },
+  tower: { pos: [-10, 1.7, 8], tgt: [-40, 145, -170] },
+  towerup: { pos: [-52, 1.7, -112], tgt: [-60, 152, -160] },
+  towermid: { pos: [-110, 1.7, -30], tgt: [-60, 140, -160] },
+  towerzoom: { pos: [-110, 1.7, -30], tgt: [-58, 150, -160], fov: 14 },
+  towerfar: { pos: [150, 1.7, 180], tgt: [-30, 140, -180] },
+  overview: { pos: [-70, 55, 85], tgt: [15, 0, -15] },
+  far: { pos: [-330, 3, 5], tgt: [0, 3, -3] },
+};
+const sel = document.getElementById("view");
+for (const k in VIEWS) { const o = document.createElement("option"); o.value = o.textContent = k; sel.appendChild(o); }
+function setView(k) {
+  const v = VIEWS[k] || VIEWS.street;
+  camera.fov = v.fov || 60; camera.updateProjectionMatrix();
+  camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update();
+  sel.value = k in VIEWS ? k : "street";
+  layer.dirty = true;
+}
+sel.onchange = () => setView(sel.value);
+document.getElementById("night").onchange = e => setNight(e.target.checked);
+const atlasBox = document.getElementById("atlasBox");
+atlasBox.appendChild(layer.atlas.canvas);
+document.getElementById("atlas").onchange = e => { atlasBox.style.display = e.target.checked ? "block" : "none"; };
+if (Q.get("atlas") === "1") { document.getElementById("atlas").checked = true; atlasBox.style.display = "block"; }
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight);
+});
+
+// ---------------------------------------------------------------- draw calls
+// Rendered twice straight to a small target, with and without the sign meshes; the
+// difference is what the SignLayer costs (main pass + shadow pass).
+const probeRT = new THREE.WebGLRenderTarget(64, 64);
+function measureCalls() {
+  const signMeshes = Object.values(layer.meshes);
+  const run = () => { renderer.setRenderTarget(probeRT); renderer.info.reset(); renderer.render(scene, camera); const c = renderer.info.render.calls; renderer.setRenderTarget(null); return c; };
+  const withShadow = run();
+  signMeshes.forEach(m => (m.visible = false)); const without = run(); signMeshes.forEach(m => (m.visible = true));
+  sun.castShadow = false; const noShadowWith = run();
+  signMeshes.forEach(m => (m.visible = false)); const noShadowWithout = run(); signMeshes.forEach(m => (m.visible = true));
+  sun.castShadow = true;
+  return { mainPass: noShadowWith - noShadowWithout, withShadowPass: withShadow - without, meshesWithInstances: signMeshes.filter(m => m.count > 0).length };
+}
+function report() {
+  const a = layer.atlas, u = a.usage(frameNo);
+  return {
+    instances: layer.stats.instances, atlas: { ...u, stats: { ...a.stats } }, bias: layer.bias,
+    refreshMs: +layer.stats.lastMs.toFixed(2), refreshes: layer.stats.refreshes, calls: measureCalls(),
+    guide: { w: +guide.userData.width.toFixed(2), h: +guide.userData.height.toFixed(2), panelH: +guide.userData.panelHeight.toFixed(2) },
+  };
+}
+
+// ---------------------------------------------------------------- loop
+let frameNo = 0, lastStats = 0;
+const statsEl = document.getElementById("stats");
+function frame(now) {
+  frameNo++;
+  layer.update(camera.position.x, camera.position.z, OFFS, U.uNight.value, frameNo);
+  controls.update();
+  composer.render();
+  if (now - lastStats > 500) {
+    lastStats = now;
+    const u = layer.atlas.usage(frameNo), s = layer.stats, i = s.instances;
+    statsEl.textContent = `instances  shop ${i.shop}  plate ${i.plate}  pole ${i.pole}  tower ${i.tower}  speed ${i.speed}\n` +
+      `atlas      ${u.entries} entries, ${u.shelves} shelves, fill ${(u.fill * 100).toFixed(1)} %  bias ${layer.bias.toFixed(2)}\n` +
+      `refresh    ${s.lastMs.toFixed(2)} ms, drawn ${s.drawnLast}, total drawn ${layer.atlas.stats.drawn}, sub-uploads ${layer.atlas.stats.uploads}`;
+  }
+  if (!window.labReady && frameNo > 4 && !layer.busy) window.labReady = true;
+  requestAnimationFrame(frame);
+}
+// resolves once the layer has refreshed for the current camera and drawn everything in range
+function settle(extraFrames = 3) {
+  layer.dirty = true;
+  return new Promise(res => {
+    let calm = 0;
+    const tick = () => { if (!layer.busy) calm++; else calm = 0; if (calm > extraFrames) res(report()); else requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+}
+setNight(Q.get("night") === "1");
+setView(Q.get("view") || "street");
+requestAnimationFrame(frame);
+window.lab = { THREE, scene, camera, controls, renderer, layer, guide, TextAtlas, setNight, setView, settle, report, measureCalls, VIEWS, U, OFFS };
+</script>
+</body>
+</html>

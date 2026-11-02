@@ -1,0 +1,22 @@
+# Your API keys live in config.js: never commit it. Copy config.example.js to config.js instead.
+config.js
+
+# Local reference clone of God's Eye View (its own repository)
+_ref/
+
+# Screenshots and test output from the build scripts (large, regenerated on demand)
+build/shots*/
+build/thumbs/
+city/shots_*/
+*.log
+
+node_modules/
+__pycache__/
+.DS_Store
+Thumbs.db
+
+# Raw Overpass / Valhalla responses cached by build/bake_roads.py and build/bake_route_lanes.py
+build/cache_overpass/
+
+# Raw Overpass responses for the landmarks2 footprints (city/tools/fetch_landmarks2.py)
+build/cache_landmarks2/

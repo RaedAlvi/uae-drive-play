@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landmark Lab 2</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0e14; font: 13px/1.3 system-ui, sans-serif; }
+  #ui { position: fixed; top: 10px; left: 10px; z-index: 2; background: rgba(10, 14, 20, 0.72); color: #eef2f6;
+        padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: calc(100vw - 40px); }
+  #ui select, #ui button { font: inherit; }
+  #info { opacity: 0.85; }
+  body.noui #ui { display: none; }
+</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="ui">
+  <select id="sel"></select>
+  <label><input type="checkbox" id="night"> night</label>
+  <button id="bStreet">street</button>
+  <button id="bAerial">aerial</button>
+  <span id="info"></span>
+</div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Sky } from "three/addons/objects/Sky.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { LANDMARKS2 as LANDMARKS, disposeLandmark } from "./landmarks2.js";
+
+const DEG = Math.PI / 180;
+const params = new URLSearchParams(location.search);
+if (params.get("ui") === "0") document.body.classList.add("noui");
+
+// Camera presets per landmark. az = bearing (deg clockwise from north) of the CAMERA seen from the model origin.
+// street: eye height 1.7 m; aerial: elevated orbit. Anything missing is derived from the bounding box.
+const VIEWS = {
+  princess_tower: { crown: { look: 372, dist: 140 } },
+  marina_101:     { crown: { look: 396, dist: 150 } },
+  marina_23:      { crown: { look: 362, dist: 150 } },
+  almas:          { crown: { look: 330, dist: 170 } },
+  address_downtown: { crown: { look: 270, dist: 150 } },
+  rose_tower:     { crown: { look: 295, dist: 140 } },
+  index:          { crown: { look: 295, dist: 200 } },
+  jw_marriott_marquis: { crown: { look: 315, dist: 200 } },
+  dubai_opera:    { street: { az: 110, dist: 230, look: 20, fov: 55 }, aerial: { az: 120, dist: 330, elev: 28, look: 15 } },
+  dubai_world_trade_centre: { crown: { look: 140, dist: 110 } },
+  jumeirah_beach_hotel: { street: { az: 270, dist: 330, look: 45, fov: 60 }, aerial: { az: 250, dist: 520, elev: 25, look: 40 } },
+  atlantis_the_royal: { street: { az: 170, dist: 420, look: 80, fov: 55 }, aerial: { az: 160, dist: 620, elev: 22, look: 80 } },
+  the_gate:       { street: { az: 118, dist: 170, look: 28, fov: 55 }, aerial: { az: 140, dist: 260, elev: 25, look: 25 } },
+  adnoc_hq:       { crown: { look: 315, dist: 170 } },
+  the_landmark:   { crown: { look: 285, dist: 170 } },
+  al_bahar_towers: { street: { az: 160, dist: 260, look: 65, fov: 55 }, aerial: { az: 170, dist: 330, elev: 22, look: 60 }, crown: { look: 110, dist: 120, az: 170 } },
+  wtc_abu_dhabi:  { crown: { look: 345, dist: 180 } },
+  qasr_al_watan:  { street: { az: 165, dist: 430, look: 30, fov: 55 }, aerial: { az: 150, dist: 720, elev: 30, look: 20 } },
+  yas_viceroy:    { street: { az: 200, dist: 300, look: 25, fov: 55 }, aerial: { az: 210, dist: 360, elev: 28, look: 20 } },
+};
+
+// ---------------------------------------------------------------- renderer / scene
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.85;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.5, 30000);
+camera.position.set(300, 120, 300);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = 89.5 * DEG;
+
+// Lighting mirrors the game (city/sky.js): Preetham sky rescaled to an average radiance of ~0.35,
+// sun 3.1, weak hemisphere, exposure 0.72, exp2 haze, bloom only at night.
+function hazeSky(mat) {
+  mat.uniforms.uHaze = { value: new THREE.Color(0xd5dde2) };
+  mat.uniforms.uScale = { value: 0.1 };
+  mat.fragmentShader = mat.fragmentShader
+    .replace("uniform float mieDirectionalG;", "uniform float mieDirectionalG;\nuniform vec3 uHaze;\nuniform float uScale;")
+    .replace("gl_FragColor = vec4( texColor, 1.0 );", `
+      texColor = max( texColor * uScale, vec3( 0.004, 0.006, 0.016 ) );
+      float hz = smoothstep( -0.02, 0.22, direction.y );
+      texColor = mix( uHaze, min( texColor, vec3( 6.0 ) ), hz );
+      gl_FragColor = vec4( texColor, 1.0 );`);
+  mat.needsUpdate = true;
+}
+const sky = new Sky();
+sky.scale.setScalar(25000);
+sky.material.fog = false;
+hazeSky(sky.material);
+const su = sky.material.uniforms;
+scene.add(sky);
+
+const hemi = new THREE.HemisphereLight(0xcfe3ff, 0xc9b08a, 0.16);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 3.1);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.6;
+scene.add(sun, sun.target);
+
+scene.fog = new THREE.FogExp2(0xd7dde0, 0.00015);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40000, 40000),
+  new THREE.MeshStandardMaterial({ color: 0xe6c793, roughness: 1, metalness: 0 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const redBox = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshStandardMaterial({ color: 0xd01010, roughness: 0.6 }));
+redBox.castShadow = true; redBox.receiveShadow = true;
+scene.add(redBox);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envScene = new THREE.Scene();
+const envSky = new Sky();
+envSky.scale.setScalar(1000);
+hazeSky(envSky.material);
+envScene.add(envSky);
+let envRT = null;
+const cubeRT = new THREE.WebGLCubeRenderTarget(8, { type: THREE.FloatType });
+const cubeCam = new THREE.CubeCamera(0.1, 2000, cubeRT);
+const px = new Float32Array(8 * 8 * 4);
+
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+const ortho = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 5000);
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.3, 0.45, 1.2);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ---------------------------------------------------------------- state
+let current = null, currentDef = null, isNight = false, frameCount = 0, readyAt = -1, supLine = null;
+let sunAz = 210, sunEl = 38;
+const sel = document.getElementById("sel");
+for (const L of LANDMARKS) {
+  const o = document.createElement("option"); o.value = L.id; o.textContent = L.name; sel.appendChild(o);
+}
+
+function setLighting() {
+  const el = isNight ? -12 : sunEl;
+  const dir = new THREE.Vector3(Math.sin(sunAz * DEG) * Math.cos(el * DEG), Math.sin(el * DEG), -Math.cos(sunAz * DEG) * Math.cos(el * DEG));
+  const golden = isNight ? 0 : 1 - THREE.MathUtils.smoothstep(el, 4, 22);
+  const fogC = new THREE.Color(isNight ? 0x1b1f2e : 0xd5dde2);
+  for (const u of [su, envSky.material.uniforms]) {
+    u.sunPosition.value.copy(dir);
+    u.turbidity.value = 10 + 2 * golden; u.rayleigh.value = isNight ? 0.75 : 0.75 + 1.8 * golden;
+    u.mieCoefficient.value = 0.012; u.mieDirectionalG.value = 0.86;
+    u.cloudCoverage.value = 0.22; u.cloudDensity.value = 0.35; u.cloudScale.value = 0.00016; u.cloudElevation.value = 0.6;
+    u.uHaze.value.copy(fogC);
+  }
+  // measure the raw sky and rescale it like the game does
+  const e = envSky.material.uniforms;
+  e.uScale.value = 1;
+  let L = 0, n = 0;
+  cubeCam.update(renderer, envScene);
+  for (const f of [0, 1, 2, 4, 5]) {
+    renderer.readRenderTargetPixels(cubeRT, 0, 0, 8, 8, px, f);
+    for (let i = 0; i < 64; i++) { const v = 0.2126 * px[4 * i] + 0.7152 * px[4 * i + 1] + 0.0722 * px[4 * i + 2]; if (isFinite(v)) { L += v; n++; } }
+  }
+  const scale = THREE.MathUtils.clamp(0.35 / Math.max(n ? L / n : 4, 1e-4), 0.08, 0.25);
+  e.uScale.value = scale; su.uScale.value = scale;
+  if (envRT) envRT.dispose();
+  envRT = pmrem.fromScene(envScene, 0, 0.1, 2000);
+  scene.environment = envRT.texture;
+  scene.environmentIntensity = 1.0;
+  scene.fog.color.copy(fogC);
+  if (isNight) {
+    sun.color.setRGB(0.55, 0.65, 0.95); sun.intensity = 0.35;
+    sun.userData.dir = new THREE.Vector3(-0.4, 0.75, 0.3).normalize();
+    hemi.intensity = 0.06; hemi.color.setRGB(0.18, 0.22, 0.38); hemi.groundColor.setRGB(0.12, 0.1, 0.1);
+    scene.fog.density = 0.00023;
+    renderer.toneMappingExposure = 0.9;
+    bloom.enabled = true; bloom.strength = 0.48; bloom.threshold = 0.9; bloom.radius = 0.55;
+  } else {
+    sun.color.setRGB(1, 0.94 - 0.28 * golden, 0.86 - 0.5 * golden); sun.intensity = 3.1;
+    sun.userData.dir = dir;
+    hemi.intensity = 0.16; hemi.color.setRGB(0.75, 0.84, 1.0); hemi.groundColor.setRGB(0.78, 0.66, 0.5);
+    scene.fog.density = 0.00015;
+    renderer.toneMappingExposure = 0.72;
+    bloom.enabled = false;
+  }
+  if (current) {
+    for (const m of current.userData.nightMats || []) m.mat.emissiveIntensity = isNight ? m.night : m.day;
+  }
+  fitShadow();
+}
+
+let bounds = new THREE.Box3(), bSphere = new THREE.Sphere();
+function fitShadow() {
+  if (!current) return;
+  const c = bSphere.center, r = bSphere.radius;
+  const d = sun.userData.dir || new THREE.Vector3(0, 1, 0);
+  sun.target.position.copy(c);
+  sun.position.copy(c).addScaledVector(d, r * 2.2);
+  const cam = sun.shadow.camera;
+  cam.left = -r * 1.05; cam.right = r * 1.05; cam.top = r * 1.05; cam.bottom = -r * 1.05;
+  cam.near = r * 0.2; cam.far = r * 4.5;
+  cam.updateProjectionMatrix();
+}
+
+function stats(group) {
+  let tris = 0, calls = 0, meshes = [];
+  group.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry;
+    const n = g.index ? g.index.count / 3 : g.attributes.position.count / 3;
+    const inst = o.isInstancedMesh ? o.count : 1;
+    tris += n * inst; calls += 1;
+    meshes.push({ name: o.name || o.material.name || "", tris: n * inst, inst });
+  });
+  return { tris: Math.round(tris), calls, meshes };
+}
+
+function load(id) {
+  const def = LANDMARKS.find((l) => l.id === id) || LANDMARKS[0];
+  if (current) { scene.remove(current); disposeLandmark(current); current = null; }
+  const t0 = performance.now();
+  const g = def.build();
+  const buildMs = performance.now() - t0;
+  g.rotation.y = -(def.headingDeg || 0) * DEG;
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = o.castShadow !== false; o.receiveShadow = true; } });
+  scene.add(g);
+  // suppress polygon (from OSM footprints) drawn on the ground in red: the model should sit inside it
+  if (supLine) { scene.remove(supLine); supLine.geometry.dispose(); supLine = null; }
+  if (def.suppress && def.suppress.length > 2) {
+    const mx = 111320 * Math.cos(def.lat * DEG), my = 110574;
+    const pts = def.suppress.map(([la, lo]) => new THREE.Vector3((lo - def.lon) * mx, 0.6, -(la - def.lat) * my));
+    supLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xff2020 }));
+    supLine.visible = params.get("osm") !== "0";
+    scene.add(supLine);
+  }
+  g.updateMatrixWorld(true);
+  current = g; currentDef = def;
+  bounds.setFromObject(g); bounds.getBoundingSphere(bSphere);
+  sel.value = def.id;
+  const s = stats(g);
+  window.__stats = { id: def.id, ...s, buildMs: Math.round(buildMs), size: bounds.getSize(new THREE.Vector3()).toArray().map((v) => Math.round(v)) };
+  document.getElementById("info").textContent = `${def.name}: ${s.tris} tris, ${s.calls} draw calls, H ${Math.round(bounds.max.y)} m (declared ${def.height})`;
+  setLighting();
+}
+
+let viewOverride = {};
+function viewCfg(kind) {
+  const def = currentDef, v = { ...((VIEWS[def.id] || {})[kind] || {}), ...viewOverride };
+  const H = Math.max(bounds.max.y, 10), R = bSphere.radius;
+  if (kind === "street") return { az: v.az ?? 150, dist: v.dist ?? Math.max(H * 1.1, R * 1.6), look: v.look ?? H * 0.45, fov: v.fov ?? 55, eye: 1.7 };
+  if (kind === "crown") return { az: v.az ?? 150, dist: v.dist ?? Math.max(80, R * 0.45), elev: v.elev ?? 6, look: v.look ?? H * 0.9, fov: v.fov ?? 40 };
+  const tall = H > 150;
+  return { az: v.az ?? 200, dist: v.dist ?? (tall ? H * 1.45 : R * 2.4), elev: v.elev ?? (tall ? 16 : 28), look: v.look ?? (tall ? H * 0.5 : H * 0.35), fov: v.fov ?? 45 };
+}
+
+function setView(kind, azOverride) {
+  if (!current) return;
+  const c = viewCfg(kind);
+  const az = (azOverride ?? c.az) * DEG;
+  const cx = bSphere.center.x, cz = bSphere.center.z;
+  const dir = new THREE.Vector3(Math.sin(az), 0, -Math.cos(az));
+  camera.fov = c.fov; camera.updateProjectionMatrix();
+  if (supLine) supLine.visible = kind === "top" || params.get("osm") === "1";
+  if (kind === "top") {
+    // orthographic, straight down, north up: the model against the OSM-derived suppress outline (red)
+    const hs = bounds.getSize(new THREE.Vector3());
+    const half = Math.max(hs.x, hs.z) * 0.62, asp = window.innerWidth / window.innerHeight;
+    ortho.left = -half * asp; ortho.right = half * asp; ortho.top = half; ortho.bottom = -half;
+    ortho.near = 1; ortho.far = bounds.max.y + 3000;
+    ortho.position.set(cx, bounds.max.y + 1000, cz);
+    ortho.up.set(0, 0, -1); ortho.lookAt(cx, 0, cz); ortho.updateProjectionMatrix();
+    renderPass.camera = ortho;
+    sunAz = 160; sunEl = 60; setLighting(); readyAt = frameCount + 8; window.__ready = false;
+    return;
+  }
+  renderPass.camera = camera;
+  camera.up.set(0, 1, 0);
+  if (kind === "street") {
+    camera.position.set(cx + dir.x * c.dist, c.eye, cz + dir.z * c.dist);
+  } else {
+    const e = c.elev * DEG;
+    camera.position.set(cx + dir.x * c.dist * Math.cos(e), c.dist * Math.sin(e) + c.look, cz + dir.z * c.dist * Math.cos(e));
+  }
+  controls.target.set(cx, c.look, cz);
+  controls.update();
+  // red scale box: on the model side facing the camera, just outside the bounding box
+  const toCam = new THREE.Vector3(camera.position.x - cx, 0, camera.position.z - cz).normalize();
+  const hs = bounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
+  const reach = Math.min(Math.abs(hs.x / (toCam.x || 1e-6)), Math.abs(hs.z / (toCam.z || 1e-6)));
+  const side = new THREE.Vector3(-toCam.z, 0, toCam.x);
+  redBox.position.set(cx + toCam.x * (reach + 4) + side.x * 6, 1, cz + toCam.z * (reach + 4) + side.z * 6);
+  // sun: from behind the camera, to its left
+  sunAz = (((azOverride ?? c.az) + 55) % 360 + 360) % 360;
+  sunEl = kind === "street" ? 32 : 40;
+  setLighting();
+  readyAt = frameCount + 8;
+  window.__ready = false;
+}
+
+window.__show = (id, view = "aerial", night = false, az, opts = {}) => new Promise((resolve) => {
+  viewOverride = opts || {};
+  isNight = !!night; document.getElementById("night").checked = isNight;
+  if (!currentDef || currentDef.id !== id) load(id);
+  setView(view, az);
+  const check = () => { if (window.__ready) resolve(window.__stats); else requestAnimationFrame(check); };
+  check();
+});
+window.__all = () => LANDMARKS.map((l) => ({ id: l.id, name: l.name, lat: l.lat, lon: l.lon, headingDeg: l.headingDeg, height: l.height, suppress: l.suppress.length }));
+
+sel.addEventListener("change", () => { load(sel.value); setView("aerial"); });
+document.getElementById("night").addEventListener("change", (e) => { isNight = e.target.checked; setLighting(); });
+document.getElementById("bStreet").addEventListener("click", () => setView("street"));
+document.getElementById("bAerial").addEventListener("click", () => setView("aerial"));
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
+});
+
+isNight = params.get("night") === "1";
+document.getElementById("night").checked = isNight;
+load(params.get("id") || LANDMARKS[0].id);
+setView(params.get("view") === "street" ? "street" : "aerial", params.has("az") ? Number(params.get("az")) : undefined);
+
+try {
+  const gl = renderer.getContext();
+  const ext = gl.getExtension("WEBGL_debug_renderer_info");
+  window.__gpu = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : "unknown";
+} catch (e) { window.__gpu = "unknown"; }
+
+function loop() {
+  requestAnimationFrame(loop);
+  controls.update();
+  composer.render();
+  frameCount++;
+  if (readyAt >= 0 && frameCount >= readyAt) { window.__ready = true; readyAt = -1; }
+}
+loop();
+</script>
+</body>
+</html>
