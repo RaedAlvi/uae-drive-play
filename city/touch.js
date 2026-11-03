@@ -37,6 +37,21 @@ function setup() {
     html.touch #keys { display: none !important; }
     html.touch #speed { bottom: auto !important; top: 12px !important; left: auto !important; right: 290px !important; transform: scale(.8); transform-origin: top right; }
     html.touch #bottomc { bottom: 132px !important; transform: translateX(-50%) scale(.85) !important; }
+  }
+  /* phones held sideways (short screens): compact controls and a HUD that keeps the road clear */
+  @media (max-height: 460px) {
+    #tc .pad { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: 136px; height: 56px; }
+    #tc .pad .b { width: 64px; height: 56px; border-radius: 14px; font-size: 22px; }
+    #tc .gas { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: 70px; height: 70px; font-size: 13px; }
+    #tc .brk { right: calc(max(12px, env(safe-area-inset-right)) + 78px); bottom: max(10px, env(safe-area-inset-bottom)); width: 56px; height: 56px; font-size: 11px; }
+    #tc .hb { right: calc(max(12px, env(safe-area-inset-right)) + 78px); bottom: calc(max(10px, env(safe-area-inset-bottom)) + 64px); width: 56px; height: 26px; border-radius: 8px; font-size: 10px; }
+    #tc .top { top: max(6px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); gap: 5px; }
+    #tc .top .b { width: 34px; height: 28px; border-radius: 8px; font-size: 10px; border-width: 1.5px; }
+    #tc .b { border-width: 1.5px; }
+    html.touch #nav { width: 330px !important; top: 6px !important; left: max(6px, env(safe-area-inset-left)) !important; transform: scale(.56) !important; transform-origin: top left; }
+    html.touch #speed { top: 6px !important; bottom: auto !important; left: auto !important; right: calc(max(8px, env(safe-area-inset-right)) + 200px) !important; transform: scale(.55) !important; transform-origin: top right; }
+    html.touch #mini:not(.big) { top: 42px !important; right: max(8px, env(safe-area-inset-right)) !important; bottom: auto !important; width: 92px !important; height: 92px !important; border-width: 2px !important; border-radius: 12px !important; }
+    html.touch #bottomc { bottom: max(4px, env(safe-area-inset-bottom)) !important; transform: translateX(-50%) scale(.6) !important; transform-origin: bottom center; gap: 3px !important; }
   }`;
   document.head.appendChild(css);
 
