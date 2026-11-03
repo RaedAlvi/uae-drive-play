@@ -7,6 +7,9 @@
 import { decodeTile, polygons, ringArea } from "./mvt.js";
 import earcut from "./earcut.js";
 
+// Region rules: "shanghai" (shanghai.html) swaps the UAE guesses (villas, palms, desert scrub, Arabic names)
+// for Shanghai ones (tower heights, plane trees, Chinese names). Set from each tile message.
+let CN = false;
 const LAYERS = new Set(["building", "transportation", "transportation_name", "water", "landuse", "landcover", "park", "poi", "place"]);
 
 // ------------------------------------------------------------------ growable buffers
@@ -207,6 +210,7 @@ const SHED = ["#c8ccd0", "#b8c2cc", "#d6d2c8", "#aeb8bf", "#c9c1b2"];
 // ------------------------------------------------------------------ main
 if (typeof self !== "undefined") self.onmessage = async (e) => {
   const m = e.data;
+  if (m.cmd === "tile") CN = m.region === "shanghai";
   if (m.cmd === "prefetch") {
     // download into the cache only, no geometry: the route ahead is ready when we get there
     try { const cache = await caches.open("uae-drive-tiles-v1"); if (!(await cache.match(m.url))) { const r = await fetch(m.url); if (r.ok) await cache.put(m.url, r); } } catch (err) {}
@@ -322,7 +326,7 @@ export function buildTile(ab, m) {
     for (const g of f.geom) {
       const fl = [], pm = [];
       for (let i = 0; i < g.length; i += 2) { fl.push(lonOf(g[i]), latOf(g[i + 1])); pm.push([g[i] * S, g[i + 1] * S]); }
-      names.push({ c: p.class, en: p["name:en"] || p.name_en || "", lat: p["name:latin"] || "", nm: p.name || "", ar: p["name:ar"] || "", ref: p.ref || "", g: fl });
+      names.push({ c: p.class, en: p["name:en"] || p.name_en || (CN ? p["name:latin"] || "" : ""), lat: p["name:latin"] || "", nm: p.name || "", ar: CN ? (p.name && HANRE.test(p.name) ? p.name : "") : (p["name:ar"] || ""), ref: p.ref || "", g: fl });
       if (NAME_SIGN.has(p.class)) {
         const en = latinName(p), ar = arabicName(p);
         if (en || ar) nameLines.push({ en, ar, ref: p.ref || "", pts: pm, bb: bboxOf(pm) });
@@ -454,7 +458,7 @@ export function buildTile(ab, m) {
     if (L.oneway && L.spec.c <= 1 && !L.ramp && !L.bridge && !elevated) medianBarrier(SW, pts, off, W, ys);
     // props along the road
     const seed0 = hash2(Math.round(pts[0][0]), Math.round(pts[0][1]));
-    if (PALM_CLASSES.has(L.cls) && !L.ramp && !L.bridge && !elevated && !sunk) propsAlong(palms, pts, cum, off, W, aD, bD, aR, bR, 24, W / 2 + 2.6, [-1, 1], seed0, 10, false, null);
+    if (PALM_CLASSES.has(L.cls) && !L.ramp && !L.bridge && !elevated && !sunk) propsAlong(CN ? streetTrees : palms, pts, cum, off, W, aD, bD, aR, bR, 24, W / 2 + 2.6, [-1, 1], seed0, 10, false, null);
     else if ((L.cls === "tertiary" || L.cls === "minor") && !L.ramp && !L.bridge && !elevated && !sunk && seed0 < 0.6 && streetTrees.n < 4 * 450) propsAlong(streetTrees, pts, cum, off, W, aD, bD, aR, bR, 19, W / 2 + 1.9, L.oneway ? [1] : [-1, 1], seed0, 9, false, null);
     if (LAMP_CLASSES.has(L.cls) && !sunk) propsAlong(lamps, pts, cum, off, W, aD, bD, aR, bR, 42, L.oneway ? W / 2 + 0.9 : W / 2 + 1.2, L.oneway ? [1] : [-1, 1], seed0, 6, true, ys);
     else if (L.cls === "minor" && !sunk && !L.bridge) propsAlong(lamps, pts, cum, off, W, aD, bD, aR, bR, 36, W / 2 + 1.0, [1], seed0, 6, true, ys);   // side streets: one row of lamps
@@ -550,13 +554,16 @@ export function buildTile(ab, m) {
         if (bi.levels && h < bi.levels * 3.0) h = bi.levels * 3.4 + 1.2;
         else if (!bi.levels && h <= 6.5) h = (T === "residential" || T === "apartments") && areaM < 500 ? 7.5 : (TYPE_H[T] || h);
       }
+      // Shanghai: OpenStreetMap has a height for only about 1 building in 10, and the tile default is a
+      // 2-storey box. Estimate from the footprint instead (point towers, slab blocks, podiums, sheds).
+      if (CN && minh < 1 && !canopy && h0 <= 6.5 && !(bi && (bi.levels || bi.height))) h = cnHeight(areaM, (maxx - minx) * S, (maxy - miny) * S, T, seed);
       if (bi && bi.colour) col = hexRgb(bi.colour) || col;
       const glassy = (col && col[2] > col[0] + 0.12) || (bi && bi.material === "glass");            // OSM "glass" material comes through as #5a81a0
       let type, color, floorH = 3.3;
       let isMosque = !!(bi && (T === "mosque" || (bi.amenity === "place_of_worship" && bi.religion === "muslim")) && h < 40);
       if (!isMosque && h < 30 && mosques.length) for (const q of mosques) if (q[0] > minx && q[0] < maxx && q[1] > miny && q[1] < maxy && pointInRingXY(q[0], q[1], o)) { isMosque = true; break; }
       // "residential" on a small footprint without storeys is a villa (common tagging in Abu Dhabi)
-      const kind = (T === "residential" && areaM < 500 && !(bi && bi.levels > 2)) ? "house" : TYPE_KIND[T] || (bi && (bi.shop === "mall" || bi.shop === "supermarket") ? "retail" : bi && bi.tourism === "hotel" ? "hotel" : "");
+      const kind = (!CN && T === "residential" && areaM < 500 && !(bi && bi.levels > 2)) ? "house" : TYPE_KIND[T] || (bi && (bi.shop === "mall" || bi.shop === "supermarket") ? "retail" : bi && bi.tourism === "hotel" ? "hotel" : "");
       if (isMosque) { type = 5; color = lin(hexRgb(seed < 0.5 ? "#f4efe6" : "#ebe1cf")); floorH = 4.5; }
       else if (h >= 45 || (glassy && h >= 18)) {
         if (glassy || seed < 0.62) { type = 0; color = lin(col && glassy ? col : hexRgb(GLASS[Math.floor(seed * 97) % GLASS.length])); floorH = 3.8; }
@@ -584,7 +591,7 @@ export function buildTile(ab, m) {
       recs.push({ rings, o, h, minh, type, color, seed, floorH, cx, cy, minx, miny, maxx, maxy, areaM, isMosque, canopy, retail: kind === "retail" || kind === "hotel" && h < 30 ? 1 : 0, used: null, bi, kind,
         roofShape: bi && bi.roofShape && bi.roofShape !== "flat" ? bi.roofShape : null, roofH: bi && bi.roofHeight ? bi.roofHeight : 0, roofCol: bi && bi.roofColour ? lin(hexRgb(bi.roofColour)) : null,
         name: bi && !bi.part ? (bi.nameEn || (bi.name && LATINRE.test(bi.name) ? bi.name : "")) : "",
-        guessH: h0 <= 6.5 && minh0 === 0 && !(bi && (bi.levels || bi.height)) && (!kind || T === "residential") });
+        guessH: !CN && h0 <= 6.5 && minh0 === 0 && !(bi && (bi.levels || bi.height)) && (!kind || T === "residential") });
     }
   }
   // Untagged low buildings in a dense district (Karama, Deira, Satwa, Bur Dubai) are G+2 to G+4
@@ -702,7 +709,7 @@ export function buildTile(ab, m) {
     if (rec.isMosque && minh === 0) addMosqueParts(B, rec.o, S, rec.cx, rec.cy, h, rec.minx, rec.miny, rec.maxx, rec.maxy, seed);
     bCount++;
     if (roofBudget > 0 && minh < 1 && !rec.isMosque && type !== 4 && rec.areaM >= 60) roofBudget -= roofItems(rec, S, roof);
-    if (type === 3 && minh < 1 && h < 11 && rec.areaM >= 60 && rec.areaM < 1100 && !retail && !rec.heritage) villaWall(rec, S, roadGrid, bldAt, VW, recs);
+    if (!CN && type === 3 && minh < 1 && h < 11 && rec.areaM >= 60 && rec.areaM < 1100 && !retail && !rec.heritage) villaWall(rec, S, roadGrid, bldAt, VW, recs);
   }
   msg.buildings = B.out(); collect(msg.buildings, transfer); chunkIndex(msg.buildings, TS, 3, transfer);
   msg.tallest = tallest; msg.bCount = bCount;
@@ -858,7 +865,7 @@ export function buildTile(ab, m) {
       let inHole = false; for (let r = 1; r < rings.length; r++) if (pointInRingXY(px, py, rings[r])) { inHole = true; break; }
       if (inHole) continue;
       // [x, z, rotation, kind + scale]: kind 0 = date palm, 1 = broadleaf (ghaf / neem); scale in 0.75..1.25
-      const kind = hash2(i, 99) < 0.72 ? 0 : 1;
+      const kind = !CN && hash2(i, 99) < 0.72 ? 0 : 1;      // Shanghai parks: broadleaf only
       trees.p4(px * S, py * S, hash2(i, 5) * 6.283, kind * 10 + 0.75 + 0.5 * hash2(i, 11));
       k--; budget--;
     }
@@ -870,7 +877,7 @@ export function buildTile(ab, m) {
   }
   // desert scrub beside the motorways where there is open ground (no building within 60 m)
   let shrubN = 0;
-  for (const pts of highways) {
+  for (const pts of CN ? [] : highways) {
     let acc = 0;
     for (let i = 0; i < pts.length - 1 && shrubN < 1400; i++) {
       const ax = pts[i][0], az = pts[i][1], dx = pts[i + 1][0] - ax, dz = pts[i + 1][1] - az, l = Math.hypot(dx, dz) || 1;
@@ -1241,7 +1248,9 @@ const NAME_SIGN = new Set(["trunk", "primary", "secondary", "tertiary", "minor"]
 const SPEED_KMH = [120, 100, 80, 60, 60];                   // by road class code when OpenStreetMap has no maxspeed
 const LATINRE = /^[\x20-\x7EÀ-ɏ’]+$/, ARRE = /[؀-ۿ]/;
 function latinName(p) { for (const k of ["name:en", "name_en", "name:latin", "name_int", "name"]) { const v = p[k]; if (v && LATINRE.test(v)) return String(v).trim(); } return ""; }
-function arabicName(p) { const v = p["name:ar"] || (p.name && ARRE.test(p.name) ? p.name : ""); return v ? String(v).trim() : ""; }
+const HANRE = /[\u4e00-\u9fff]/;
+// Shanghai: the second line of a sign carries the Chinese name instead of the Arabic one.
+function arabicName(p) { if (CN) { const v = p["name:zh"] || p.name; return v && HANRE.test(v) ? String(v).trim() : ""; } const v = p["name:ar"] || (p.name && ARRE.test(p.name) ? p.name : ""); return v ? String(v).trim() : ""; }
 function bboxOf(pts) { let a = 1e9, b = 1e9, c = -1e9, d = -1e9; for (const p of pts) { if (p[0] < a) a = p[0]; if (p[0] > c) c = p[0]; if (p[1] < b) b = p[1]; if (p[1] > d) d = p[1]; } return [a, b, c, d]; }
 // which half of a signal cycle an approach belongs to: along the controller's main axis or across it
 function groupOf(phi, ref) { const d = Math.abs(((phi - ref) % Math.PI + Math.PI) % Math.PI); return d < Math.PI / 4 || d > 3 * Math.PI / 4 ? 0 : 1; }
@@ -1564,6 +1573,23 @@ TYPE_KIND.hotel = "hotel";
 for (const t of ["school", "university", "college", "hospital", "government", "civic", "public", "kindergarten", "train_station", "fire_station", "police", "clinic", "museum", "stadium", "sports_hall", "sports_centre", "transportation"]) TYPE_KIND[t] = "civic";
 TYPE_KIND.construction = "construction";
 // a height for tagged buildings that have neither height nor storeys (the tiles then default to a few metres)
+// Shanghai storeys from the footprint (metres): compact 300 to 1300 m2 footprints are the residential
+// point towers that fill Pudong, long thin ones are slab blocks, big ones are podiums, malls and campuses.
+function cnHeight(areaM, wM, dM, T, seed) {
+  const L = Math.max(wM, dM), Wd = Math.min(wM, dM), fl = (a, b) => Math.round(a + (b - a) * seed);
+  const k = TYPE_KIND[T] || "";
+  if (k === "shed") return 8 + 6 * seed;
+  const low = /school|kindergarten|college|university|hospital|civic|public|church|temple|government|sports|stadium/.test(T);
+  let f;
+  if (k === "house") f = fl(2, 3);
+  else if (areaM < 120) f = fl(1, 3);
+  else if (areaM < 300) f = fl(3, 7);
+  else if (areaM <= 1300 && L < 70) f = low ? fl(3, 6) : fl(14, 33);
+  else if (Wd < 22 && L >= 50) f = low ? fl(4, 6) : fl(6, 18);
+  else if (areaM < 4000) f = /office|commercial|hotel/.test(T) ? fl(12, 30) : fl(4, 8);
+  else f = fl(3, 5);
+  return f * 3.1 + 1.5;
+}
 const TYPE_H = { apartments: 13, residential: 13, dormitory: 10, flats: 13, hotel: 16, office: 15, commercial: 12, retail: 8, supermarket: 8, mall: 15, house: 7.5, villa: 7.5, detached: 7.5, semidetached_house: 7.5, terrace: 7, school: 9, university: 12, college: 12, hospital: 14, government: 12, civic: 10, public: 10, warehouse: 9, industrial: 9, hangar: 12, garage: 3.5, garages: 3.5, service: 4 };
 
 // the footprint's oriented box, in metres: centre, axes, half extents

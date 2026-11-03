@@ -1,6 +1,6 @@
-# UAE Drive
+# UAE Drive and Shanghai Drive
 
-A browser-based 3D driving simulator of Dubai and Abu Dhabi, built by Raed Alvi in JavaScript and Three.js (WebGL) from OpenStreetMap data, with simulated traffic, traffic signals and turn-by-turn navigation.
+Browser-based 3D driving simulators built by Raed Alvi in JavaScript and Three.js (WebGL) from OpenStreetMap data: Dubai and Abu Dhabi, and Shanghai (Qiantan to Lujiazui), with simulated traffic, traffic signals, turn-by-turn navigation and on-screen controls for phones.
 
 Play: https://raedalvi.github.io/uae-drive-play/
 

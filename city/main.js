@@ -4,7 +4,7 @@
 // missions, GPS, rerouting and Salik/Darb billing as the original game.
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { Tiles, Index, toWorld, toLatLon, origin, K, TILE, mercX, mercY, hav, segDist, CAP, tileOf } from "./world.js";
+import { Tiles, Index, toWorld, toLatLon, origin, K, TILE, mercX, mercY, hav, segDist, CAP, tileOf, CITY } from "./world.js";
 import { Atmosphere } from "./sky.js";
 import { Props } from "./props.js";
 import { FX, PRESETS } from "./fx.js";
@@ -24,7 +24,7 @@ try { LM2 = await import("./landmarks2.js"); } catch (e) { console.warn("landmar
 // ================================================================== data and settings
 const D = window.UAE_DRIVE;
 const P = Object.fromEntries(D.places.map(p => [p.id, p]));
-const LEVELS = { 1: "Dubai: short hops", 2: "Dubai: cross-city", 3: "Abu Dhabi", 4: "Intercity on the E11" };
+const LEVELS = CITY.levels || { 1: "Dubai: short hops", 2: "Dubai: cross-city", 3: "Abu Dhabi", 4: "Intercity on the E11" };
 const BANDS = {
   offpeak: { label: "Off-peak (10-16, 20-01)", salik: 4.20, darbBridge: 0 },
   peak: { label: "Peak (Mon-Sat 6-10, 16-20)", salik: 6.30, darbBridge: 4 },
@@ -62,7 +62,7 @@ function move(lat, lon, hdg, dist) { const h = hdg * Math.PI / 180; return [lat 
 // ================================================================== live routing (same rules as the bake)
 const T = { 1: ["start", null], 2: ["start", null], 3: ["start", null], 4: ["arrive", null], 5: ["arrive", null], 6: ["arrive", null], 7: ["becomes", null], 8: ["continue", null], 9: ["turn", "right"], 10: ["turn", "right"], 11: ["turn", "right"], 12: ["turn", "uturn"], 13: ["turn", "uturn"], 14: ["turn", "left"], 15: ["turn", "left"], 16: ["turn", "left"], 17: ["ramp", "straight"], 18: ["ramp", "right"], 19: ["ramp", "left"], 20: ["exit", "right"], 21: ["exit", "left"], 22: ["keep", "straight"], 23: ["keep", "right"], 24: ["keep", "left"], 25: ["merge", null], 37: ["merge", null], 38: ["merge", null], 26: ["roundabout", "exit"], 27: ["roundabout_exit", null] };
 const ASK = new Set(["turn", "ramp", "exit", "keep", "roundabout"]);
-const AR = /[؀-ۿ][؀-ۿ\s\-()0-9']*/g;
+const AR = /[؀-ۿ\u4e00-\u9fff][؀-ۿ\u4e00-\u9fff\s\-()0-9']*/g;      // Arabic, or Chinese in Shanghai
 function enName(n) { if (!n) return ""; if (LATIN.test(n)) return n; return D.names[n] || ""; }
 function translate(s) { const found = [...new Set((s.match(AR) || []).map(x => x.trim()).filter(Boolean))].sort((a, b) => b.length - a.length); for (const ar of found) { const en = D.names[ar]; if (en) s = s.split(ar).join(en); } return s.replace(/\/\s*[؀-ۿ][^/.,]*/g, "").replace(/[؀-ۿ][؀-ۿ\s]*/g, "").replace(/\s{2,}/g, " ").replace(/ \./g, ".").trim(); }
 function decode6(str) { const out = []; let i = 0, lat = 0, lon = 0; while (i < str.length) { for (let w = 0; w < 2; w++) { let res = 0, sh = 0, b; do { b = str.charCodeAt(i++) - 63; res |= (b & 0x1f) << sh; sh += 5; } while (b >= 0x20); const dl = res & 1 ? ~(res >> 1) : res >> 1; if (w === 0) lat += dl; else lon += dl; } out.push([lat / 1e6, lon / 1e6]); } return out; }
@@ -577,7 +577,7 @@ function drawLabels() {
 // ================================================================== minimap (MapLibre, north-up)
 let mini = null, miniCar = null, miniDest = null;
 try {
-  mini = new maplibregl.Map({ container: "minimap", style: "https://tiles.openfreemap.org/styles/positron", center: [55.27, 25.2], zoom: 13.2, interactive: false, attributionControl: false, fadeDuration: 0 });
+  mini = new maplibregl.Map({ container: "minimap", style: "https://tiles.openfreemap.org/styles/positron", center: [CITY.lon, CITY.lat], zoom: 13.2, interactive: false, attributionControl: false, fadeDuration: 0 });
   mini.on("load", () => {
     for (const l of mini.getStyle().layers) {
       const tf = l.layout && l.layout["text-field"];
@@ -601,7 +601,7 @@ addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; if (e.key.to
 addEventListener("pointerdown", () => audio.start());
 const Kk = { up: () => keys["w"] || keys["arrowup"], down: () => keys["s"] || keys["arrowdown"], left: () => keys["a"] || keys["arrowleft"], right: () => keys["d"] || keys["arrowright"], hb: () => keys[" "] };
 const LIMIT = { motorway: 120, trunk: 100, primary: 80, secondary: 60, tertiary: 60, minor: 40, service: 25, motorway_link: 80, trunk_link: 60, raceway: 300 };
-const S = { lat: 25.2, lon: 55.27, y: 0, yT: 0, hdg: 0, v: 0, steer: 0, onRoad: true, cls: "minor", name: "", ref: "", nameAr: "", brunnel: "", lastNameT: 0, lastRoadT: 0, crashT: 0 };
+const S = { lat: CITY.lat, lon: CITY.lon, y: 0, yT: 0, hdg: 0, v: 0, steer: 0, onRoad: true, cls: "minor", name: "", ref: "", nameAr: "", brunnel: "", lastNameT: 0, lastRoadT: 0, crashT: 0 };
 let M = null, paused = false, running = false, lastT = performance.now();
 function step(dt) {
   const throttle = Kk.up() ? 1 : 0, brake = Kk.down() ? 1 : 0, sIn = Kk.left() ? -1 : Kk.right() ? 1 : 0;
@@ -793,7 +793,7 @@ function updateCamera(dt) {
   if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
 }
 // Menu attract mode: a slow orbit around a landmark at golden hour
-const ATTRACT = [{ lat: 25.1972, lon: 55.2744, r: 1500, h: 420, look: 260, name: "Downtown Dubai" }, { lat: 25.0805, lon: 55.1403, r: 1100, h: 320, look: 150, name: "Dubai Marina" }, { lat: 25.2180, lon: 55.2820, r: 900, h: 260, look: 120, name: "Sheikh Zayed Road" }];
+const ATTRACT = CITY.attract || [{ lat: 25.1972, lon: 55.2744, r: 1500, h: 420, look: 260, name: "Downtown Dubai" }, { lat: 25.0805, lon: 55.1403, r: 1100, h: 320, look: 150, name: "Dubai Marina" }, { lat: 25.2180, lon: 55.2820, r: 900, h: 260, look: 120, name: "Sheikh Zayed Road" }];
 let attractI = 0, attractT = 0;
 let attractOverride = null;
 // Orbit a landmark (tests and "photo mode" from the console: GAME.viewLandmark("burj_al_arab"))
@@ -1091,8 +1091,8 @@ let menuTab = "missions", menuRoute = null, menuVariant = "fast";
 function renderMenu(tab, routeId) {
   menuTab = tab || menuTab; if (routeId) { menuRoute = D.routes.find(r => r.id === routeId); menuVariant = "fast"; }
   document.getElementById("menu").hidden = false;
-  const tabs = ["missions", "free", "live", "look", "tolls", "help"].map(t => `<button class="${menuTab === t ? "on" : ""}" onclick="renderMenu('${t}')">${{ missions: "Missions", free: "Free roam", live: "Any A to B", look: "Look & feel", tolls: "Salik & Darb", help: "How to play" }[t]}</button>`).join("");
-  let h = `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}</div>`;
+  const tabs = ["missions", "free", "live", "look", "tolls", "help"].filter(t => t !== "tolls" || !CITY.noTolls).map(t => `<button class="${menuTab === t ? "on" : ""}" onclick="renderMenu('${t}')">${{ missions: "Missions", free: "Free roam", live: "Any A to B", look: "Look & feel", tolls: "Salik & Darb", help: "How to play" }[t]}</button>`).join("");
+  let h = CITY.title ? `<h1>${CITY.title}</h1><p class="sub">${CITY.sub}</p>` : `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}</div>`;
   if (menuTab === "missions") h += menuRoute ? briefing(menuRoute) : missionList();
   else if (menuTab === "free") h += freeRoam();
   else if (menuTab === "live") h += liveForm();
@@ -1110,7 +1110,7 @@ function missionList() {
     h += `<h2>Level ${lv}: ${LEVELS[lv]}</h2><div class="grid">`;
     for (const r of D.routes.filter(x => x.level === lv)) {
       const f = r.fast; const b = best(r.id, "fast");
-      const gates = f.gates.length ? `<span class="pill ${f.gates.some(g => g.sys === "salik") ? "salik" : "darb"}">${f.gates.length} gate${f.gates.length > 1 ? "s" : ""}</span>` : `<span class="pill free">no tolls</span>`;
+      const gates = f.gates.length ? `<span class="pill ${f.gates.some(g => g.sys === "salik") ? "salik" : "darb"}">${f.gates.length} gate${f.gates.length > 1 ? "s" : ""}</span>` : CITY.noTolls ? `` : `<span class="pill free">no tolls</span>`;
       h += `<div class="card" onclick="renderMenu('missions','${r.id}')"><div class="nm">${esc(r.title)}${gates}<small>${esc(P[r.from].label)} to ${esc(P[r.to].label)}${b ? ` <span class="best">best ${fmtT(b.time)}</span>` : ""}</small></div><div class="pr">${fmtKm(f.km)}<br>${f.min} min real</div></div>`;
     }
     h += `</div>`;
@@ -1242,6 +1242,8 @@ addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; cam
 
 // expose for inline handlers and tests
 Object.assign(window, { startMission, retry, nextMission, quitToMenu, renderMenu, togglePause, respawn, onKey, startFree, setOpt, liveGo });
+// used by build/bake_shanghai_routes.js to bake missions with the same code the live router uses
+window.__routeKit = { buildVariant, valhalla };
 Object.defineProperties(window, {
   menuRoute: { get: () => menuRoute, set: v => { menuRoute = v; }, configurable: true },
   menuVariant: { get: () => menuVariant, set: v => { menuVariant = v; }, configurable: true },

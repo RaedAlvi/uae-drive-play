@@ -7,13 +7,16 @@ import { makeBuildingMaterial, makeRoadMaterial, makeWalkMaterial, makeAreaMater
 // Web Mercator metres scaled by cos(24.9 deg), the latitude between Abu Dhabi and Dubai,
 // so one unit is within 0.4 % of a true metre anywhere on the map. Mercator is
 // conformal, so shapes are exact; only the scale drifts by that fraction.
-export const K = Math.cos(24.9 * Math.PI / 180);
+// A page can set window.CITY = { region, lat, lon, kLat } before the modules load (shanghai.html does);
+// without it this is the UAE game.
+export const CITY = Object.assign({ region: "uae", lat: 25.2, lon: 55.27, kLat: 24.9 }, (typeof window !== "undefined" && window.CITY) || {});
+export const K = Math.cos(CITY.kLat * Math.PI / 180);
 const RE = 6378137, CIRC = 2 * Math.PI * RE;
 export const Z = 14;
 export const TILE = CIRC / Math.pow(2, Z) * K;         // tile edge in world metres (about 2219)
 export const mercX = lon => RE * lon * Math.PI / 180;
 export const mercY = lat => RE * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-export const origin = { mx: mercX(55.27), my: mercY(25.2) };
+export const origin = { mx: mercX(CITY.lon), my: mercY(CITY.lat) };
 export function toWorld(lat, lon, out = new THREE.Vector3()) { out.x = (mercX(lon) - origin.mx) * K; out.z = -(mercY(lat) - origin.my) * K; return out; }
 export function toLatLon(x, z) { const mx = x / K + origin.mx, my = -z / K + origin.my; return [(2 * Math.atan(Math.exp(my / RE)) - Math.PI / 2) * 180 / Math.PI, mx / RE * 180 / Math.PI]; }
 const ZF = 10;                                             // far layer: sea out to the horizon
@@ -214,7 +217,7 @@ export class Tiles {
       if (!w.idle || !this.queue.length) continue;
       const k = this.queue.shift(); const t = this.tiles.get(k); if (!t || t.state !== "queued") { continue; }
       t.state = "loading"; w.idle = false;
-      w.postMessage({ cmd: "tile", key: k, z: Z, x: t.x, y: t.y, url: this.url(t.x, t.y), size: TILE, suppress: this.suppress });
+      w.postMessage({ cmd: "tile", key: k, z: Z, x: t.x, y: t.y, url: this.url(t.x, t.y), size: TILE, suppress: this.suppress, region: CITY.region });
     }
   }
   // near-only detail (villa walls): chunk by chunk, visible within `r` metres of the camera

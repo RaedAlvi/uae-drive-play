@@ -1,5 +1,17 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>UAE Drive</title><meta http-equiv="refresh" content="0; url=city.html">
-<style>body{background:#0b1220;color:#e8eef7;font:16px system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}a{color:#7cc4ff}</style>
-</head><body><p>Loading UAE Drive... <a href="city.html">Start driving</a></p></body></html>
+<title>Drive: UAE and Shanghai</title>
+<style>
+:root{--bg:#0b1220;--card:#141d2e;--ink:#eef2f7;--dim:#9fb0c6;--gold:#f0b429}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,sans-serif;display:grid;place-items:center;padding:24px}
+h1{margin:0 0 6px;font-size:30px}p{margin:0 0 22px;color:var(--dim)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;max-width:760px;width:100%}
+a.c{display:block;background:var(--card);border:2px solid #24324a;border-radius:16px;padding:22px;color:var(--ink);text-decoration:none}
+a.c:hover,a.c:focus{border-color:var(--gold)}a.c b{display:block;font-size:22px;margin-bottom:4px}a.c span{color:var(--dim);font-size:14px}
+small{display:block;margin-top:22px;color:#6f819b;font-size:12px}
+</style></head><body><main style="max-width:760px;width:100%">
+<h1>Pick a city</h1><p>Real streets from OpenStreetMap, in 3D. Works on a computer (keyboard) or a phone held sideways (on-screen controls).</p>
+<div class="grid">
+<a class="c" href="city.html"><b>UAE Drive</b><span>Dubai and Abu Dhabi: missions, Salik gates, the landmarks.</span></a>
+<a class="c" href="shanghai.html"><b>Shanghai Drive</b><span>Qiantan and NYU Shanghai up to Lujiazui, with mosques and halal food on the map.</span></a>
+</div><small>Map data &copy; OpenStreetMap contributors. Built by Raed Alvi.</small></main></body></html>
