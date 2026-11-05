@@ -670,7 +670,8 @@ function startMission(route, variantKey, opts) {
   waitWorld = performance.now(); pendingLane = true;
   if (!M.free) tiles.prefetchRoute(g);
   LOOK.yaw = 0; LOOK.pitch = 0; LOOK.zoom = 1;
-  if (!M.free && settings.preview !== false && !(opts && opts.noPreview) && !navigator.webdriver) startPreview();      // automated tests call startPreview() themselves
+  PV.ask = false; if (PV.on) { PV.on = false; } pvRender();
+  if (!M.free && settings.preview !== false && !(opts && opts.noPreview) && !navigator.webdriver) askPreview();      // automated tests call startPreview() themselves
   toast(M.free ? `Free roam from ${esc(P[route.from].label)}. Drive anywhere.` : `<b>${esc(route.title)}</b><small>Get to ${esc(P[route.to].label)}. ${settings.gps ? "Follow the directions and the blue line." : "GPS is off: find your own way."}</small>`, "good");
   if (!M.free && settings.gps && nav.voice) setTimeout(() => { if (M && !M.free && M.route === route) nav.say(`Starting route to ${M.destName}. ${Math.round(M.v.km * 10) / 10} kilometres.`); }, 600);
 }
@@ -760,7 +761,7 @@ function finish(t) {
 }
 function retry() { document.getElementById("debrief").hidden = true; startMission(M.route, M.variant); }
 function nextMission() { document.getElementById("debrief").hidden = true; const i = D.routes.findIndex(r => r.id === M.route.id); const n = D.routes[(i + 1) % D.routes.length]; startMission(n, "fast"); }
-function quitToMenu() { document.getElementById("debrief").hidden = true; document.getElementById("pause").hidden = true; running = false; M = null; document.getElementById("hud").hidden = true; setGps([], null); nav.hide(); beam.visible = false; renderMenu("missions"); }
+function quitToMenu() { if (PV.on) endPreview(); PV.ask = false; pvRender(); document.getElementById("debrief").hidden = true; document.getElementById("pause").hidden = true; running = false; M = null; document.getElementById("hud").hidden = true; setGps([], null); nav.hide(); beam.visible = false; renderMenu("missions"); }
 function oneBreath(v) { const roads = v.roads.filter(r => r.km >= 0.8).map(r => r.en + (r.ref ? " (" + r.ref + ")" : "")); const u = roads.filter((x, i) => roads.indexOf(x) === i); return u.length ? u.join(", then ") + "." : "Local streets only."; }
 
 // ================================================================== floating origin
@@ -785,7 +786,6 @@ function lookDecay(dt) {
 {
   const el = renderer.domElement;
   el.addEventListener("pointerdown", e => {
-    if (PV.on) { endPreview(); return; }
     if (!running || paused || (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2)) return;
     LOOK.drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { el.setPointerCapture(e.pointerId); } catch (_) {}
   });
@@ -804,33 +804,54 @@ function lookDecay(dt) {
 }
 
 // ================================================================== route preview
-// Before you drive it, see the route. "drive" (default): your car drives the whole route on fast-forward
-// along the real roads, the chase camera pulled back so you see the streets and the places on the way;
-// it eases off wherever the city ahead has not loaded yet, then puts you back at the start. "sky": a
-// fly-over from a few hundred metres up. Any key or tap skips; O plays it again.
-const PV = window.__PV = { on: false, sky: false, ll: [0, 0], w: new THREE.Vector3(), t: 0, T: 10, el: null, look: new THREE.Vector3(), pos: new THREE.Vector3() };
+// When a mission starts the car waits at A with a card: "Preview route" or "Drive", so you first see
+// where you are. The preview (default "drive"): your car drives the whole route on fast-forward, seen
+// from a raised chase camera you can swing round by dragging (or Q / E); speed from a quarter to four
+// times with the - + buttons or keys. "sky" (setting): a fly-over from a few hundred metres up.
+// Skip, Esc or Enter ends it and puts you back at the start; O plays it again.
+const PV_SPEEDS = [0.25, 0.5, 1, 2, 4];
+const PV = window.__PV = { on: false, ask: false, sky: false, mult: PV_SPEEDS.includes(settings.pvSpeed) ? settings.pvSpeed : 1, ll: [0, 0], w: new THREE.Vector3(), t: 0, T: 10, ui: null, look: new THREE.Vector3(), pos: new THREE.Vector3() };
 function routePoint(s, out) {
   const g = M.v.geom, c = M.cum; s = Math.max(0, Math.min(c[c.length - 1], s));
   let lo = 0, hi = c.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c[m] <= s) lo = m; else hi = m; }
   const f = (s - c[lo]) / Math.max(1e-6, c[hi] - c[lo]);
   out[0] = g[lo][0] + (g[hi][0] - g[lo][0]) * f; out[1] = g[lo][1] + (g[hi][1] - g[lo][1]) * f; return out;
 }
+const fmtMult = m => (m === 0.25 ? "&frac14;" : m === 0.5 ? "&frac12;" : m) + "&times;";
+function pvRender() {
+  if (!PV.ui) { PV.ui = document.createElement("div"); PV.ui.id = "pvui"; document.body.appendChild(PV.ui); PV.ui.addEventListener("pointerdown", e => e.stopPropagation()); }
+  const el = PV.ui;
+  document.documentElement.classList.toggle("pv", PV.on);
+  if (!M || (!PV.on && !PV.ask)) { el.hidden = true; return; }
+  el.hidden = false;
+  const km = (M.cum[M.cum.length - 1] / 1000).toFixed(1), from = P[M.route.from] ? P[M.route.from].label : "the start";
+  const speeds = `<div class="pvsp" title="Preview speed"><button onclick="pvSpeed(-1)" aria-label="Slower">&minus;</button><b><span id="pvmult">${fmtMult(PV.mult)}</span><small>speed</small></b><button onclick="pvSpeed(1)" aria-label="Faster">+</button></div>`;
+  if (PV.on) el.innerHTML = `<div class="pvt">Route preview${PV.sky ? " from the sky" : ""} &middot; <span id="pvpct">0</span>%<span class="pvh">drag to look around</span></div><div class="pvrow">${speeds}<button class="btn" onclick="endPreview()">Skip</button></div>`;
+  else el.innerHTML = `<div class="pvt">You are at <b>${esc(from)}</b><br>Going to <b>${esc(M.destName)}</b>, ${km} km</div><div class="pvrow"><button class="btn primary" onclick="startPreview()">&#9654; Preview route</button>${PV.sky ? "" : speeds}<button class="btn" onclick="pvDismiss()">Drive</button></div>`;
+}
+function pvSpeed(d) {
+  const i = Math.max(0, Math.min(PV_SPEEDS.length - 1, PV_SPEEDS.indexOf(PV.mult) + d));
+  PV.mult = PV_SPEEDS[i]; settings.pvSpeed = PV.mult; saveSettings();
+  const el = document.getElementById("pvmult"); if (el) el.innerHTML = fmtMult(PV.mult);
+}
+function askPreview() { if (!M || M.free) return; PV.ask = true; pvRender(); }
+function pvDismiss() { PV.ask = false; pvRender(); }
 function startPreview(mode) {
   if (!M || M.free || !M.cum || M.cum.length < 2) return;
   if (PV.on) endPreview();
   const total = M.cum[M.cum.length - 1], km = total / 1000;
   mode = mode || (settings.preview === "sky" ? "sky" : "drive");
-  Object.assign(PV, { on: true, sky: mode === "sky", t: 0, s: 0, T: Math.min(16, Math.max(7, 5 + km * 0.8)), total, alt: Math.min(460, Math.max(170, 130 + km * 22)), back: Math.min(520, Math.max(220, 160 + km * 25)),
-    V: Math.min(320, Math.max(40, total / 20)), vs: 0, dir: null, t0: 0 });
+  Object.assign(PV, { on: true, ask: false, sky: mode === "sky", t: 0, s: 0, T: Math.min(16, Math.max(7, 5 + km * 0.8)), total, alt: Math.min(460, Math.max(170, 130 + km * 22)), back: Math.min(520, Math.max(220, 160 + km * 25)),
+    V: Math.min(320, Math.max(40, total / 20)), vs: 0, dir: null, t0: 0, readyT: 1, cy: carPos.y, nameT: 0 });
   PV.ll = [S.lat, S.lon]; toWorld(S.lat, S.lon, PV.w);
   PV.pos.copy(camera.position); PV.look.copy(carPos);
-  if (!PV.el) { PV.el = document.createElement("div"); PV.el.id = "pvcard"; PV.el.style.cssText = "position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:950;background:rgba(14,17,22,.82);color:#eef2f7;font:600 14px/1.3 'Segoe UI',system-ui,sans-serif;padding:9px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.35);text-align:center;pointer-events:none;max-width:90vw"; document.body.appendChild(PV.el); }
-  PV.el.innerHTML = `Route preview${PV.sky ? " from the sky" : ", fast-forward"}: ${esc(P[M.route.from] ? P[M.route.from].label : "start")} to ${esc(M.destName)}, ${km.toFixed(1)} km<br><span style="opacity:.7;font-weight:400;font-size:12px">press any key or tap to skip &middot; <span id="pvpct">0</span>%</span>`;
-  PV.el.hidden = false; S.v = 0;
+  LOOK.yaw = 0; LOOK.pitch = 0; LOOK.zoom = 1;
+  S.v = 0; pvRender();
 }
 function endPreview() {
   if (!PV.on) return;
-  PV.on = false; if (PV.el) PV.el.hidden = true;
+  PV.on = false; pvRender();
+  LOOK.yaw = 0; LOOK.pitch = 0; LOOK.zoom = 1;
   if (!PV.sky && M && M.v) {                                         // back to the start of the route
     const g = M.v.geom; S.lat = g[0][0]; S.lon = g[0][1]; S.hdg = bearing(g[0], g[Math.min(3, g.length - 1)]); S.v = 0; S.y = 0; S.yT = 0;
     M.progress = 0; M.ri = 0; rebaseTo(S.lat, S.lon); toWorld(S.lat, S.lon, carPos); camInit = true;
@@ -839,43 +860,53 @@ function endPreview() {
 }
 const _pa = [0, 0], _pb = [0, 0], _pc = [0, 0];
 function previewStep(dt) {
+  if (loadingEl && !loadingEl.hidden) loadingEl.hidden = true;      // the loading card belongs to the drive, not the preview
   if (!PV.sky) {
-    // fast-forward along the route; ease off while the ground ahead is still loading
+    // fast-forward along the route at a steady speed; slow down (gently, with hysteresis) while the city
+    // ahead is still loading, and ease in at the destination
     routePoint(PV.s + 300, _pc);
     const ready = worldReadyAt(S.lat, S.lon) && worldReadyAt(_pc[0], _pc[1]);
-    const left = PV.total - PV.s, vt = Math.min(ready ? PV.V : PV.V * 0.4, 12 + left * 0.8);     // ease in at the destination
-    PV.vs += (vt - PV.vs) * Math.min(1, dt * 1.2);
+    PV.readyT = ready ? PV.readyT + dt : 0;
+    const left = PV.total - PV.s, vt = Math.min((PV.readyT > 0.8 ? 1 : 0.35) * PV.V * PV.mult, 10 + left * 0.9);
+    PV.vs += (vt - PV.vs) * Math.min(1, dt * 0.9);
     PV.s = Math.min(PV.total, PV.s + dt * PV.vs);
-    routePoint(PV.s, _pa); routePoint(PV.s + 20, _pb);
+    routePoint(PV.s, _pa); routePoint(PV.s + 35, _pb);
     S.lat = _pa[0]; S.lon = _pa[1]; S.v = 0;
-    if (IDX.ready) { const r = alignedRoad(S.lat, S.lon, bearing(_pa, _pb)); if (r) { S.y = S.yT = r.e || 0; } }      // ride the route's own deck (fast-forward jumps past ramps too quickly to climb them)
-    if (PV.s + 1 < PV.total) { let d = bearing(_pa, _pb) - S.hdg; while (d > 180) d -= 360; while (d < -180) d += 360; S.hdg = (S.hdg + d * Math.min(1, dt * 6) + 360) % 360; }
+    if (IDX.ready) { const r = alignedRoad(S.lat, S.lon, bearing(_pa, _pb)); if (r) { S.y = S.yT = r.e || 0; } }      // ride the route's own deck (the camera height is smoothed separately)
+    if (PV.s + 1 < PV.total) { let d = bearing(_pa, _pb) - S.hdg; while (d > 180) d -= 360; while (d < -180) d += 360; S.hdg = (S.hdg + d * Math.min(1, dt * 4) + 360) % 360; }
     M.progress = PV.s; PV.ll = [S.lat, S.lon]; toWorld(S.lat, S.lon, PV.w);
-    if ((PV.nameT = (PV.nameT || 0) + dt) > 0.3) { PV.nameT = 0; try { senseRoad(performance.now()); } catch (_) {} S.v = 0; }      // keep the street card current
+    if ((PV.nameT += dt) > 0.3) { PV.nameT = 0; try { senseRoad(performance.now()); } catch (_) {} S.v = 0; }      // keep the street card current
     const pc = document.getElementById("pvpct"); if (pc) pc.textContent = Math.round(100 * PV.s / PV.total);
-    if (PV.s >= PV.total) { PV.t += dt; if (PV.t > 1.2) endPreview(); }       // a moment at the destination
+    if (PV.s >= PV.total) { PV.t += dt; if (PV.t > 1.5) endPreview(); }       // a moment at the destination
     return;
   }
-  PV.t += dt; const u = Math.min(1, PV.t / PV.T);
+  PV.t += dt * PV.mult; const u = Math.min(1, PV.t / PV.T);
   const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;          // ease in and out
   const s = PV.total * e;
   routePoint(s, _pa); PV.ll = [_pa[0], _pa[1]]; toWorld(_pa[0], _pa[1], PV.w);
+  const pc = document.getElementById("pvpct"); if (pc) pc.textContent = Math.round(100 * u);
   if (u >= 1) endPreview();
 }
 function previewChase(dt) {
   if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.updateProjectionMatrix(); }
-  // the camera is tied to the car (fixed distance, so the car never shrinks away at speed); only its
-  // direction is smoothed, taken from the route 150 m behind to 150 m ahead so bends turn it gently
+  lookDecay(dt);
+  // the camera is tied to the car (fixed distance, so the car never shrinks away at speed); its direction
+  // follows the route 150 m behind to 150 m ahead, smoothed (faster at higher speed so it keeps up)
   routePoint(PV.s - 150, _pb); routePoint(PV.s + 150, _pc);
   const b = toWorld(_pb[0], _pb[1]), a = toWorld(_pc[0], _pc[1]);
   let dx = a.x - b.x, dz = a.z - b.z; const dl = Math.hypot(dx, dz) || 1; dx /= dl; dz /= dl;
   if (!PV.dir) PV.dir = new THREE.Vector2(dx, dz);
-  PV.dir.x += (dx - PV.dir.x) * Math.min(1, dt * 1.8); PV.dir.y += (dz - PV.dir.y) * Math.min(1, dt * 1.8); PV.dir.normalize();
-  const ramp = Math.min(1, PV.t0 = (PV.t0 || 0) + dt);                    // first second: rise from the chase camera
-  const BACK = 44, UP = 25;
-  const wantPos = new THREE.Vector3(carPos.x - PV.dir.x * BACK, carPos.y + UP, carPos.z - PV.dir.y * BACK);
-  const wantLook = new THREE.Vector3(carPos.x + PV.dir.x * 38, carPos.y + 1, carPos.z + PV.dir.y * 38);
-  PV.pos.lerp(wantPos, ramp < 1 ? Math.min(1, dt * 3) : 1); PV.look.lerp(wantLook, ramp < 1 ? Math.min(1, dt * 3) : 1);
+  const kd = Math.min(1, dt * (1.1 + PV.vs / 160));
+  PV.dir.x += (dx - PV.dir.x) * kd; PV.dir.y += (dz - PV.dir.y) * kd; PV.dir.normalize();
+  // your drag swings the camera round the car (yaw) and tilts it (pitch: up to look at the towers)
+  const c = Math.cos(LOOK.yaw), sn = Math.sin(LOOK.yaw);
+  const ux = PV.dir.x * c - PV.dir.y * sn, uz = PV.dir.x * sn + PV.dir.y * c;
+  PV.cy += (carPos.y - PV.cy) * Math.min(1, dt * 3);                     // the camera's height eases over ramps
+  const z = LOOK.zoom, BACK = 44 * z, UP = Math.max(3, 25 * z * (1 - 0.7 * LOOK.pitch));
+  const wantPos = new THREE.Vector3(carPos.x - ux * BACK, PV.cy + UP, carPos.z - uz * BACK);
+  const wantLook = new THREE.Vector3(carPos.x + ux * 28, PV.cy + 1 + Math.max(0, LOOK.pitch) * 60, carPos.z + uz * 28);      // the car sits just below the middle, clear of the street card
+  const ramp = Math.min(1, PV.t0 += dt), k = ramp < 1 ? Math.min(1, dt * 3) : Math.min(1, dt * 12);
+  PV.pos.lerp(wantPos, k); PV.look.lerp(wantLook, k);
   camera.position.copy(PV.pos); camera.up.set(0, 1, 0); camera.lookAt(PV.look);
   if (Math.abs(camera.fov - 58) > 0.05) { camera.fov += (58 - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
 }
@@ -991,7 +1022,7 @@ function frame(t) {
   if (running && Math.hypot(carPos.x, carPos.z) > 2500) { const bx = carPos.x, bz = carPos.z; rebaseTo(S.lat, S.lon); toWorld(S.lat, S.lon, carPos); const ddx = carPos.x - bx, ddz = carPos.z - bz; camPos.x += ddx; camPos.z += ddz; camera.position.x += ddx; camera.position.z += ddz; PV.pos.x += ddx; PV.pos.z += ddz; PV.look.x += ddx; PV.look.z += ddz; }
   // car
   car.group.visible = running || !!M;
-  if (running && IDX.ready) {
+  if (running && IDX.ready && !PV.on) {                             // (the preview sets the height from the route's own deck)
     const r = IDX.roadAt(S.lat, S.lon, S.y); S.yT = r ? (r.eAt || 0) : 0;
     // slope under the car: the deck 2.2 m ahead and behind gives the pitch, and the higher of the
     // centre and the mean keeps the body out of the ramp on a change of grade
@@ -1218,7 +1249,12 @@ function hud(t) {
 // ================================================================== keys and menus
 function onKey(e) {
   const k = e.key.toLowerCase();
-  if (PV.on) { endPreview(); return; }
+  if (PV.on) {
+    if (k === "escape" || k === "enter" || k === " ") endPreview();
+    else if (k === "+" || k === "=" || k === "]") pvSpeed(1); else if (k === "-" || k === "_" || k === "[") pvSpeed(-1);
+    return;
+  }
+  if (PV.ask && running) { if (k === "enter" || k === "o") { startPreview(); return; } if (k !== "q" && k !== "e" && k !== "c" && k !== "t" && k !== "f") pvDismiss(); }
   if (k === "o" && running && M && !M.free) { startPreview(); return; }
   if (k === "f" && !running) { cycleLook(); return; }
   if (k === "t" && !running) { cycleTime(); return; }
@@ -1241,7 +1277,7 @@ function togglePause() {
   document.getElementById("pause").hidden = !paused;
   if (paused) document.getElementById("pausePanel").innerHTML = `<h3>Paused</h3><p class="sub">${esc(M.route.title)}</p>
     <div class="row2"><button class="btn primary" onclick="togglePause()">Resume</button><button class="btn" onclick="respawn();togglePause()">Back on route</button><button class="btn" onclick="onKey({key:'g'});togglePause()">GPS ${settings.gps ? "off" : "on"}</button><button class="btn" onclick="onKey({key:'c'});togglePause()">Next camera</button><button class="btn" onclick="onKey({key:'t'});togglePause()">Time of day</button><button class="btn" onclick="onKey({key:'f'});togglePause()">Visual look</button><button class="btn" onclick="togglePause();startPreview()">Route preview</button><button class="btn" onclick="quitToMenu()">Quit to menu</button></div>
-    <h2>Keys</h2><p class="sub"><span class="kbd">W</span> accelerate &middot; <span class="kbd">S</span> brake / reverse &middot; <span class="kbd">A</span> <span class="kbd">D</span> steer &middot; <span class="kbd">Space</span> handbrake &middot; <span class="kbd">H</span> horn &middot; <span class="kbd">C</span> camera &middot; <span class="kbd">T</span> time of day &middot; <span class="kbd">F</span> visual look &middot; <span class="kbd">G</span> GPS &middot; <span class="kbd">V</span> voice &middot; <span class="kbd">M</span> big map &middot; <span class="kbd">R</span> back on route &middot; <span class="kbd">O</span> route preview &middot; <span class="kbd">P</span> frame rate &middot; <span class="kbd">Esc</span> this menu &middot; drag the screen (or <span class="kbd">Q</span> <span class="kbd">E</span>) to look around, scroll to zoom</p>`;
+    <div class="kbdhelp"><h2>Keys</h2><p class="sub"><span class="kbd">W</span> accelerate &middot; <span class="kbd">S</span> brake / reverse &middot; <span class="kbd">A</span> <span class="kbd">D</span> steer &middot; <span class="kbd">Space</span> handbrake &middot; <span class="kbd">H</span> horn &middot; <span class="kbd">C</span> camera &middot; <span class="kbd">T</span> time of day &middot; <span class="kbd">F</span> visual look &middot; <span class="kbd">G</span> GPS &middot; <span class="kbd">V</span> voice &middot; <span class="kbd">M</span> big map &middot; <span class="kbd">R</span> back on route &middot; <span class="kbd">O</span> route preview &middot; <span class="kbd">P</span> frame rate &middot; <span class="kbd">Esc</span> this menu &middot; drag the screen (or <span class="kbd">Q</span> <span class="kbd">E</span>) to look around, scroll to zoom</p></div><p class="sub">Drag the screen to look around; double-tap to reset the view.</p>`;
   else lastT = performance.now();
 }
 let menuTab = "missions", menuRoute = null, menuVariant = "fast";
@@ -1249,7 +1285,7 @@ function renderMenu(tab, routeId) {
   menuTab = tab || menuTab; if (routeId) { menuRoute = D.routes.find(r => r.id === routeId); menuVariant = "fast"; }
   document.getElementById("menu").hidden = false;
   const tabs = ["missions", "free", "live", "look", "tolls", "help"].filter(t => t !== "tolls" || !CITY.noTolls).map(t => `<button class="${menuTab === t ? "on" : ""}" onclick="renderMenu('${t}')">${{ missions: "Missions", free: "Free roam", live: "Any A to B", look: "Look & feel", tolls: "Salik & Darb", help: "How to play" }[t]}</button>`).join("");
-  let h = CITY.title ? `<h1>${CITY.title}</h1><p class="sub">${CITY.sub}</p>` : `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}</div>`;
+  let h = CITY.title ? `<h1>${CITY.title}</h1><p class="sub">${CITY.sub}</p><div class="tabs">${tabs}</div>` : `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}</div>`;
   if (menuTab === "missions") h += menuRoute ? briefing(menuRoute) : missionList();
   else if (menuTab === "free") h += freeRoam();
   else if (menuTab === "live") h += liveForm();
@@ -1339,7 +1375,7 @@ function trySnap() {
 function liveForm() {
   const stops = D.places.filter(p => p.kind === "stop").sort((a, b) => (a.city + a.label).localeCompare(b.city + b.label));
   const opt = sel => stops.map(p => `<option value="${p.id}" ${p.id === sel ? "selected" : ""}>${p.city}: ${esc(p.label)}</option>`).join("");
-  return `<h3>Any A to B</h3><p class="sub">Routed live by the public Valhalla router on current OpenStreetMap data. Needs internet.</p><div class="row2"><label class="opt">from <select id="fa">${opt("dxb")}</select></label><label class="opt">to <select id="fb2">${opt("difc")}</select></label><label class="opt"><input type="checkbox" id="avoid"> avoid Salik and 24/7 Darb gates</label><button class="btn primary" id="go">Route it</button></div><div id="fres"></div>`;
+  return `<h3>Any A to B</h3><p class="sub">Routed live by the public Valhalla router on current OpenStreetMap data. Needs internet.</p><div class="row2"><label class="opt">from <select id="fa">${opt(P.dxb ? "dxb" : D.places[0].id)}</select></label><label class="opt">to <select id="fb2">${opt(P.difc ? "difc" : (D.places[6] || D.places[1]).id)}</select></label>${CITY.noTolls ? "<input type=\"checkbox\" id=\"avoid\" hidden>" : "<label class=\"opt\"><input type=\"checkbox\" id=\"avoid\"> avoid Salik and 24/7 Darb gates</label>"}<button class="btn primary" id="go">Route it</button></div><div id="fres"></div>`;
 }
 async function liveGo() {
   const a = P[document.getElementById("fa").value], b = P[document.getElementById("fb2").value], avoid = document.getElementById("avoid").checked;
@@ -1401,7 +1437,7 @@ function toast(html, cls) { const t = document.createElement("div"); t.className
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); fx.setSize(innerWidth, innerHeight); });
 
 // expose for inline handlers and tests
-Object.assign(window, { startMission, retry, nextMission, quitToMenu, renderMenu, togglePause, respawn, onKey, startFree, setOpt, liveGo, startPreview });
+Object.assign(window, { startMission, retry, nextMission, quitToMenu, renderMenu, togglePause, respawn, onKey, startFree, setOpt, liveGo, startPreview, endPreview, pvSpeed, pvDismiss, askPreview });
 // used by build/bake_shanghai_routes.js to bake missions with the same code the live router uses
 window.__routeKit = { buildVariant, valhalla };
 Object.defineProperties(window, {

@@ -1,0 +1,87 @@
+/* Shared by city.html and shanghai.html: the route-preview card, menu stacking, and the phone and tablet
+   layout (portrait and landscape, iPhone safe areas). Loaded after each page's own <style>. */
+
+/* menus sit above the HUD and the touch controls */
+#menu, #pause, #debrief { z-index: 970; }
+#menu .panel, .panel { overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+#loading { z-index: 960; }
+
+/* ---------------------------------------------------------------- route preview card */
+#pvui { position: fixed; left: 50%; top: max(12px, env(safe-area-inset-top)); transform: translateX(-50%); z-index: 950;
+  background: rgba(14,17,22,.9); color: #eef2f7; border: 1px solid #2a3140; border-radius: 12px; padding: 10px 14px;
+  box-shadow: 0 8px 26px rgba(0,0,0,.4); text-align: center; width: max-content; max-width: min(560px, 94vw);
+  font: 14px/1.35 "Segoe UI", system-ui, sans-serif; backdrop-filter: blur(6px); }
+#pvui[hidden] { display: none; }
+#pvui .pvt b { color: #f0b429; }
+#pvui .pvh { opacity: .65; font-size: 12px; margin-left: 6px; }
+#pvui .pvrow { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+#pvui .btn { min-height: 36px; }
+#pvui .pvsp { display: inline-flex; align-items: center; border: 1px solid #2a3140; border-radius: 8px; overflow: hidden; background: #1c2230; }
+#pvui .pvsp button { background: transparent; color: #eef2f7; border: 0; width: 40px; height: 36px; font-size: 20px; line-height: 1; cursor: pointer; }
+#pvui .pvsp button:active { background: #f0b429; color: #10131a; }
+#pvui .pvsp b { min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
+#pvui .pvsp small { display: block; font-size: 10px; opacity: .6; font-weight: 400; margin-top: -2px; }
+/* while previewing, the driving pads step aside so the view is clear */
+html.pv #tc .pad, html.pv #tc .gas, html.pv #tc .brk, html.pv #tc .hb { display: none !important; }
+
+/* ---------------------------------------------------------------- narrow screens (phones in portrait, small tablets) */
+@media (max-width: 760px) {
+  #menu { justify-content: center; padding: 0; background: rgba(8,10,14,.86); }
+  #menu .panel, .panel, .panel.narrow { width: auto; max-width: none; margin: 0;
+    position: absolute; left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right));
+    top: max(8px, env(safe-area-inset-top)); bottom: max(8px, env(safe-area-inset-bottom)); max-height: none;
+    padding: 16px 14px 20px; border-radius: 12px; }
+  #pause .panel, #debrief .panel { bottom: auto; max-height: calc(100% - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  .panel h1 { font-size: 26px; margin: 2px 0 4px; }
+  .panel h2 { font-size: 13px; }
+  .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 10px -14px 6px; padding: 0 14px 2px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button, .tabs .btn { flex: none; min-height: 38px; }
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 52px; }
+  .row2 { gap: 8px; }
+  .row2 label.opt { display: flex; width: 100%; margin: 2px 0; }
+  .row2 label.opt select { flex: 1; min-width: 0; max-width: 100%; }
+  select { max-width: 100%; min-height: 38px; }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; }
+  .seg button { flex: 1 1 auto; min-height: 38px; padding: 7px 10px; }
+  .btn { min-height: 38px; }
+  #toasts { right: 8px; left: 8px; align-items: center; }
+  .toast { max-width: 100%; font-size: 12.5px; }
+  #intro { display: none !important; }
+}
+
+/* ---------------------------------------------------------------- phones held sideways (short screens) */
+@media (max-height: 500px) {
+  #menu { justify-content: center; padding: 0; }
+  #menu .panel { width: min(94vw, 860px); max-height: calc(100% - 12px); padding: 12px 18px 16px; }
+  #pause .panel, #debrief .panel { width: min(94vw, 640px); max-height: calc(100% - 12px); padding: 12px 18px 14px; }
+  .panel h1 { font-size: 22px; margin: 0 0 2px; }
+  .panel .sub { font-size: 12.5px; }
+  .tabs { margin: 8px -18px 4px; padding: 0 18px 2px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button, .tabs .btn { flex: none; }
+  .grid { grid-template-columns: 1fr 1fr; }
+  #intro { display: none !important; }
+  /* pop-ups go under the turn card on the left instead of over the minimap */
+  #toasts { right: auto; left: max(8px, env(safe-area-inset-left)); top: 96px; align-items: flex-start; max-width: 42vw; }
+  .toast { font-size: 11.5px; padding: 6px 9px; max-width: 42vw; }
+  #pvui { top: max(6px, env(safe-area-inset-top)); padding: 5px 9px; font-size: 12px; }
+  #pvui .pvh, #pvui .pvsp small { display: none; }
+  #pvui { max-width: min(300px, calc(100vw - 2 * 200px)); min-width: 220px; line-height: 1.25; }
+  #pvui .pvt { font-size: 11.5px; }
+  #pvui .pvrow { gap: 5px; margin-top: 4px; flex-wrap: nowrap; }
+  #pvui .btn { font-size: 12px; padding: 4px 9px; min-height: 30px; white-space: nowrap; }
+  #pvui .pvsp button { width: 28px; height: 30px; font-size: 17px; }
+  #pvui .pvsp b { min-width: 30px; font-size: 12px; }
+  html.pv #speed { display: none !important; }
+  #pvui .pvrow { margin-top: 5px; }
+  #pvui .pvsp button { width: 36px; height: 32px; }
+  #pvui .btn { min-height: 32px; padding: 5px 11px; }
+}
+
+/* touch screens: the keyboard list is no use, bigger targets */
+html.touch .kbdhelp { display: none; }
+@media (pointer: coarse) {
+  .tabs button, .btn, .seg button, .card { touch-action: manipulation; }
+}

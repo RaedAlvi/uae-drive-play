@@ -31,7 +31,7 @@ function setup() {
   @media (orientation: portrait) { html.touch #rot.on { display: grid; } }
   /* the game's own panels, sized for a phone */
   @media (max-width: 900px), (max-height: 520px) {
-    html.touch #menu .panel, html.touch #pause .panel { width: min(96vw, 620px) !important; max-height: 92vh; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    html.touch #menu .panel, html.touch #pause .panel { overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
     html.touch #nav { width: 300px !important; transform: scale(.82); transform-origin: top left; }
     html.touch #mini { width: 150px !important; height: 150px !important; bottom: auto !important; top: 58px !important; right: 10px !important; }
     html.touch #keys { display: none !important; }
