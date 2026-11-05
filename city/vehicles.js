@@ -441,6 +441,17 @@ function plateTexture(text = "O 1234") {
   const W = 256, H = 56, cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const g = cv.getContext("2d");
+  if (window.CITY && window.CITY.region === "shanghai") {
+    // Shanghai private plate: blue, white border and characters, 沪A then a dot and five characters
+    g.fillStyle = "#1f4fa8"; g.fillRect(0, 0, W, H);
+    g.strokeStyle = "#f2f4f8"; g.lineWidth = 3; g.strokeRect(5, 5, W - 10, H - 10);
+    g.fillStyle = "#f2f4f8"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = "bold 32px 'Microsoft YaHei', 'SimHei', sans-serif"; g.fillText("沪A", 52, 29);
+    g.beginPath(); g.arc(94, 29, 3.5, 0, Math.PI * 2); g.fill();
+    g.font = "bold 36px Arial, sans-serif"; g.fillText("D7Q28", 172, 30);
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    return tex;
+  }
   g.fillStyle = "#f6f6f1"; g.fillRect(0, 0, W, H);
   g.strokeStyle = "#1a1a1a"; g.lineWidth = 3; g.strokeRect(2.5, 2.5, W - 5, H - 5);
   g.fillStyle = "#111"; g.textAlign = "center"; g.textBaseline = "middle";

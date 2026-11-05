@@ -337,6 +337,8 @@ totalEmissiveRadiance += crownC * crown * uNight * 1.3;
 }
 
 // ------------------------------------------------------------------ roads
+// Shanghai (shanghai.html sets window.CITY): Chinese markings, a yellow line between the two directions.
+const CN_ROADS = typeof window !== "undefined" && !!window.CITY && window.CITY.region === "shanghai";
 // road: (width, lanes, flags, class) flags bit0 oneway, bit1 bridge, bit3 ramp, bit4 junction disc
 // junc: (dist since junction, dist to next junction, radius behind, radius ahead)
 // Painted lane arrows (metres; x across the lane to the right, y along travel, tip toward +y)
@@ -418,6 +420,12 @@ if (!disc && cls < 6.5) {
     float lm = 1.0 - smoothstep(0.06, 0.06 + fw, abs(u - lu));
     bool centre = !oneway && abs(lu - W * 0.5) < 0.1;
     float pat = centre && cls < 2.5 ? 1.0 : dash;                     // solid centre line on big two-way roads
+${CN_ROADS ? `    if (centre) {                                                     // China: yellow centre line, double solid on main roads, dashed on side streets
+      float l2 = 1.0 - smoothstep(0.06, 0.06 + fw, abs(abs(u - lu) - 0.18));
+      float cm = (cls < 3.5 ? l2 : lm * dash) * clear;
+      if (cm > 0.0) markC = mix(markC, vec3(0.95, 0.72, 0.1), cm);
+      mark = max(mark, cm); continue;
+    }` : ""}
     mark = max(mark, lm * pat * clear);
   }
   // zebra crossing and stop line where urban roads meet a junction
@@ -477,7 +485,7 @@ float tunnelLight = 0.0;
 if (vUvW.y > 2.5) { diffuseColor.rgb = vec3(0.95, 0.93, 0.88); tunnelLight = 1.0; }
 else if (vUvW.y > 0.5 && vUvW.y < 1.5) {
   float s = step(0.5, fract(vUvW.x / 1.0));
-  diffuseColor.rgb = mix(vec3(0.02, 0.02, 0.02), vec3(0.85, 0.85, 0.82), s);
+  diffuseColor.rgb = ${CN_ROADS ? "vec3(0.62, 0.61, 0.58) * (0.94 + 0.06 * s)" : "mix(vec3(0.02, 0.02, 0.02), vec3(0.85, 0.85, 0.82), s)"};      // Shanghai: plain granite kerbs
 } else if (vUvW.y < 0.5) {
   // paving slabs
   vec2 t = vWPW.xz / 0.6; vec2 f = abs(fract(t) - 0.5);
@@ -516,9 +524,9 @@ diffuseColor.rgb = c;
   return m;
 }
 
-// Endless desert ground under everything, following the camera.
+// Endless desert ground under everything, following the camera (Shanghai: bare grey-olive earth).
 export function makeGroundMaterial() {
-  const m = new THREE.MeshStandardMaterial({ color: 0xc8aa7e, roughness: 1, metalness: 0 });
+  const m = new THREE.MeshStandardMaterial({ color: CN_ROADS ? 0x8e8f7c : 0xc8aa7e, roughness: 1, metalness: 0 });
   m.onBeforeCompile = (sh) => {
     cutUniforms(sh);
     sh.vertexShader = sh.vertexShader

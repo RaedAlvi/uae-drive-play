@@ -20,6 +20,8 @@ try { SG = await import("./signs.js"); } catch (e) { console.warn("signs.js not 
 try { VEH = await import("./vehicles.js"); } catch (e) { console.warn("vehicles.js not loaded, using simple cars", e && e.message); }
 try { LM = await import("./landmarks.js"); } catch (e) { console.warn("landmarks.js not loaded", e && e.message); }
 try { LM2 = await import("./landmarks2.js"); } catch (e) { console.warn("landmarks2.js not loaded", e && e.message); }
+let LMSH = null;
+if (CITY.region === "shanghai") try { LMSH = await import("./landmarks_sh.js"); } catch (e) { console.warn("landmarks_sh.js not loaded", e && e.message); }
 
 // ================================================================== data and settings
 const D = window.UAE_DRIVE;
@@ -37,7 +39,7 @@ const CAMS = ["chase", "far", "hood", "heli", "top"];
 const CAM_NAMES = { chase: "chase", far: "far chase", hood: "bonnet", heli: "helicopter", top: "top-down" };
 function load(k, def) { try { const v = localStorage.getItem(k); return v ? Object.assign({}, def, JSON.parse(v)) : def; } catch (e) { return def; } }
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-const settings = load("uaecity.settings", { band: "offpeak", gps: true, cam: "chase", time: 2, look: "normal", quality: "normal", traffic: "normal", color: 0xf97316, fps: false, sound: true, voice: true, labels: true });
+const settings = load("uaecity.settings", { band: "offpeak", gps: true, cam: "chase", time: 2, look: "normal", quality: "normal", traffic: "normal", color: 0xf97316, fps: false, sound: true, voice: true, labels: true, vol: 0.7, preview: true });
 if (!CAMS.includes(settings.cam)) settings.cam = "chase";
 function saveSettings() { save("uaecity.settings", settings); }
 function best(id, variant) { return load(`uaecity.best.${id}.${variant}`, null); }
@@ -105,6 +107,8 @@ const Q = QUALITY[settings.quality] || QUALITY.normal;
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", reversedDepthBuffer: true, stencil: false });
 renderer.setPixelRatio(Q.pr);
 renderer.setSize(innerWidth, innerHeight);
+// Reading back each shader's compile log waits on the GPU (a visible hitch whenever a new material first draws).
+renderer.debug.checkShaderErrors = /[?&]debug=1/.test(location.search);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled = Q.shadow > 0;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -170,7 +174,7 @@ const tiles = new Tiles(scene, {
 });
 // landmarks: suppress OSM buildings under them, place the hand-built models
 const landmarks = [];
-const ALL_LANDMARKS = [...(LM && LM.LANDMARKS ? LM.LANDMARKS : []), ...(LM2 && LM2.LANDMARKS2 ? LM2.LANDMARKS2.map(L => ({ ...L, dispose: LM2.disposeLandmark })) : [])];
+const ALL_LANDMARKS = [...(LM && LM.LANDMARKS ? LM.LANDMARKS : []), ...(LM2 && LM2.LANDMARKS2 ? LM2.LANDMARKS2.map(L => ({ ...L, dispose: LM2.disposeLandmark })) : []), ...(LMSH ? LMSH.LANDMARKS_SH.map(L => ({ ...L, dispose: LM2.disposeLandmark })) : [])];
 {
   for (const L of ALL_LANDMARKS) {
     if (L.suppress && L.suppress.length > 2) {
@@ -525,10 +529,11 @@ const _v = new THREE.Vector3();
 function drawLabels() {
   let n = 0;
   const list = [];
+  const fLL = PV.on ? PV.ll : [S.lat, S.lon], fR = PV.on ? 2600 : 1400, lf = PV.on ? PV.w : carPos;
   if (running) {
-    for (const p of D.places) { if (M && (p.id === M.route.to)) continue; const d = hav([S.lat, S.lon], [p.lat, p.lon]); if (d < 1400) list.push({ lat: p.lat, lon: p.lon, y: 30, html: esc(p.label), cls: "", d }); }
+    for (const p of D.places) { if (M && (p.id === M.route.to)) continue; const d = hav(fLL, [p.lat, p.lon]); if (d < fR) list.push({ lat: p.lat, lon: p.lon, y: 30, html: esc(p.label), cls: "", d: PV.on ? d * 0.6 : d }); }
     for (const g of D.gates) { const d = hav([S.lat, S.lon], [g.lat, g.lon]); if (d < 900) list.push({ lat: g.lat, lon: g.lon, y: 10.5, html: (g.sys === "salik" ? "SALIK " : "DARB ") + esc(g.name), cls: g.sys === "salik" ? "gate" : "darb", d }); }
-    if (M && !M.free) { const dest = M.v.geom[M.v.geom.length - 1]; const d = hav([S.lat, S.lon], dest); list.push({ lat: dest[0], lon: dest[1], y: 40, html: esc(P[M.route.to] ? P[M.route.to].label : "Destination") + `<small>${fmtM(d)}</small>`, cls: "dest", d }); }
+    if (M && !M.free) { const dest = M.v.geom[M.v.geom.length - 1]; const d = hav(fLL, dest); list.push({ lat: dest[0], lon: dest[1], y: 40, html: esc(P[M.route.to] ? P[M.route.to].label : "Destination") + `<small>${fmtM(d)}</small>`, cls: "dest", d }); }
   }
   const W = innerWidth, H = innerHeight;
   for (const L of list) {
@@ -544,13 +549,13 @@ function drawLabels() {
     const fx = camera.position.x, fz = camera.position.z, cand = [];
     for (const t of tiles.tiles.values()) {
       if (!t.labels || !t.off || t.state !== "ready") continue;
-      for (const L of t.labels) { const x = L.x + t.off.x, z = L.z + t.off.z, d = Math.hypot(x - carPos.x, z - carPos.z); if (d < 700) cand.push({ L, x, z, d }); }
+      for (const L of t.labels) { const x = L.x + t.off.x, z = L.z + t.off.z, d = Math.hypot(x - lf.x, z - lf.z); if (d < (PV.on ? 1500 : 700)) cand.push({ L, x, z, d: PV.on ? d / 2 : d }); }
     }
     // the hand-built landmarks are named too (they come first within 1.5 km)
     for (const L of landmarks) {
       if (!L.group) continue;
-      const x = L.group.position.x, z = L.group.position.z, d = Math.hypot(x - carPos.x, z - carPos.z);
-      if (d < 1500) cand.push({ L: { en: L.def.name, k: "landmark", y: Math.min((L.def.height || 60) * 0.55, 140) }, x, z, d: d * 0.4 });
+      const x = L.group.position.x, z = L.group.position.z, d = Math.hypot(x - lf.x, z - lf.z);
+      if (d < (PV.on ? 3000 : 1500)) cand.push({ L: { en: L.def.name, k: "landmark", y: Math.min((L.def.height || 60) * 0.55, 140) }, x, z, d: d * 0.4 });
     }
     cand.sort((a, b) => a.d - b.d);
     const used = [], perKind = {}, seenNames = new Set(list.map(L => L.html.replace(/<[^>]*>.*$/, "").toLowerCase())); let shown = 0;
@@ -595,7 +600,7 @@ try {
 
 // ================================================================== car physics (ported unchanged from the vector game)
 const keys = {};
-const audio = new CarAudio(); audio.on = settings.sound !== false;
+const audio = new CarAudio(); audio.on = settings.sound !== false; audio.vol = settings.vol ?? 0.7;
 addEventListener("keydown", e => { audio.start(); if (e.repeat) return; keys[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === "h") audio.hornOn = true; onKey(e); });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; if (e.key.toLowerCase() === "h") audio.hornOn = false; });
 addEventListener("pointerdown", () => audio.start());
@@ -664,6 +669,8 @@ function startMission(route, variantKey, opts) {
   running = true; paused = false; lastT = performance.now(); camInit = true;
   waitWorld = performance.now(); pendingLane = true;
   if (!M.free) tiles.prefetchRoute(g);
+  LOOK.yaw = 0; LOOK.pitch = 0; LOOK.zoom = 1;
+  if (!M.free && settings.preview !== false && !(opts && opts.noPreview) && !navigator.webdriver) startPreview();      // automated tests call startPreview() themselves
   toast(M.free ? `Free roam from ${esc(P[route.from].label)}. Drive anywhere.` : `<b>${esc(route.title)}</b><small>Get to ${esc(P[route.to].label)}. ${settings.gps ? "Follow the directions and the blue line." : "GPS is off: find your own way."}</small>`, "good");
   if (!M.free && settings.gps && nav.voice) setTimeout(() => { if (M && !M.free && M.route === route) nav.say(`Starting route to ${M.destName}. ${Math.round(M.v.km * 10) / 10} kilometres.`); }, 600);
 }
@@ -763,6 +770,88 @@ function rebaseTo(lat, lon) {
   for (const L of landmarks) if (L.group) { const v = toWorld(L.def.lat, L.def.lon); L.group.position.set(v.x, 0, v.z); }
 }
 
+// ================================================================== free look
+// Drag the screen (mouse or finger) to swing the camera round the car and tilt it up at the towers;
+// the wheel zooms the chase boom; Q and E look left and right. Once you drive on, the view eases back
+// behind the car after two seconds (it stays put while you are stopped).
+const LOOK = { yaw: 0, pitch: 0, zoom: 1, t: -1e9, drag: null, keys: 0 };
+function lookDecay(dt) {
+  if (keys["q"] || keys["e"]) { LOOK.yaw += (keys["q"] ? -1 : 1) * dt * 1.8; LOOK.t = performance.now(); }
+  if (LOOK.drag || performance.now() - LOOK.t < 2000 || Math.abs(S.v) < 2) return;
+  const k = Math.min(1, dt * 1.6);
+  LOOK.yaw -= LOOK.yaw * k; LOOK.pitch -= LOOK.pitch * k;
+  if (Math.abs(LOOK.yaw) < 1e-3) LOOK.yaw = 0; if (Math.abs(LOOK.pitch) < 1e-3) LOOK.pitch = 0;
+}
+{
+  const el = renderer.domElement;
+  el.addEventListener("pointerdown", e => {
+    if (PV.on) { endPreview(); return; }
+    if (!running || paused || (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2)) return;
+    LOOK.drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  el.addEventListener("pointermove", e => {
+    const d = LOOK.drag; if (!d || d.id !== e.pointerId) return;
+    const sx = 3.4 / Math.max(320, innerWidth);                // a full-width drag turns about 200 degrees
+    LOOK.yaw -= (e.clientX - d.x) * sx; LOOK.pitch = THREE.MathUtils.clamp(LOOK.pitch - (e.clientY - d.y) * sx, -0.45, 1.25);
+    while (LOOK.yaw > Math.PI) LOOK.yaw -= 2 * Math.PI; while (LOOK.yaw < -Math.PI) LOOK.yaw += 2 * Math.PI;
+    d.x = e.clientX; d.y = e.clientY; LOOK.t = performance.now();
+  });
+  const up = e => { if (LOOK.drag && LOOK.drag.id === e.pointerId) { LOOK.drag = null; LOOK.t = performance.now(); } };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  el.addEventListener("contextmenu", e => e.preventDefault());
+  el.addEventListener("wheel", e => { if (!running) return; e.preventDefault(); LOOK.zoom = THREE.MathUtils.clamp(LOOK.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3.2); }, { passive: false });
+  el.addEventListener("dblclick", () => { LOOK.yaw = 0; LOOK.pitch = 0; LOOK.zoom = 1; });
+}
+
+// ================================================================== route preview
+// A quick fly-over of the whole route from the sky before you drive it: the camera climbs off the car,
+// sweeps along the blue line looking ahead, with the places on the way named, and drops back behind the
+// car. 7 to 16 seconds depending on length; any key or tap skips it.
+const PV = { on: false, ll: [0, 0], w: new THREE.Vector3(), t: 0, T: 10, el: null, look: new THREE.Vector3(), pos: new THREE.Vector3() };
+function routePoint(s, out) {
+  const g = M.v.geom, c = M.cum; s = Math.max(0, Math.min(c[c.length - 1], s));
+  let lo = 0, hi = c.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c[m] <= s) lo = m; else hi = m; }
+  const f = (s - c[lo]) / Math.max(1e-6, c[hi] - c[lo]);
+  out[0] = g[lo][0] + (g[hi][0] - g[lo][0]) * f; out[1] = g[lo][1] + (g[hi][1] - g[lo][1]) * f; return out;
+}
+function startPreview() {
+  if (!M || M.free || !M.cum || M.cum.length < 2) return;
+  const total = M.cum[M.cum.length - 1], km = total / 1000;
+  Object.assign(PV, { on: true, t: 0, T: Math.min(16, Math.max(7, 5 + km * 0.8)), total, alt: Math.min(460, Math.max(170, 130 + km * 22)), back: Math.min(520, Math.max(220, 160 + km * 25)) });
+  PV.ll = [S.lat, S.lon]; toWorld(S.lat, S.lon, PV.w);
+  PV.pos.copy(camera.position); PV.look.copy(carPos);
+  if (!PV.el) { PV.el = document.createElement("div"); PV.el.id = "pvcard"; PV.el.style.cssText = "position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:950;background:rgba(14,17,22,.82);color:#eef2f7;font:600 14px/1.3 'Segoe UI',system-ui,sans-serif;padding:9px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.35);text-align:center;pointer-events:none;max-width:90vw"; document.body.appendChild(PV.el); }
+  PV.el.innerHTML = `Route preview: ${esc(P[M.route.from] ? P[M.route.from].label : "start")} to ${esc(M.destName)}, ${km.toFixed(1)} km<br><span style="opacity:.7;font-weight:400;font-size:12px">press any key or tap to skip</span>`;
+  PV.el.hidden = false; S.v = 0;
+}
+function endPreview() {
+  if (!PV.on) return;
+  PV.on = false; if (PV.el) PV.el.hidden = true;
+  camPos.copy(camera.position); camInit = false;                     // the chase camera swoops down from where the preview left it
+  waitWorld = performance.now(); lastT = performance.now();         // hold the car until the ground under it is back
+}
+const _pa = [0, 0], _pb = [0, 0], _pc = [0, 0];
+function previewStep(dt) {
+  PV.t += dt; const u = Math.min(1, PV.t / PV.T);
+  const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;          // ease in and out
+  const s = PV.total * e;
+  routePoint(s, _pa); PV.ll = [_pa[0], _pa[1]]; toWorld(_pa[0], _pa[1], PV.w);
+  if (u >= 1) endPreview();
+}
+function previewCamera(dt) {
+  if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.updateProjectionMatrix(); }
+  const u = Math.min(1, PV.t / PV.T), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, s = PV.total * e;
+  // climb for the first 15%, cruise, come down over the last 15% towards the car's chase position
+  const up = Math.min(1, u / 0.15, (1 - u) / 0.15 + 0.25);
+  routePoint(s - PV.back * up, _pb); routePoint(s + 600 + 500 * up, _pc);
+  const b = toWorld(_pb[0], _pb[1]), a = toWorld(_pc[0], _pc[1]);
+  const wantPos = new THREE.Vector3(b.x, carPos.y + 6 + PV.alt * up, b.z), wantLook = new THREE.Vector3(a.x, 0, a.z);
+  const k = Math.min(1, dt * 2.2);
+  PV.pos.lerp(wantPos, k); PV.look.lerp(wantLook, Math.min(1, dt * 1.6));
+  camera.position.copy(PV.pos); camera.up.set(0, 1, 0); camera.lookAt(PV.look);
+  if (Math.abs(camera.fov - 55) > 0.05) { camera.fov += (55 - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
+}
+
 // ================================================================== camera
 const carPos = new THREE.Vector3(), camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
 let camYaw = 0, camInit = true, camDist = 7.5;
@@ -774,20 +863,29 @@ function updateCamera(dt) {
   // yaw follows the car with a lag, which is what makes a chase camera feel alive
   let d = hdg - camYaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
   camYaw += d * (camInit ? 1 : Math.min(1, dt * (settings.cam === "hood" ? 20 : 3.2)));
-  const fx = Math.sin(camYaw), fz = -Math.cos(camYaw);
+  lookDecay(dt);
+  const yawB = camYaw + LOOK.yaw, fx = Math.sin(yawB), fz = -Math.cos(yawB);
   const speed = Math.abs(S.v);
   let back = cfg.back + (settings.cam === "chase" || settings.cam === "far" ? Math.min(3.5, speed * 0.05) : 0);
   // keep the camera outside buildings: shorten the boom if a footprint is behind the car
   if ((settings.cam === "chase" || settings.cam === "far") && IDX.ready) {
-    for (let s = 2; s <= back; s += 1.5) { const [la, lo] = move(S.lat, S.lon, camYaw * 180 / Math.PI + 180, s); if (IDX.building(la, lo) && !IDX.roadAt(la, lo)) { back = Math.max(3.2, s - 1.2); break; } }
+    back *= LOOK.zoom;
+    for (let s = 2; s <= back; s += 1.5) { const [la, lo] = move(S.lat, S.lon, yawB * 180 / Math.PI + 180, s); if (IDX.building(la, lo) && !IDX.roadAt(la, lo)) { back = Math.max(3.2, s - 1.2); break; } }
   }
   camDist += (back - camDist) * (back < camDist ? 0.4 : Math.min(1, dt * 2.5));
-  const want = new THREE.Vector3(carPos.x - fx * camDist, carPos.y + cfg.up + (settings.cam === "chase" ? speed * 0.012 : 0), carPos.z - fz * camDist);
+  const tilt = settings.cam === "chase" || settings.cam === "far" ? LOOK.pitch : 0;      // looking up drops the camera towards the car's roof line
+  const want = new THREE.Vector3(carPos.x - fx * camDist, carPos.y + Math.max(0.9, cfg.up * LOOK.zoom - tilt * 1.6 + (settings.cam === "chase" ? speed * 0.012 : 0)), carPos.z - fz * camDist);
   if (settings.cam === "top") want.set(carPos.x, carPos.y + cfg.up, carPos.z + 0.1);
   if (camInit) { camPos.copy(want); camInit = false; } else camPos.lerp(want, settings.cam === "hood" ? 1 : Math.min(1, dt * 7));
   camera.position.copy(camPos);
   camLook.set(carPos.x + fx * cfg.ahead, carPos.y + cfg.look, carPos.z + fz * cfg.ahead);
   if (settings.cam === "top") { camera.up.set(fx, 0, fz); } else camera.up.set(0, 1, 0);
+  if (LOOK.pitch && settings.cam !== "top" && settings.cam !== "heli") {
+    // tilt the view up (or down) about the camera: keep the heading, add the pitch
+    const dx = camLook.x - camPos.x, dy = camLook.y - camPos.y, dz = camLook.z - camPos.z, hz = Math.hypot(dx, dz) || 1;
+    const p = THREE.MathUtils.clamp(Math.atan2(dy, hz) + LOOK.pitch, -1.2, 1.35), R = 60;
+    camLook.set(camPos.x + dx / hz * Math.cos(p) * R, camPos.y + Math.sin(p) * R, camPos.z + dz / hz * Math.cos(p) * R);
+  }
   camera.lookAt(camLook);
   const fov = cfg.fov + (settings.cam === "chase" || settings.cam === "hood" ? Math.min(14, speed * 0.2) : 0);
   if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
@@ -797,10 +895,11 @@ const ATTRACT = CITY.attract || [{ lat: 25.1972, lon: 55.2744, r: 1500, h: 420, 
 let attractI = 0, attractT = 0;
 let attractOverride = null;
 // Orbit a landmark (tests and "photo mode" from the console: GAME.viewLandmark("burj_al_arab"))
-function viewLandmark(id, hour) {
+function viewLandmark(id, hour, o = {}) {      // o: { r, h, look, ang } to frame a closer shot
   const L = landmarks.find(x => x.def.id === id); if (!L) return false;
   const h = L.def.height || 100;
-  attractOverride = { lat: L.def.lat, lon: L.def.lon, r: Math.max(260, h * 1.7), h: Math.max(60, h * 0.55), look: h * 0.4, name: L.def.name };
+  attractOverride = { lat: L.def.lat, lon: L.def.lon, r: o.r ?? Math.max(260, h * 1.7), h: o.h ?? Math.max(60, h * 0.55), look: o.look ?? h * 0.4, ang0: o.ang ?? 0, name: L.def.name };
+  attractT = 0;
   if (hour !== undefined) atmo.setHour(hour);
   document.getElementById("menu").hidden = true; document.getElementById("intro").hidden = true;
   return true;
@@ -812,7 +911,7 @@ function attractCamera(dt) {
   const wEl = document.getElementById("where"); if (wEl && wEl.textContent !== A.name) wEl.textContent = A.name;
   if (Math.abs(S.lat - A.lat) > 1e-6 || Math.abs(S.lon - A.lon) > 1e-6) { S.lat = A.lat; S.lon = A.lon; rebaseTo(A.lat, A.lon); }
   const c = toWorld(A.lat, A.lon);
-  const ang = attractT * 0.05;
+  const ang = (A.ang0 || 0) + attractT * 0.05;
   camera.position.set(c.x + Math.cos(ang) * A.r, A.h, c.z + Math.sin(ang) * A.r);
   camera.up.set(0, 1, 0);
   camera.lookAt(c.x, A.look, c.z);
@@ -821,11 +920,11 @@ function attractCamera(dt) {
 
 // ================================================================== frame loop
 const PERF = { traffic: 0, props: 0, render: 0, frame: 0, n: 0 };
-let frameNo = 0, fpsAcc = 0, fpsN = 0, fpsShow = 0, tileTick = 0, prMode = Q.pr;
+let frameNo = 0, fpsAcc = 0, fpsN = 0, fpsShow = 0, tileTick = 0, prMode = Q.pr, rawDt = 0;
 const loadingEl = document.getElementById("loading");
 function frame(t) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t; frameNo++;
+  rawDt = Math.min(1, (t - lastT) / 1000); const dt = Math.min(0.05, rawDt); lastT = t; frameNo++;
   U.uTime.value = t / 1000;
   gpsMat.uniforms.uTime.value = t / 1000; arrowMat.uniforms.uTime.value = t / 1000;
   gpsMat.uniforms.uProg.value = M && !M.free ? M.progress : -1e9;
@@ -836,12 +935,13 @@ function frame(t) {
   if (PT) PT.idxMs += performance.now() - tI0;
   if (pendingSnap && frameNo % 10 === 0) trySnap();
   // Hold the car (and the clock) until the ground under it has loaded, with a loading card.
-  if (waitWorld) {
+  if (PV.on) previewStep(dt);
+  else if (waitWorld) {
     const ready = worldReadyAt(S.lat, S.lon);
     if (loadingEl) { loadingEl.hidden = ready; if (!ready) loadingEl.firstChild.textContent = "Loading " + (M && P[M.route.from] ? P[M.route.from].label : "the city") + "…"; }
     if (ready || performance.now() - waitWorld > 20000) { waitWorld = 0; if (loadingEl) loadingEl.hidden = true; lastT = performance.now(); }
   }
-  if (waitWorld) { /* frozen while loading */ }
+  if (waitWorld || PV.on) { /* frozen while loading or previewing */ }
   else if (pendingSnap && running) { S.v = 0; }                     // free roam: hold still until placed on a road
   else if (pendingLane && running && IDX.ready && frameNo % 5 === 0) laneStart();
   else if (running && !paused && AUTO.on && M && !M.free) { autopilot(dt); trackMission(t); }
@@ -861,11 +961,11 @@ function frame(t) {
   U.uHeadPos.value.set(carPos.x + Math.sin(S.hdg * Math.PI / 180) * 1.8, carPos.y, carPos.z - Math.cos(S.hdg * Math.PI / 180) * 1.8);
   U.uHeadDir.value.set(Math.sin(S.hdg * Math.PI / 180), 0, -Math.cos(S.hdg * Math.PI / 180));
   // camera
-  if (running || M) updateCamera(dt); else attractCamera(dt);
+  if (PV.on) previewCamera(dt); else if (running || M) updateCamera(dt); else attractCamera(dt);
   // tiles around the camera focus
   if (ribbonDirty && frameNo % 20 === 0) { ribbonDirty = false; liftRibbon(gpsMesh); }
-  if (frameNo % 240 === 5) { const [la, lo] = running ? [S.lat, S.lon] : toLatLon(camera.position.x, camera.position.z); tiles.updateFar(la, lo); }
-  if (++tileTick % 15 === 1) { const [la, lo] = running ? [S.lat, S.lon] : toLatLon(camera.position.x, camera.position.z); tiles.update(la, lo, running ? carPos.x : camera.position.x, running ? carPos.z : camera.position.z); if (gantriesDirty) buildGantries(); placeLandmarks(); tiles.cullNear(camera.position.x, camera.position.z); }
+  if (frameNo % 240 === 5 || PV.on && frameNo % 60 === 5) { const [la, lo] = PV.on ? PV.ll : running ? [S.lat, S.lon] : toLatLon(camera.position.x, camera.position.z); tiles.updateFar(la, lo); }
+  if (++tileTick % 15 === 1) { const [la, lo] = PV.on ? PV.ll : running ? [S.lat, S.lon] : toLatLon(camera.position.x, camera.position.z); tiles.update(la, lo, PV.on ? PV.w.x : running ? carPos.x : camera.position.x, PV.on ? PV.w.z : running ? carPos.z : camera.position.z); if (gantriesDirty) buildGantries(); placeLandmarks(); tiles.cullNear(camera.position.x, camera.position.z); }
   // traffic, props
   const tA = performance.now();
   const sh = globalShift();
@@ -897,7 +997,7 @@ function frame(t) {
   // loading overlay
   if (loadingEl && !loadingEl.hidden && !waitWorld) { const pend = tiles.pending(), tot = tiles.tiles.size || 1; loadingEl.querySelector("i").style.width = Math.round(100 * (1 - pend / tot)) + "%"; if (tiles.stats.loaded >= 4 || (tot > 0 && pend === 0 && tiles.stats.loaded > 0)) { loadingEl.hidden = true; if (!running && !M) { renderMenu("missions"); document.getElementById("intro").hidden = false; } } }
   // fps
-  fpsAcc += dt; fpsN++;
+  fpsAcc += rawDt; fpsN++;
   if (fpsAcc > 1) { fpsShow = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; adaptQuality(fpsShow); const k = Math.max(1, PERF.n); window.PERF_LAST = { traffic: PERF.traffic / k, props: PERF.props / k, render: PERF.render / k, frame: PERF.frame / k }; PERF.traffic = PERF.props = PERF.render = PERF.frame = 0; PERF.n = 0; if (settings.fps) { const el = document.getElementById("fps"); el.hidden = false; const P2 = window.PERF_LAST; el.textContent = `${fpsShow.toFixed(0)} fps  ${renderer.info.render.calls} calls  ${(renderer.info.render.triangles / 1000).toFixed(0)}k tris  tiles ${tiles.tiles.size}  cars ${traffic.cars.length}  pr ${prMode.toFixed(2)}  cpu ms: traffic ${P2.traffic.toFixed(1)} props ${P2.props.toFixed(1)} render-submit ${P2.render.toFixed(1)} frame ${P2.frame.toFixed(1)}`; } }
   if (frameNo % 2 === 0 && !window.NOLABELS) drawLabels();
   if (running && mini && miniCar && frameNo % 3 === 0 && !window.NOMINI) {
@@ -968,11 +1068,16 @@ function worldReadyAt(lat, lon) { const [x, y] = tileOf(lat, lon); const t = til
 function offsets() { const m = new Map(); for (const t of tiles.tiles.values()) if (t.off && t.state === "ready") m.set(t.key, t.off); return m; }
 // Dynamic resolution: on "normal", drop the pixel ratio when frames run long and restore it when there is headroom.
 let slowSecs = 0, fastSecs = 0;
+// Each change rebuilds the render targets, which freezes a frame for 100-300 ms, so it changes rarely:
+// one bigger step down after 3 slow seconds, back up only after 12 fast seconds, at least 20 s apart,
+// at most 4 changes a session, and never during the route preview.
+let prChanges = 0, prLastT = -1e9;
 function adaptQuality(fps) {
-  if (settings.quality !== "normal") return;
-  if (fps < 28) { slowSecs++; fastSecs = 0; } else if (fps > 50) { fastSecs++; slowSecs = 0; } else { slowSecs = 0; fastSecs = 0; }
-  if (slowSecs >= 2 && prMode > 0.62) { prMode = Math.max(0.6, prMode - 0.12); applyPR(); slowSecs = 0; }
-  if (fastSecs >= 4 && prMode < Q.pr) { prMode = Math.min(Q.pr, prMode + 0.1); applyPR(); fastSecs = 0; }
+  if (settings.quality !== "normal" || PV.on) return;
+  if (fps < 24) { slowSecs++; fastSecs = 0; } else if (fps > 55) { fastSecs++; slowSecs = 0; } else { slowSecs = 0; fastSecs = 0; }
+  const now = performance.now(); if (prChanges >= 4 || now - prLastT < 20000) return;
+  if (slowSecs >= 3 && prMode > 0.62) { prMode = Math.max(0.6, prMode - 0.2); applyPR(); slowSecs = 0; prChanges++; prLastT = now; }
+  else if (fastSecs >= 12 && prMode < Q.pr) { prMode = Math.min(Q.pr, prMode + 0.2); applyPR(); fastSecs = 0; prChanges++; prLastT = now; }
 }
 function applyPR() { renderer.setPixelRatio(prMode); renderer.setSize(innerWidth, innerHeight); fx.setSize(innerWidth, innerHeight); }
 function placeLandmarks() {
@@ -1020,7 +1125,7 @@ function updateArea(t) {
   }
   let nm = best ? (best.en || D.names[best.ar] || best.ar) : "";
   if (AREA.name && nm !== AREA.name && curD < 3500 && bd > curD * 0.75) nm = AREA.name;
-  AREA.city = city ? (city.en || city.ar) : (S.lon < 54.95 ? "Abu Dhabi" : "Dubai");
+  AREA.city = city ? (city.en || city.ar) : CITY.region === "shanghai" ? "Shanghai" : (S.lon < 54.95 ? "Abu Dhabi" : "Dubai");
   if (nm && nm !== AREA.name) { if (AREA.name && running && !paused) toast(`Entering <b>${esc(nm)}</b><small>${esc(AREA.city)}</small>`, "good"); AREA.name = nm; }
 }
 function hud(t) {
@@ -1063,6 +1168,8 @@ function hud(t) {
 // ================================================================== keys and menus
 function onKey(e) {
   const k = e.key.toLowerCase();
+  if (PV.on) { endPreview(); return; }
+  if (k === "o" && running && M && !M.free) { startPreview(); return; }
   if (k === "f" && !running) { cycleLook(); return; }
   if (k === "t" && !running) { cycleTime(); return; }
   if (!running && !paused) return;
@@ -1083,8 +1190,8 @@ function togglePause() {
   paused = !paused;
   document.getElementById("pause").hidden = !paused;
   if (paused) document.getElementById("pausePanel").innerHTML = `<h3>Paused</h3><p class="sub">${esc(M.route.title)}</p>
-    <div class="row2"><button class="btn primary" onclick="togglePause()">Resume</button><button class="btn" onclick="respawn();togglePause()">Back on route</button><button class="btn" onclick="onKey({key:'g'});togglePause()">GPS ${settings.gps ? "off" : "on"}</button><button class="btn" onclick="onKey({key:'c'});togglePause()">Next camera</button><button class="btn" onclick="onKey({key:'t'});togglePause()">Time of day</button><button class="btn" onclick="onKey({key:'f'});togglePause()">Visual look</button><button class="btn" onclick="quitToMenu()">Quit to menu</button></div>
-    <h2>Keys</h2><p class="sub"><span class="kbd">W</span> accelerate &middot; <span class="kbd">S</span> brake / reverse &middot; <span class="kbd">A</span> <span class="kbd">D</span> steer &middot; <span class="kbd">Space</span> handbrake &middot; <span class="kbd">H</span> horn &middot; <span class="kbd">C</span> camera &middot; <span class="kbd">T</span> time of day &middot; <span class="kbd">F</span> visual look &middot; <span class="kbd">G</span> GPS &middot; <span class="kbd">V</span> voice &middot; <span class="kbd">M</span> big map &middot; <span class="kbd">R</span> back on route &middot; <span class="kbd">P</span> frame rate &middot; <span class="kbd">Esc</span> this menu</p>`;
+    <div class="row2"><button class="btn primary" onclick="togglePause()">Resume</button><button class="btn" onclick="respawn();togglePause()">Back on route</button><button class="btn" onclick="onKey({key:'g'});togglePause()">GPS ${settings.gps ? "off" : "on"}</button><button class="btn" onclick="onKey({key:'c'});togglePause()">Next camera</button><button class="btn" onclick="onKey({key:'t'});togglePause()">Time of day</button><button class="btn" onclick="onKey({key:'f'});togglePause()">Visual look</button><button class="btn" onclick="togglePause();startPreview()">Route preview</button><button class="btn" onclick="quitToMenu()">Quit to menu</button></div>
+    <h2>Keys</h2><p class="sub"><span class="kbd">W</span> accelerate &middot; <span class="kbd">S</span> brake / reverse &middot; <span class="kbd">A</span> <span class="kbd">D</span> steer &middot; <span class="kbd">Space</span> handbrake &middot; <span class="kbd">H</span> horn &middot; <span class="kbd">C</span> camera &middot; <span class="kbd">T</span> time of day &middot; <span class="kbd">F</span> visual look &middot; <span class="kbd">G</span> GPS &middot; <span class="kbd">V</span> voice &middot; <span class="kbd">M</span> big map &middot; <span class="kbd">R</span> back on route &middot; <span class="kbd">O</span> route preview &middot; <span class="kbd">P</span> frame rate &middot; <span class="kbd">Esc</span> this menu &middot; drag the screen (or <span class="kbd">Q</span> <span class="kbd">E</span>) to look around, scroll to zoom</p>`;
   else lastT = performance.now();
 }
 let menuTab = "missions", menuRoute = null, menuVariant = "fast";
@@ -1146,7 +1253,7 @@ function walkthroughRows(v) {
 }
 function freeRoam() {
   const stops = D.places.filter(p => p.kind === "stop").sort((a, b) => (a.city + a.label).localeCompare(b.city + b.label));
-  return `<h3>Free roam</h3><p class="sub">No destination. Start somewhere and explore. Gates still charge, landmarks still get called out, the street name is always on screen.</p><div class="grid">${stops.map(p => `<div class="card" onclick="startFree('${p.id}')"><div class="nm">${esc(p.label)}<small>${p.city === "DXB" ? "Dubai" : "Abu Dhabi"}</small></div></div>`).join("")}</div>`;
+  return `<h3>Free roam</h3><p class="sub">No destination. Start somewhere and explore. Gates still charge, landmarks still get called out, the street name is always on screen.</p><div class="grid">${stops.map(p => `<div class="card" onclick="startFree('${p.id}')"><div class="nm">${esc(p.label)}<small>${p.city === "DXB" ? "Dubai" : p.city === "AUH" ? "Abu Dhabi" : esc(p.city)}</small></div></div>`).join("")}</div>`;
 }
 function startFree(pid) {
   const p = P[pid];
@@ -1205,7 +1312,8 @@ function lookPage() {
   <h2>Camera</h2>${seg("cam", CAMS.map(c => [c, CAM_NAMES[c]]), settings.cam)}
   <h2>Traffic</h2>${seg("traffic", [["off", "off"], ["normal", "normal"], ["heavy", "heavy"]], settings.traffic)}
   <h2>Car colour</h2>${seg("color", colors.map(([c, n]) => [c, n]), settings.color)}
-  <h2>Sound</h2>${seg("sound", [["1", "on"], ["0", "off"]], settings.sound === false ? "0" : "1")} <span class="sub">&nbsp;engine, tyres, wind; <span class="kbd">H</span> is the horn</span>
+  <h2>Sound</h2>${seg("sound", [["1", "on"], ["0", "off"]], settings.sound === false ? "0" : "1")} ${seg("vol", [["0.35", "quiet"], ["0.7", "medium"], ["1", "loud"]], settings.vol ?? 0.7)} <span class="sub">&nbsp;engine, tyres, wind; <span class="kbd">H</span> is the horn</span>
+  <h2>Route preview</h2>${seg("preview", [["1", "on"], ["0", "off"]], settings.preview === false ? "0" : "1")} <span class="sub">&nbsp;a quick fly-over of the whole route from the sky when a mission starts; <span class="kbd">O</span> plays it again, any key skips it</span>
   <h2>Spoken directions</h2>${seg("voice", [["1", "on"], ["0", "off"]], settings.voice === false ? "0" : "1")} <span class="sub">&nbsp;or <span class="kbd">V</span> while driving</span>
   <h2>Place names over the city</h2>${seg("labels", [["1", "on"], ["0", "off"]], settings.labels === false ? "0" : "1")} <span class="sub">&nbsp;metro stations, malls, hotels and sights near you</span>
   <h2>Graphics quality</h2>${seg("quality", [["low", "low"], ["normal", "normal (adaptive)"], ["high", "high"]], settings.quality)} <p class="sub">Quality changes apply after a reload. Press <span class="kbd">P</span> while driving to see the frame rate.</p>`;
@@ -1218,6 +1326,8 @@ function setOpt(name, v) {
   else if (name === "color") { settings.color = +v; car.setColor(+v); }
   else if (name === "quality") { settings.quality = v; saveSettings(); location.reload(); return; }
   else if (name === "sound") { settings.sound = v === "1"; audio.setEnabled(settings.sound); }
+  else if (name === "vol") { settings.vol = +v; audio.setVolume(settings.vol); }
+  else if (name === "preview") { settings.preview = v === "1"; }
   else if (name === "voice") { settings.voice = v === "1"; nav.voice = settings.voice; }
   else if (name === "labels") { settings.labels = v === "1"; }
   saveSettings(); renderMenu();
@@ -1241,7 +1351,7 @@ function toast(html, cls) { const t = document.createElement("div"); t.className
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); fx.setSize(innerWidth, innerHeight); });
 
 // expose for inline handlers and tests
-Object.assign(window, { startMission, retry, nextMission, quitToMenu, renderMenu, togglePause, respawn, onKey, startFree, setOpt, liveGo });
+Object.assign(window, { startMission, retry, nextMission, quitToMenu, renderMenu, togglePause, respawn, onKey, startFree, setOpt, liveGo, startPreview });
 // used by build/bake_shanghai_routes.js to bake missions with the same code the live router uses
 window.__routeKit = { buildVariant, valhalla };
 Object.defineProperties(window, {

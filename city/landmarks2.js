@@ -2204,3 +2204,10 @@ export function disposeLandmark(group) {
     m.dispose();
   }
 }
+
+// The geometry and texture kit, shared with the Shanghai landmarks (city/landmarks_sh.js).
+export const KIT = {
+  THREE, mergeGeometries, DEG, TAU, V3, mulberry32, Kit, finish, fromArrays, prism, capXZ, loftRings, loft2, liftedCap,
+  addWallsBy, offsetPoly, ccw, areaXZ, clipAxis, ngon, cyl, lathe, strut, beam, box, sphereGeom, canvasTex, facadeSet,
+  facadeMat, std, phys, ORM, litColor,
+};
