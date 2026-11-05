@@ -39,7 +39,7 @@ const CAMS = ["chase", "far", "hood", "heli", "top"];
 const CAM_NAMES = { chase: "chase", far: "far chase", hood: "bonnet", heli: "helicopter", top: "top-down" };
 function load(k, def) { try { const v = localStorage.getItem(k); return v ? Object.assign({}, def, JSON.parse(v)) : def; } catch (e) { return def; } }
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-const settings = load("uaecity.settings", { band: "offpeak", gps: true, cam: "chase", time: 2, look: "normal", quality: "normal", traffic: "normal", color: 0xf97316, fps: false, sound: true, voice: true, labels: true, vol: 0.7, preview: true });
+const settings = load("uaecity.settings", { band: "offpeak", gps: true, cam: "chase", time: 2, look: "normal", quality: "normal", traffic: "normal", color: 0xf97316, fps: false, sound: true, voice: true, labels: true, vol: 0.7, preview: "drive" });
 if (!CAMS.includes(settings.cam)) settings.cam = "chase";
 function saveSettings() { save("uaecity.settings", settings); }
 function best(id, variant) { return load(`uaecity.best.${id}.${variant}`, null); }
@@ -529,9 +529,9 @@ const _v = new THREE.Vector3();
 function drawLabels() {
   let n = 0;
   const list = [];
-  const fLL = PV.on ? PV.ll : [S.lat, S.lon], fR = PV.on ? 2600 : 1400, lf = PV.on ? PV.w : carPos;
+  const fLL = PV.on ? PV.ll : [S.lat, S.lon], fR = PV.sky ? 2600 : 1400, lf = PV.on ? PV.w : carPos;
   if (running) {
-    for (const p of D.places) { if (M && (p.id === M.route.to)) continue; const d = hav(fLL, [p.lat, p.lon]); if (d < fR) list.push({ lat: p.lat, lon: p.lon, y: 30, html: esc(p.label), cls: "", d: PV.on ? d * 0.6 : d }); }
+    for (const p of D.places) { if (M && (p.id === M.route.to)) continue; const d = hav(fLL, [p.lat, p.lon]); if (d < fR) list.push({ lat: p.lat, lon: p.lon, y: 30, html: esc(p.label), cls: "", d: PV.sky ? d * 0.6 : d }); }
     for (const g of D.gates) { const d = hav([S.lat, S.lon], [g.lat, g.lon]); if (d < 900) list.push({ lat: g.lat, lon: g.lon, y: 10.5, html: (g.sys === "salik" ? "SALIK " : "DARB ") + esc(g.name), cls: g.sys === "salik" ? "gate" : "darb", d }); }
     if (M && !M.free) { const dest = M.v.geom[M.v.geom.length - 1]; const d = hav(fLL, dest); list.push({ lat: dest[0], lon: dest[1], y: 40, html: esc(P[M.route.to] ? P[M.route.to].label : "Destination") + `<small>${fmtM(d)}</small>`, cls: "dest", d }); }
   }
@@ -549,13 +549,13 @@ function drawLabels() {
     const fx = camera.position.x, fz = camera.position.z, cand = [];
     for (const t of tiles.tiles.values()) {
       if (!t.labels || !t.off || t.state !== "ready") continue;
-      for (const L of t.labels) { const x = L.x + t.off.x, z = L.z + t.off.z, d = Math.hypot(x - lf.x, z - lf.z); if (d < (PV.on ? 1500 : 700)) cand.push({ L, x, z, d: PV.on ? d / 2 : d }); }
+      for (const L of t.labels) { const x = L.x + t.off.x, z = L.z + t.off.z, d = Math.hypot(x - lf.x, z - lf.z); if (d < (PV.sky ? 1500 : 700)) cand.push({ L, x, z, d: PV.sky ? d / 2 : d }); }
     }
     // the hand-built landmarks are named too (they come first within 1.5 km)
     for (const L of landmarks) {
       if (!L.group) continue;
       const x = L.group.position.x, z = L.group.position.z, d = Math.hypot(x - lf.x, z - lf.z);
-      if (d < (PV.on ? 3000 : 1500)) cand.push({ L: { en: L.def.name, k: "landmark", y: Math.min((L.def.height || 60) * 0.55, 140) }, x, z, d: d * 0.4 });
+      if (d < (PV.sky ? 3000 : 1500)) cand.push({ L: { en: L.def.name, k: "landmark", y: Math.min((L.def.height || 60) * 0.55, 140) }, x, z, d: d * 0.4 });
     }
     cand.sort((a, b) => a.d - b.d);
     const used = [], perKind = {}, seenNames = new Set(list.map(L => L.html.replace(/<[^>]*>.*$/, "").toLowerCase())); let shown = 0;
@@ -804,39 +804,80 @@ function lookDecay(dt) {
 }
 
 // ================================================================== route preview
-// A quick fly-over of the whole route from the sky before you drive it: the camera climbs off the car,
-// sweeps along the blue line looking ahead, with the places on the way named, and drops back behind the
-// car. 7 to 16 seconds depending on length; any key or tap skips it.
-const PV = { on: false, ll: [0, 0], w: new THREE.Vector3(), t: 0, T: 10, el: null, look: new THREE.Vector3(), pos: new THREE.Vector3() };
+// Before you drive it, see the route. "drive" (default): your car drives the whole route on fast-forward
+// along the real roads, the chase camera pulled back so you see the streets and the places on the way;
+// it eases off wherever the city ahead has not loaded yet, then puts you back at the start. "sky": a
+// fly-over from a few hundred metres up. Any key or tap skips; O plays it again.
+const PV = window.__PV = { on: false, sky: false, ll: [0, 0], w: new THREE.Vector3(), t: 0, T: 10, el: null, look: new THREE.Vector3(), pos: new THREE.Vector3() };
 function routePoint(s, out) {
   const g = M.v.geom, c = M.cum; s = Math.max(0, Math.min(c[c.length - 1], s));
   let lo = 0, hi = c.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c[m] <= s) lo = m; else hi = m; }
   const f = (s - c[lo]) / Math.max(1e-6, c[hi] - c[lo]);
   out[0] = g[lo][0] + (g[hi][0] - g[lo][0]) * f; out[1] = g[lo][1] + (g[hi][1] - g[lo][1]) * f; return out;
 }
-function startPreview() {
+function startPreview(mode) {
   if (!M || M.free || !M.cum || M.cum.length < 2) return;
+  if (PV.on) endPreview();
   const total = M.cum[M.cum.length - 1], km = total / 1000;
-  Object.assign(PV, { on: true, t: 0, T: Math.min(16, Math.max(7, 5 + km * 0.8)), total, alt: Math.min(460, Math.max(170, 130 + km * 22)), back: Math.min(520, Math.max(220, 160 + km * 25)) });
+  mode = mode || (settings.preview === "sky" ? "sky" : "drive");
+  Object.assign(PV, { on: true, sky: mode === "sky", t: 0, s: 0, T: Math.min(16, Math.max(7, 5 + km * 0.8)), total, alt: Math.min(460, Math.max(170, 130 + km * 22)), back: Math.min(520, Math.max(220, 160 + km * 25)),
+    V: Math.min(320, Math.max(40, total / 20)), vs: 0, dir: null, t0: 0 });
   PV.ll = [S.lat, S.lon]; toWorld(S.lat, S.lon, PV.w);
   PV.pos.copy(camera.position); PV.look.copy(carPos);
   if (!PV.el) { PV.el = document.createElement("div"); PV.el.id = "pvcard"; PV.el.style.cssText = "position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:950;background:rgba(14,17,22,.82);color:#eef2f7;font:600 14px/1.3 'Segoe UI',system-ui,sans-serif;padding:9px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.35);text-align:center;pointer-events:none;max-width:90vw"; document.body.appendChild(PV.el); }
-  PV.el.innerHTML = `Route preview: ${esc(P[M.route.from] ? P[M.route.from].label : "start")} to ${esc(M.destName)}, ${km.toFixed(1)} km<br><span style="opacity:.7;font-weight:400;font-size:12px">press any key or tap to skip</span>`;
+  PV.el.innerHTML = `Route preview${PV.sky ? " from the sky" : ", fast-forward"}: ${esc(P[M.route.from] ? P[M.route.from].label : "start")} to ${esc(M.destName)}, ${km.toFixed(1)} km<br><span style="opacity:.7;font-weight:400;font-size:12px">press any key or tap to skip &middot; <span id="pvpct">0</span>%</span>`;
   PV.el.hidden = false; S.v = 0;
 }
 function endPreview() {
   if (!PV.on) return;
   PV.on = false; if (PV.el) PV.el.hidden = true;
-  camPos.copy(camera.position); camInit = false;                     // the chase camera swoops down from where the preview left it
+  if (!PV.sky && M && M.v) {                                         // back to the start of the route
+    const g = M.v.geom; S.lat = g[0][0]; S.lon = g[0][1]; S.hdg = bearing(g[0], g[Math.min(3, g.length - 1)]); S.v = 0; S.y = 0; S.yT = 0;
+    M.progress = 0; M.ri = 0; rebaseTo(S.lat, S.lon); toWorld(S.lat, S.lon, carPos); camInit = true;
+  } else { camPos.copy(camera.position); camInit = false; }          // the chase camera swoops down from where the sky preview left it
   waitWorld = performance.now(); lastT = performance.now();         // hold the car until the ground under it is back
 }
 const _pa = [0, 0], _pb = [0, 0], _pc = [0, 0];
 function previewStep(dt) {
+  if (!PV.sky) {
+    // fast-forward along the route; ease off while the ground ahead is still loading
+    routePoint(PV.s + 300, _pc);
+    const ready = worldReadyAt(S.lat, S.lon) && worldReadyAt(_pc[0], _pc[1]);
+    const left = PV.total - PV.s, vt = Math.min(ready ? PV.V : PV.V * 0.4, 12 + left * 0.8);     // ease in at the destination
+    PV.vs += (vt - PV.vs) * Math.min(1, dt * 1.2);
+    PV.s = Math.min(PV.total, PV.s + dt * PV.vs);
+    routePoint(PV.s, _pa); routePoint(PV.s + 20, _pb);
+    S.lat = _pa[0]; S.lon = _pa[1]; S.v = 0;
+    if (IDX.ready) { const r = alignedRoad(S.lat, S.lon, bearing(_pa, _pb)); if (r) { S.y = S.yT = r.e || 0; } }      // ride the route's own deck (fast-forward jumps past ramps too quickly to climb them)
+    if (PV.s + 1 < PV.total) { let d = bearing(_pa, _pb) - S.hdg; while (d > 180) d -= 360; while (d < -180) d += 360; S.hdg = (S.hdg + d * Math.min(1, dt * 6) + 360) % 360; }
+    M.progress = PV.s; PV.ll = [S.lat, S.lon]; toWorld(S.lat, S.lon, PV.w);
+    if ((PV.nameT = (PV.nameT || 0) + dt) > 0.3) { PV.nameT = 0; try { senseRoad(performance.now()); } catch (_) {} S.v = 0; }      // keep the street card current
+    const pc = document.getElementById("pvpct"); if (pc) pc.textContent = Math.round(100 * PV.s / PV.total);
+    if (PV.s >= PV.total) { PV.t += dt; if (PV.t > 1.2) endPreview(); }       // a moment at the destination
+    return;
+  }
   PV.t += dt; const u = Math.min(1, PV.t / PV.T);
   const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;          // ease in and out
   const s = PV.total * e;
   routePoint(s, _pa); PV.ll = [_pa[0], _pa[1]]; toWorld(_pa[0], _pa[1], PV.w);
   if (u >= 1) endPreview();
+}
+function previewChase(dt) {
+  if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.updateProjectionMatrix(); }
+  // the camera is tied to the car (fixed distance, so the car never shrinks away at speed); only its
+  // direction is smoothed, taken from the route 150 m behind to 150 m ahead so bends turn it gently
+  routePoint(PV.s - 150, _pb); routePoint(PV.s + 150, _pc);
+  const b = toWorld(_pb[0], _pb[1]), a = toWorld(_pc[0], _pc[1]);
+  let dx = a.x - b.x, dz = a.z - b.z; const dl = Math.hypot(dx, dz) || 1; dx /= dl; dz /= dl;
+  if (!PV.dir) PV.dir = new THREE.Vector2(dx, dz);
+  PV.dir.x += (dx - PV.dir.x) * Math.min(1, dt * 1.8); PV.dir.y += (dz - PV.dir.y) * Math.min(1, dt * 1.8); PV.dir.normalize();
+  const ramp = Math.min(1, PV.t0 = (PV.t0 || 0) + dt);                    // first second: rise from the chase camera
+  const BACK = 44, UP = 25;
+  const wantPos = new THREE.Vector3(carPos.x - PV.dir.x * BACK, carPos.y + UP, carPos.z - PV.dir.y * BACK);
+  const wantLook = new THREE.Vector3(carPos.x + PV.dir.x * 38, carPos.y + 1, carPos.z + PV.dir.y * 38);
+  PV.pos.lerp(wantPos, ramp < 1 ? Math.min(1, dt * 3) : 1); PV.look.lerp(wantLook, ramp < 1 ? Math.min(1, dt * 3) : 1);
+  camera.position.copy(PV.pos); camera.up.set(0, 1, 0); camera.lookAt(PV.look);
+  if (Math.abs(camera.fov - 58) > 0.05) { camera.fov += (58 - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
 }
 function previewCamera(dt) {
   if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.updateProjectionMatrix(); }
@@ -927,7 +968,7 @@ function frame(t) {
   rawDt = Math.min(1, (t - lastT) / 1000); const dt = Math.min(0.05, rawDt); lastT = t; frameNo++;
   U.uTime.value = t / 1000;
   gpsMat.uniforms.uTime.value = t / 1000; arrowMat.uniforms.uTime.value = t / 1000;
-  gpsMat.uniforms.uProg.value = M && !M.free ? M.progress : -1e9;
+  gpsMat.uniforms.uProg.value = M && !M.free ? M.progress + (PV.on ? 6 : 0) : -1e9;      // the preview looks down on the car: start the line past its nose
   gpsMat.uniforms.uAlphaMul.value = settings.cam === "hood" ? 0.45 : 1;
   const PT = window.PERF_TRACE; const tI0 = performance.now();
   if (warmGroup) warmStep();
@@ -935,7 +976,7 @@ function frame(t) {
   if (PT) PT.idxMs += performance.now() - tI0;
   if (pendingSnap && frameNo % 10 === 0) trySnap();
   // Hold the car (and the clock) until the ground under it has loaded, with a loading card.
-  if (PV.on) previewStep(dt);
+  if (PV.on) previewStep(Math.min(0.25, rawDt));      // real time, so the preview takes as long on a slow machine
   else if (waitWorld) {
     const ready = worldReadyAt(S.lat, S.lon);
     if (loadingEl) { loadingEl.hidden = ready; if (!ready) loadingEl.firstChild.textContent = "Loading " + (M && P[M.route.from] ? P[M.route.from].label : "the city") + "…"; }
@@ -947,21 +988,30 @@ function frame(t) {
   else if (running && !paused && AUTO.on && M && !M.free) { autopilot(dt); trackMission(t); }
   else if (running && !paused) { step(dt); senseRoad(t); if (M) trackMission(t); }
   toWorld(S.lat, S.lon, carPos);
-  if (running && Math.hypot(carPos.x, carPos.z) > 2500) { const bx = carPos.x, bz = carPos.z; rebaseTo(S.lat, S.lon); toWorld(S.lat, S.lon, carPos); const ddx = carPos.x - bx, ddz = carPos.z - bz; camPos.x += ddx; camPos.z += ddz; camera.position.x += ddx; camera.position.z += ddz; }
+  if (running && Math.hypot(carPos.x, carPos.z) > 2500) { const bx = carPos.x, bz = carPos.z; rebaseTo(S.lat, S.lon); toWorld(S.lat, S.lon, carPos); const ddx = carPos.x - bx, ddz = carPos.z - bz; camPos.x += ddx; camPos.z += ddz; camera.position.x += ddx; camera.position.z += ddz; PV.pos.x += ddx; PV.pos.z += ddz; PV.look.x += ddx; PV.look.z += ddz; }
   // car
   car.group.visible = running || !!M;
-  if (running && IDX.ready && frameNo % 2 === 0) { const r = IDX.roadAt(S.lat, S.lon, S.y); S.yT = r ? (r.eAt || 0) : 0; }
-  S.y += (S.yT - S.y) * Math.min(1, dt * (S.yT < S.y - 2 ? 3 : 10));
+  if (running && IDX.ready) {
+    const r = IDX.roadAt(S.lat, S.lon, S.y); S.yT = r ? (r.eAt || 0) : 0;
+    // slope under the car: the deck 2.2 m ahead and behind gives the pitch, and the higher of the
+    // centre and the mean keeps the body out of the ramp on a change of grade
+    const f = move(S.lat, S.lon, S.hdg, 2.2), b = move(S.lat, S.lon, S.hdg + 180, 2.2);
+    const rf = IDX.roadAt(f[0], f[1], S.y), rb = IDX.roadAt(b[0], b[1], S.y);
+    const ef = rf && Math.abs((rf.eAt || 0) - S.yT) < 3 ? rf.eAt || 0 : S.yT, eb = rb && Math.abs((rb.eAt || 0) - S.yT) < 3 ? rb.eAt || 0 : S.yT;
+    S.pitchT = Math.atan2(ef - eb, 4.4); S.yT = Math.max(S.yT, (ef + eb) / 2);
+  }
+  S.pitch = (S.pitch || 0) + ((S.pitchT || 0) - (S.pitch || 0)) * Math.min(1, dt * 8);
+  S.y += (S.yT - S.y) * Math.min(1, dt * (PV.on ? 30 : S.yT < S.y - 2 ? 4 : 14));
   carPos.y = S.y;
   car.group.position.set(carPos.x, 0.07 + S.y, carPos.z);
-  car.group.rotation.y = -S.hdg * Math.PI / 180;
+  car.group.rotation.order = "YXZ"; car.group.rotation.y = -S.hdg * Math.PI / 180; car.group.rotation.x = S.pitch || 0;
   car.update(dt, S.v, S.steer);
   car.setBrake(!!S.brake); car.setReverse(!!S.reverse); car.setHeadlights(atmo.night > 0.35);
   U.uHeadOn.value = atmo.night > 0.35 && (running || M) ? 1 : 0;
   U.uHeadPos.value.set(carPos.x + Math.sin(S.hdg * Math.PI / 180) * 1.8, carPos.y, carPos.z - Math.cos(S.hdg * Math.PI / 180) * 1.8);
   U.uHeadDir.value.set(Math.sin(S.hdg * Math.PI / 180), 0, -Math.cos(S.hdg * Math.PI / 180));
   // camera
-  if (PV.on) previewCamera(dt); else if (running || M) updateCamera(dt); else attractCamera(dt);
+  if (PV.on) (PV.sky ? previewCamera : previewChase)(dt); else if (running || M) updateCamera(dt); else attractCamera(dt);
   // tiles around the camera focus
   if (ribbonDirty && frameNo % 20 === 0) { ribbonDirty = false; liftRibbon(gpsMesh); }
   if (frameNo % 240 === 5 || PV.on && frameNo % 60 === 5) { const [la, lo] = PV.on ? PV.ll : running ? [S.lat, S.lon] : toLatLon(camera.position.x, camera.position.z); tiles.updateFar(la, lo); }
@@ -972,7 +1022,7 @@ function frame(t) {
   traffic.t = t / 1000;
   const hitCar = traffic.update(dt, { x: running ? carPos.x : camera.position.x, z: running ? carPos.z : camera.position.z, hx: Math.sin(S.hdg * Math.PI / 180), hz: -Math.cos(S.hdg * Math.PI / 180) }, sh.x, sh.z, atmo.night);
   if (hitCar && running && Math.abs(S.v) > 1 && performance.now() - S.crashT > 600) { audio.crash(Math.abs(S.v)); S.v = -S.v * 0.3; S.crashT = performance.now(); hitCar.stopT = 2.5; flash(); }
-  audio.update(dt, S.v, Kk.up() ? 1 : 0, !!Kk.hb(), S.steer, running && !paused);
+  audio.update(dt, S.v, Kk.up() ? 1 : 0, !!Kk.hb(), S.steer, running && !paused && !PV.on);
   peds.update(dt, { x: running ? carPos.x : camera.position.x, z: running ? carPos.z : camera.position.z }, sh.x, sh.z, atmo.night);
   const tB = performance.now();
   const OFF = offsets();
@@ -1313,7 +1363,7 @@ function lookPage() {
   <h2>Traffic</h2>${seg("traffic", [["off", "off"], ["normal", "normal"], ["heavy", "heavy"]], settings.traffic)}
   <h2>Car colour</h2>${seg("color", colors.map(([c, n]) => [c, n]), settings.color)}
   <h2>Sound</h2>${seg("sound", [["1", "on"], ["0", "off"]], settings.sound === false ? "0" : "1")} ${seg("vol", [["0.35", "quiet"], ["0.7", "medium"], ["1", "loud"]], settings.vol ?? 0.7)} <span class="sub">&nbsp;engine, tyres, wind; <span class="kbd">H</span> is the horn</span>
-  <h2>Route preview</h2>${seg("preview", [["1", "on"], ["0", "off"]], settings.preview === false ? "0" : "1")} <span class="sub">&nbsp;a quick fly-over of the whole route from the sky when a mission starts; <span class="kbd">O</span> plays it again, any key skips it</span>
+  <h2>Route preview</h2>${seg("preview", [["drive", "fast-forward drive"], ["sky", "from the sky"], ["0", "off"]], settings.preview === false ? "0" : settings.preview === "sky" ? "sky" : "drive")} <span class="sub">&nbsp;when a mission starts, see the whole route first; <span class="kbd">O</span> plays it again, any key or tap skips it</span>
   <h2>Spoken directions</h2>${seg("voice", [["1", "on"], ["0", "off"]], settings.voice === false ? "0" : "1")} <span class="sub">&nbsp;or <span class="kbd">V</span> while driving</span>
   <h2>Place names over the city</h2>${seg("labels", [["1", "on"], ["0", "off"]], settings.labels === false ? "0" : "1")} <span class="sub">&nbsp;metro stations, malls, hotels and sights near you</span>
   <h2>Graphics quality</h2>${seg("quality", [["low", "low"], ["normal", "normal (adaptive)"], ["high", "high"]], settings.quality)} <p class="sub">Quality changes apply after a reload. Press <span class="kbd">P</span> while driving to see the frame rate.</p>`;
@@ -1327,7 +1377,7 @@ function setOpt(name, v) {
   else if (name === "quality") { settings.quality = v; saveSettings(); location.reload(); return; }
   else if (name === "sound") { settings.sound = v === "1"; audio.setEnabled(settings.sound); }
   else if (name === "vol") { settings.vol = +v; audio.setVolume(settings.vol); }
-  else if (name === "preview") { settings.preview = v === "1"; }
+  else if (name === "preview") { settings.preview = v === "0" ? false : v; }
   else if (name === "voice") { settings.voice = v === "1"; nav.voice = settings.voice; }
   else if (name === "labels") { settings.labels = v === "1"; }
   saveSettings(); renderMenu();
