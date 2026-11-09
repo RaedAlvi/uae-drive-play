@@ -1,0 +1,75 @@
+{
+ "id": "pakistan_monument",
+ "name": "Pakistan Monument and Museum",
+ "lat": 33.69345,
+ "lon": 73.06835,
+ "headingDeg": 0.0,
+ "height": 23.0,
+ "suppress": [
+  [
+   33.6923131,
+   73.0696264
+  ],
+  [
+   33.6923253,
+   73.069476
+  ],
+  [
+   33.693308,
+   73.06805
+  ],
+  [
+   33.693524,
+   73.068082
+  ],
+  [
+   33.693616,
+   73.0684
+  ],
+  [
+   33.693337,
+   73.068909
+  ],
+  [
+   33.693063,
+   73.069265
+  ],
+  [
+   33.6925999,
+   73.0698358
+  ],
+  [
+   33.6925297,
+   73.0698702
+  ],
+  [
+   33.6923722,
+   73.0698447
+  ]
+ ],
+ "glb": "models/pakistan_monument.glb",
+ "glbFar": "models/pakistan_monument_far.glb",
+ "tris": 40102,
+ "trisFar": 673,
+ "bytes": 391944,
+ "bytesFar": 26164,
+ "budget": "hero",
+ "modelTop": 23.0,
+ "assumptions": [
+  "Petal tips 18 m above the deck for the outer pair (dossier single figure, element unspecified) and 16.8 m for the inner pair, fitted to head-on photos; small petals about 9 m, fitted to the same photos.",
+  "Deck 5 m above the arrival court, from a wall-against-person estimate in one dusk photo; the court is modelled as ground level.",
+  "Petal plan from OSM roofs with a centre fitted to the outer corners; the OSM tip positions carry satellite lean and were not used directly.",
+  "The three small petals sit in the gaps of the large ones, seen head-on; their radius is estimated.",
+  "Each petal is a smooth shell with an elliptical profile; the fit to the head-on photo silhouette is good but no drawings were found.",
+  "Back of the petals drawn as a stippled pale field with brick ribs, from one dusk photo and one low-resolution aerial; the front half of each outer petal is brick as in the head-on photos.",
+  "Mural reliefs and scroll vines are not carved: the mural fields are a stipple texture and the frame bands are drawn from the photos. Band layout is approximate.",
+  "Crescent wall radius, height 3.1 m and taper fitted to the head-on photos; panel count estimated.",
+  "Star pyramid 5.6 m high with five points and gold stars placed as in the close photo; star count approximate.",
+  "Deck depth, reflecting pool, bronze bowl, stair width and planted terrace tiers are estimated from photos.",
+  "Podium slot windows are slanted as in the east side photo; the count on each wall is derived from wall length (about 2.5 m spacing).",
+  "Viewing terrace position and radius from the OSM ring path; 24 arch positions with 2 left open at the steps, count estimated from photos.",
+  "Museum massing from OSM footprint, 7.5 m walls and stepped pale roof with a central skylight from aerial views; heights estimated. Museum facade windows not modelled.",
+  "The pillar height of 6.15 m comes from photo proportions against OSM's 2.4 m diameter; dossier value is the diameter only.",
+  "The suppress ring is the hull of the plaza and museum rings, so the OSM museum building is replaced by this model."
+ ]
+}

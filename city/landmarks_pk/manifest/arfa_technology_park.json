@@ -1,0 +1,71 @@
+{
+ "id": "arfa_technology_park",
+ "name": "Arfa Software Technology Park",
+ "lat": 31.4757288,
+ "lon": 74.3425625,
+ "headingDeg": 112.5,
+ "height": 106.0,
+ "suppress": [
+  [
+   31.475969,
+   74.342728
+  ],
+  [
+   31.475994,
+   74.342616
+  ],
+  [
+   31.476006,
+   74.342502
+  ],
+  [
+   31.475978,
+   74.342356
+  ],
+  [
+   31.4757396,
+   74.3416183
+  ],
+  [
+   31.4752343,
+   74.341779
+  ],
+  [
+   31.4752803,
+   74.3419532
+  ],
+  [
+   31.4755548,
+   74.3427822
+  ],
+  [
+   31.475812,
+   74.342947
+  ],
+  [
+   31.475914,
+   74.342832
+  ]
+ ],
+ "glb": "models/arfa_technology_park.glb",
+ "glbFar": "models/arfa_technology_park_far.glb",
+ "tris": 26763,
+ "trisFar": 143,
+ "bytes": 133784,
+ "bytesFar": 5352,
+ "budget": "normal",
+ "modelTop": 106.09,
+ "assumptions": [
+  "The 17-level OSM way is the tower: arcs are fitted to it, but its sharp tips are cut back to two-facet prow ends about 11 m wide with a 3 m arris, read from the Esri roof and the end-on photos; end widths are estimates, and the long axis is set to 63 m from the side-on street photo (OSM tip to tip is 74 m).",
+  "The 7-level OSM way is taken as the plan of the low glass rotunda on the north face; it is built 3 storeys (14 m) from the photos, not 7 levels.",
+  "17 floors at 4.9 m reach a body top of 83.3 m; 16 white spandrel bands are counted in the aerial photo, and floor height is an estimate.",
+  "The crown rim is cut on a slope from 106 m at the west prow (dossier) to about 98 m at the east end, estimated from the aerial and street photos.",
+  "The gothic curve of the crown panels and the height of the open screen above them (3.5 m) are fitted by eye.",
+  "Crown plant room and deck: size and position read from a leaning Esri image, height estimated.",
+  "Podium outline traced from Esri with a lean correction (it has no OSM way); height 31.5 m and six window rows from the end-on photo.",
+  "The podium south-west and south-east faces repeat the north-west window rows; they were seen only in part.",
+  "Lettering uses Blender's built-in font, not the real typefaces; the ITU emblem on the podium corner pier is left out.",
+  "Colours: dossier glass, crown and podium samples are daylight dependent; the white spandrels and pale podium are read from the aerial photo.",
+  "Boundary wall, gardens and palms are outside this model. A second tower has been approved but is not built in any photo found, so it is left out."
+ ]
+}

@@ -1,0 +1,48 @@
+{
+ "id": "holy_trinity_church",
+ "name": "Holy Trinity Church, Murree",
+ "lat": 33.905685,
+ "lon": 73.392091,
+ "headingDeg": 154.0,
+ "height": 25.6,
+ "suppress": [
+  [
+   33.905889,
+   73.3920992
+  ],
+  [
+   33.9057848,
+   73.3918431
+  ],
+  [
+   33.9054647,
+   73.3920304
+  ],
+  [
+   33.9055689,
+   73.3922864
+  ]
+ ],
+ "glb": "models/holy_trinity_church.glb",
+ "glbFar": "models/holy_trinity_church_far.glb",
+ "tris": 4700,
+ "trisFar": 38,
+ "bytes": 38712,
+ "bytesFar": 4296,
+ "budget": "plain",
+ "modelTop": 26.2,
+ "assumptions": [
+  "No footprint exists in OSM; the plan is sized from the Esri image and the photos: nave about 11.5 by 24 m, whole building about 38 m long.",
+  "Heading 154 and origin come from the red and grey roof seen on a z18 Esri tile; trees hide part of the roof, so position may be off by several metres.",
+  "Tower is placed at the south-south-east end by matching the repainted red slope to the side where Dawn 2018 shows the tower on the right.",
+  "Heights are estimated from door and window proportions, assuming a 2.7 m door: eave 7.2 m, ridge 12.9 m, tower top about 25.6 m.",
+  "Bays are about 3.4 m, seven a side; the count comes from the Wikipedia photo and may be off by one.",
+  "Chancel block size, 13.6 m wide, 7.5 m deep, eave 5 m, ridge 8.6 m, is read from one oblique photo.",
+  "How the door gable, the rear small gable and the timber porch wing sit relative to each other could not be fully reconciled between photos; Dawn 2018 is followed.",
+  "The west side has red sheet and the east side rust sheet, as photographed in different years; the true current colour of the east slope is unknown.",
+  "Wall colour is the tan of the 2018 and 2020 photos; sources call it grey brick.",
+  "South face of the tower and the south face of the nave are unseen; a plain door is assumed on the tower south face and the same belfry windows on every side.",
+  "Window fill is a diamond lattice texture; stained glass patterns are not modelled and no night lighting is added because none is documented.",
+  "Bishop's house, library, graves and compound walls are left out because no photo places them."
+ ]
+}

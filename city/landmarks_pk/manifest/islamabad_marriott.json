@@ -1,0 +1,52 @@
+{
+ "id": "islamabad_marriott",
+ "name": "Islamabad Marriott Hotel",
+ "lat": 33.732712,
+ "lon": 73.0871166,
+ "headingDeg": 59.6,
+ "height": 21.9,
+ "suppress": [
+  [
+   33.7320876,
+   73.0865773
+  ],
+  [
+   33.7327972,
+   73.0880233
+  ],
+  [
+   33.7333373,
+   73.0876264
+  ],
+  [
+   33.732784,
+   73.0865437
+  ],
+  [
+   33.7326285,
+   73.0862181
+  ]
+ ],
+ "glb": "models/islamabad_marriott.glb",
+ "glbFar": "models/islamabad_marriott_far.glb",
+ "tris": 7905,
+ "trisFar": 386,
+ "bytes": 37464,
+ "bytesFar": 8248,
+ "budget": "plain",
+ "modelTop": 24.6,
+ "assumptions": [
+  "Height 21.9 m at the hood tips comes from the photos (four window rows, a ground storey, a loggia floor, bay width as the scale); no published figure exists and the dossier estimate was 19 m.",
+  "Sources say five storeys; photos show a ground storey plus four window rows plus the loggia floor. The photos were followed.",
+  "Bay width 4.6 m is derived from fitting 14 bays, a core and 18 bays into the OSM long side; the slab is taken to fill that side.",
+  "Slab depth 19 m is estimated from one oblique aerial photo and a double-loaded room plan.",
+  "The slab is placed along the rear edge of the OSM outline, with the low front blocks filling the rest towards the road.",
+  "Low front blocks, hall roofs, pavilion count and the entrance position are placed by eye from three photos taken from different points; plan sizes are estimates.",
+  "The rear facade is modelled from one courtyard photo showing alternating window rows; the rear ground floor terrace and rear low wing are left out.",
+  "Pavilion roofs are red as in the 2017 and dusk photos; one aerial shows them pale, possibly covered.",
+  "The 4 m perimeter wall is left out: its route is unknown, and recent front photos show a hedge at the road, modelled here at an estimated 2.6 m.",
+  "The roof sign is drawn as plain red blocks, sized from the photos, and tops out at about 24.6 m; letterforms are not reproduced.",
+  "Rooftop plant blocks are simple boxes; their sizes are guesses.",
+  "Colours are estimated from photos under overcast and dusk light; night glow values are estimates."
+ ]
+}

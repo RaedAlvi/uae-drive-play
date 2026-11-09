@@ -1,0 +1,190 @@
+{
+ "id": "grand_jamia_mosque_bahria",
+ "name": "Grand Jamia Mosque, Bahria Town Lahore",
+ "lat": 31.3686931,
+ "lon": 74.1853556,
+ "headingDeg": 353.0,
+ "height": 50.3,
+ "suppress": [
+  [
+   31.369252,
+   74.184814
+  ],
+  [
+   31.368968,
+   74.184862
+  ],
+  [
+   31.368966,
+   74.184935
+  ],
+  [
+   31.368636,
+   74.184978
+  ],
+  [
+   31.368647,
+   74.185095
+  ],
+  [
+   31.368444,
+   74.185122
+  ],
+  [
+   31.36837,
+   74.185011
+  ],
+  [
+   31.368271,
+   74.184929
+  ],
+  [
+   31.368157,
+   74.184883
+  ],
+  [
+   31.368037,
+   74.184877
+  ],
+  [
+   31.36792,
+   74.18491
+  ],
+  [
+   31.367816,
+   74.184981
+  ],
+  [
+   31.367733,
+   74.185084
+  ],
+  [
+   31.367678,
+   74.18521
+  ],
+  [
+   31.367656,
+   74.185348
+  ],
+  [
+   31.367668,
+   74.185489
+  ],
+  [
+   31.367713,
+   74.18562
+  ],
+  [
+   31.367788,
+   74.18573
+  ],
+  [
+   31.367869,
+   74.1858
+  ],
+  [
+   31.367961,
+   74.185845
+  ],
+  [
+   31.36806,
+   74.185864
+  ],
+  [
+   31.36816,
+   74.185856
+  ],
+  [
+   31.368255,
+   74.185819
+  ],
+  [
+   31.368341,
+   74.185758
+  ],
+  [
+   31.368411,
+   74.185675
+  ],
+  [
+   31.368505,
+   74.185448
+  ],
+  [
+   31.368672,
+   74.185426
+  ],
+  [
+   31.368708,
+   74.185804
+  ],
+  [
+   31.369016,
+   74.185764
+  ],
+  [
+   31.369038,
+   74.185998
+  ],
+  [
+   31.369305,
+   74.185963
+  ],
+  [
+   31.369282,
+   74.185723
+  ],
+  [
+   31.369586,
+   74.185683
+  ],
+  [
+   31.369561,
+   74.185452
+  ],
+  [
+   31.369729,
+   74.18543
+  ],
+  [
+   31.369719,
+   74.185072
+  ],
+  [
+   31.369535,
+   74.1851
+  ],
+  [
+   31.369509,
+   74.184842
+  ],
+  [
+   31.369256,
+   74.18487
+  ]
+ ],
+ "glb": "models/grand_jamia_mosque_bahria.glb",
+ "glbFar": "models/grand_jamia_mosque_bahria_far.glb",
+ "tris": 39465,
+ "trisFar": 1368,
+ "bytes": 207248,
+ "bytesFar": 17412,
+ "budget": "normal",
+ "modelTop": 50.29,
+ "assumptions": [
+  "Heading set to 353 (entrance north-north-west) from the satellite image; the dossier's 88.1 assumed the east face and was marked unconfirmed.",
+  "Plan dimensions measured on Esri satellite imagery rectified to the model frame; wings, gate, portal and hall really are offset by several metres from a single axis in that image, and that offset is kept.",
+  "Dossier central dome span of 15.24 m is contradicted by the image, where the dome measures about 31 m across; the dossier's 12.19 m height is kept on the measured span.",
+  "Sixteen small domes are measured on the roof; sources say 20, and the model counts the four minaret caps as the other four.",
+  "Minaret centres are not visible from above; set on the diagonals 41.7 m from the hall centre from roof notches, shadows and front photos.",
+  "Minaret section is a square with small chamfers: Wikipedia says octagonal but photos show broad faces.",
+  "Minaret gallery, lantern and shaft heights fitted to front and side photos, with the total 50.29 m from the dossier.",
+  "Dossier's 6.1 m raised base is not visible outside; a 1.2 m footing and stair is built from photos, the rest of the rise being taken as inside the hall.",
+  "Drum height 18 m, tier 21 m, wing height 6.5 m, gate 11 m, pavilions 10.8 m and portal 11.5 m are estimated from photo proportions.",
+  "Twenty arched drum bays (five per quadrant) counted on the east quadrant and repeated north and west; the south quadrant is a plainer wall in two photos and is built that way.",
+  "Arcade bay counts of 13 and 19 on the court faces and 15 and 21 on the outer faces come from photo counts and bay width and may differ by one or two.",
+  "Six wooden doors: positions unconfirmed; drawn in the three portal arches and three east drum bays.",
+  "Tile colours (teal, dark, tan) and the lighter small-dome tone are photo estimates; the white marble in one Wikipedia section is not seen on the exterior and is not used.",
+  "Exterior only: no interior was built. Night glow colours are estimated from night photos."
+ ]
+}

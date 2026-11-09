@@ -1,0 +1,151 @@
+{
+ "id": "packages_mall",
+ "name": "Packages Mall",
+ "lat": 31.4712345,
+ "lon": 74.3560009,
+ "headingDeg": 35.6,
+ "height": 29.2,
+ "suppress": [
+  [
+   31.470385,
+   74.354216
+  ],
+  [
+   31.470139,
+   74.354384
+  ],
+  [
+   31.470067,
+   74.354317
+  ],
+  [
+   31.469905,
+   74.35443
+  ],
+  [
+   31.469983,
+   74.354493
+  ],
+  [
+   31.469781,
+   74.354641
+  ],
+  [
+   31.470394,
+   74.355865
+  ],
+  [
+   31.470517,
+   74.355774
+  ],
+  [
+   31.471231,
+   74.356302
+  ],
+  [
+   31.470797,
+   74.356921
+  ],
+  [
+   31.471551,
+   74.357643
+  ],
+  [
+   31.471967,
+   74.35705
+  ],
+  [
+   31.472108,
+   74.357176
+  ],
+  [
+   31.472229,
+   74.356996
+  ],
+  [
+   31.472463,
+   74.356296
+  ],
+  [
+   31.472708,
+   74.355972
+  ],
+  [
+   31.472157,
+   74.355512
+  ],
+  [
+   31.471959,
+   74.356126
+  ],
+  [
+   31.471689,
+   74.356001
+  ],
+  [
+   31.470933,
+   74.355453
+  ],
+  [
+   31.470716,
+   74.355058
+  ],
+  [
+   31.470677,
+   74.354653
+  ],
+  [
+   31.470644,
+   74.35458
+  ],
+  [
+   31.470727,
+   74.354536
+  ],
+  [
+   31.470738,
+   74.354492
+  ],
+  [
+   31.470659,
+   74.354335
+  ],
+  [
+   31.470636,
+   74.354323
+  ],
+  [
+   31.470547,
+   74.35439
+  ],
+  [
+   31.470508,
+   74.354297
+  ]
+ ],
+ "glb": "models/packages_mall.glb",
+ "glbFar": "models/packages_mall_far.glb",
+ "tris": 1629,
+ "trisFar": 86,
+ "bytes": 24400,
+ "bytesFar": 4464,
+ "budget": "plain",
+ "modelTop": 29.24,
+ "assumptions": [
+  "No published height: main walls 18.5 m, drum 20 m and blade tips 29 m are scaled from photo wiki5 with the pink columns taken as 5 m from a person in ft_b.",
+  "Cladding #CFC9BD is read from daylight photos; the dossier #928D89 is a dusk thumbnail sample and looked too dark.",
+  "Roof plan, solar panels and blades traced by hand from Esri satellite at about 0.5 m per pixel; satellite lean may shift them 2 to 4 m.",
+  "Which entrance wiki5 shows is inferred: the south-west pair, because the long wall runs off to the viewer's left there.",
+  "North entrance drum and blades use the south-west elevation; only its roof plan was seen.",
+  "Each blade rises to one tip at the point traced furthest out; the tip height and the fold of the underside are simplified from one low photo.",
+  "One pale post per blade; the V strut in the pre-construction render was not confirmed as built.",
+  "Drum sagitta 4 m and depth are estimates; the narrow glazed reveal beside the drum in wiki5 is omitted.",
+  "Pink V columns are three pairs per drum, read from wiki5 and ft_b; exact count not confirmed.",
+  "East hall roof is at the same height as the main roof: no photo of that side, plainest form.",
+  "South, east and north service elevations were not photographed and are plain cladding over the same dark band.",
+  "The dark ground band is drawn as continuous shopfront at 5 m; the car park wall in ft_main shows it, other sides are assumed.",
+  "Wall corners at OSM nodes 18 to 20 are rounded by up to 22 m to give the single curve seen on the satellite.",
+  "Billboards are blank panels at estimated positions; brand signs are left off because they change. The blue one's place along the wall is a guess.",
+  "Service annexes outside the OSM ring on the south side, the forecourt tree sculpture, planters and the car park are not modelled."
+ ]
+}

@@ -1,0 +1,54 @@
+{
+ "id": "centaurus",
+ "name": "The Centaurus",
+ "lat": 33.7078937,
+ "lon": 73.0498666,
+ "headingDeg": 148.8,
+ "height": 110.0,
+ "suppress": [
+  [
+   33.7071825,
+   73.0492701
+  ],
+  [
+   33.7080271,
+   73.0508966
+  ],
+  [
+   33.7086048,
+   73.0504631
+  ],
+  [
+   33.7077602,
+   73.0488366
+  ]
+ ],
+ "glb": "models/centaurus.glb",
+ "glbFar": "models/centaurus_far.glb",
+ "tris": 65358,
+ "trisFar": 520,
+ "bytes": 267732,
+ "bytesFar": 14400,
+ "budget": "hero",
+ "modelTop": 110.0,
+ "assumptions": [
+  "No fourth tower: the architect's spire-and-sail hotel renders do not match any photograph, and 2025 drone and Accor photos show the Movenpick name and helipad on one of the three existing towers, so way 472386422 (OSM construction plot) is left empty.",
+  "The hotel is taken to be the south-west tower (Centaurus 1): inferred from the sun and road direction in the helipad drone photo. The helipad is on that tower only.",
+  "Tower centres are 57 m apart, symmetric on the mall (x = 57, 0, -57). OSM places them about 15 m towards the south-west with one tower almost on the mall edge, which contradicts the street, telephoto and site-plan views, so the OSM tower positions are read as roof traces with lean.",
+  "Band count 22 storeys from photo counts (22 to 23 bands), matching Wikipedia article and developer; storey height is fitted to the 27.4 to 100 m band.",
+  "Tower total 110 m (OSM, Wikipedia list), crown drum 10 m (dossier low confidence). The Wikipedia 116 m for the corporate tower is not applied, because no source says which tower it is.",
+  "Crown rim built flat, not arched: the arching in ground photos is the near rim of an oval seen from below; the telephoto from the hills and the drone photo show a level rim, open at the top with plant inside.",
+  "Plan is the OSM rectangle with a chamfer and barrel at each narrow end; chamfer and barrel proportions estimated from photos.",
+  "Broad face central slot width 3.4 m and depth 1 m, and its colour (dark in overcast, bronze in sun), estimated.",
+  "Wave heights: peaks 30 m (OSM), dip 19.5 m (dossier estimate), ends fitted by eye. The sag of the roof between the two long fascias is inferred so the towers' pilaster storeys stay visible, as in the street view.",
+  "Panels 4.2 by 1.2 m in level half-bond courses of the dossier cream, grey and ochre are read from wiki_infobox and wiki_TheCentauru0e; the exact course order, panel size and punched window strip positions are representative, not surveyed.",
+  "The blue ribbon window is built level at 8.8 to 12 m as wiki_infobox shows it, overriding the dossier note that it follows the wave; its height is measured from that one photo.",
+  "Only the hotel tower's drum is black (movenpick-heli, 2025). The other two stay silver as in the earlier wiki photos; movenpick-heli is backlit and cannot confirm their current colour. The hotel's red Movenpick lettering is left out.",
+  "Roof end panels are built pale and solid per wiki_TheCentaurud3 and wiki_infobox; their exact tone and whether they are glazed are not known.",
+  "Crown, roof, fascia, soffit and panel colours are lifted above the dossier hex estimates, towards the sunlit wiki_TheCentauru0e and accx1 photos; tones are by eye.",
+  "Pale metal cladding has metalness 0 in the GLB so it keeps its dossier colour without an environment map to reflect; it is a look decision, not a material survey.",
+  "Entrance bays at x = +/-28 m on both long sides, read from photos; north side seen, south side per dossier.",
+  "End walls: glazing, three raking props and three roof panels seen at the south-west end only; the north-east end is built the same.",
+  "Rooftop plant boxes other than the helipad are plain placeholders. Advert wraps, signage and Movenpick lettering are left out; night glow is windows and fascia only."
+ ]
+}

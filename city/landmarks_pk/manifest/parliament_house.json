@@ -1,0 +1,50 @@
+{
+ "id": "parliament_house",
+ "name": "Parliament House",
+ "lat": 33.73015,
+ "lon": 73.0969742,
+ "headingDeg": 238.8,
+ "height": 42.0,
+ "suppress": [
+  [
+   33.7299662,
+   73.0978631
+  ],
+  [
+   33.7309329,
+   73.0971624
+  ],
+  [
+   33.730315,
+   73.0959413
+  ],
+  [
+   33.7293483,
+   73.096642
+  ]
+ ],
+ "glb": "models/parliament_house.glb",
+ "glbFar": "models/parliament_house_far.glb",
+ "tris": 12236,
+ "trisFar": 74,
+ "bytes": 63660,
+ "bytesFar": 5140,
+ "budget": "normal",
+ "modelTop": 42.0,
+ "assumptions": [
+  "Main front set to bearing 238.8, not the dossier 58.8: all photos show the Kalima panel, porticos and star-parterre lawns on the south-west face.",
+  "Height is fitted, not published: roof of the central slab 29 m, wing roof 22.2 m, flag top 42 m, from a reconstructed camera on the official head-on photo.",
+  "OSM footprint is taken as the base of the upper wings; tier A steps out 8 m at the front, 10 m north-west, 4.9 m south-east and 3 m at the rear, read from the Esri plan after allowing for about 6 m of roof parallax, so each is good to about 2 to 3 m.",
+  "Rear steps are the plainest reading: the plan shows no visible terrace on the north-east side, and up to about 4 m could be hidden behind the displaced roof; no photo of the rear was found.",
+  "Slab front width 41 m from the head-on photo and the 39.6 m hall dome (the sheared Esri plan reads about 35 m, the photo was preferred); the dome itself is internal and is not modelled, as the dossier notes.",
+  "Rear and side elevations use the front's ribbon rhythm; only the front, the south-east side and the plan view were seen.",
+  "Bay counts come from the front (about 5 m pitch); side and rear counts are extrapolated.",
+  "Court plan is read from the sheared Esri view to about 3 m and is not symmetrised: each side is a front and rear well joined by a slit past the arm end, with the white L-shaped returns drawn as a plain ledge at tier B level; their true level and form, the court interiors and windows are assumed.",
+  "Slab rear is taken nearly flush with the rear wall from the plan, narrower there (about 25 m) than the front; the rear notch of the earlier model had no source.",
+  "Ground storey of tier A is drawn solid behind the retaining wall; the ribbons counted are the upper four of the five floors.",
+  "The Kalima inscription is deliberately not reproduced: a plain pale band and two rosettes stand for the lettering in the dark panel.",
+  "Exterior cladding is undocumented: white stone with a joint pattern from one close photo; colours other than the two dossier roof greys are photo estimates.",
+  "Solar panels are navy from the drone photo (the dossier's grey is a satellite reading); rows run east-west following the plan view, their number approximate; plant boxes are indicative.",
+  "Porticos, gates and canopy are public-exterior items simplified from photos; trees, flagpoles, lawns, security barriers and the forecourt are left to the world."
+ ]
+}

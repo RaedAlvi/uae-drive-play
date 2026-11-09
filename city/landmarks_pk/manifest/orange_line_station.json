@@ -1,0 +1,103 @@
+{
+ "id": "orange_line_station",
+ "name": "Orange Line elevated station (Dera Gujran as the mapped example)",
+ "lat": 31.5897231,
+ "lon": 74.4313232,
+ "headingDeg": 83.7,
+ "height": 21.0,
+ "suppress": [
+  [
+   31.589795,
+   74.430729
+  ],
+  [
+   31.589757,
+   74.43071
+  ],
+  [
+   31.589712,
+   74.430699
+  ],
+  [
+   31.589684,
+   74.430697
+  ],
+  [
+   31.589662,
+   74.430701
+  ],
+  [
+   31.589588,
+   74.43072
+  ],
+  [
+   31.589562,
+   74.430742
+  ],
+  [
+   31.589536,
+   74.430775
+  ],
+  [
+   31.589653,
+   74.431888
+  ],
+  [
+   31.589672,
+   74.431914
+  ],
+  [
+   31.589697,
+   74.431931
+  ],
+  [
+   31.589725,
+   74.43195
+  ],
+  [
+   31.589794,
+   74.431971
+  ],
+  [
+   31.589824,
+   74.431965
+  ],
+  [
+   31.589844,
+   74.43195
+  ],
+  [
+   31.589869,
+   74.431926
+  ],
+  [
+   31.589904,
+   74.431875
+  ]
+ ],
+ "glb": "models/orange_line_station.glb",
+ "glbFar": "models/orange_line_station_far.glb",
+ "tris": 17156,
+ "trisFar": 218,
+ "bytes": 86268,
+ "bytesFar": 7524,
+ "budget": "normal",
+ "modelTop": 21.0,
+ "assumptions": [
+  "Rail level 12 m is the dossier's low-confidence figure; platform floor is set 1.05 m above it and all other levels stack from there.",
+  "Roof eaves 18 m and crown 21 m are fitted to one aerial construction photo and the platform photos, not measured.",
+  "Roof plan is the OSM ring rectified to a symmetric 29 m wide barrel with ends bowed 5 m; the ring's slight skew is ignored.",
+  "Platform and deck use the published 102 x 22.5 m; the roof overhangs them to fill the 109 x 29 m ring, and the ring may include that overhang.",
+  "Photos used are of the Chauburji station and an unnamed station under construction; Dera Gujran is assumed to share the standard design.",
+  "Concourse drum length (76 m), its belly profile and the ribbon window height come from the dossier's description only; the exterior photo of it could not be fetched.",
+  "Footbridge position at mid-station, their length, and the stair layout are plain guesses from the dossier's 'footbridges either side'.",
+  "Column layout under the station (two rows of round piers) is assumed; single T-head piers are photographed on the approaches only.",
+  "Viaduct is cut at a pier on each side as a short stub; the real line continues.",
+  "Rib spacing 8.4 m and X bracing in alternate bays are estimated from platform photos; bay count may be off by one or two.",
+  "Intermediate raked columns are pale (Chauburji photo) and end columns orange (aerial photo); colours may vary by station.",
+  "Platform rooms: four, positions and sizes estimated from the Chauburji platform. Stair and escalator openings in the platforms are left out.",
+  "Screen doors appear at Chauburji in photos; the dossier notes Wikipedia confirms them only underground.",
+  "A five-car train is parked at one platform as dressing to show the documented livery; set SHOW_TRAIN False to remove it. Car length 19 m is an estimate.",
+  "Colours other than the dossier's soffit hex are photo estimates."
+ ]
+}

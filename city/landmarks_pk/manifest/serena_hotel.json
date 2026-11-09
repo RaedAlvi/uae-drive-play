@@ -1,0 +1,74 @@
+{
+ "id": "serena_hotel",
+ "name": "Islamabad Serena Hotel",
+ "lat": 33.7160442,
+ "lon": 73.1014153,
+ "headingDeg": 149.2,
+ "height": 33.0,
+ "suppress": [
+  [
+   33.7147542,
+   73.1020121
+  ],
+  [
+   33.7155119,
+   73.1014259
+  ],
+  [
+   33.7156397,
+   73.1013349
+  ],
+  [
+   33.7162045,
+   73.1009329
+  ],
+  [
+   33.7162863,
+   73.1008785
+  ],
+  [
+   33.7164015,
+   73.1009086
+  ],
+  [
+   33.7167011,
+   73.1014153
+  ],
+  [
+   33.716817,
+   73.1016506
+  ],
+  [
+   33.7160327,
+   73.1026383
+  ],
+  [
+   33.7157635,
+   73.1028401
+  ],
+  [
+   33.7148184,
+   73.1021372
+  ]
+ ],
+ "glb": "models/serena_hotel.glb",
+ "glbFar": "models/serena_hotel_far.glb",
+ "tris": 11977,
+ "trisFar": 413,
+ "bytes": 70932,
+ "bytesFar": 7680,
+ "budget": "plain",
+ "modelTop": 33.0,
+ "assumptions": [
+  "Height is not published: seven levels counted in the garden photos (one Scribd source agrees), ground floor 5.6 m and upper floors 3.4 m are estimates from window pitch, so the roof is 26 m and arch crowns about 30 m.",
+  "Service towers to 33 and 31.5 m: two are seen above the roofline in photos, their positions and size are estimates.",
+  "The second pool block is not in OSM; it is placed from the Esri image with a roof-lean correction, and its plan is approximate.",
+  "West faces carry no timber screens or roof arches because the satellite shows plain wall there; those faces were not photographed from the ground.",
+  "Timber screen bays are repeated, five to a run, on every other long face; real runs vary between three and five and a few smaller ones are left out.",
+  "Roof arches: the interlaced double row is simplified to two straight rows 1.3 m apart.",
+  "The stacked central screens are placed on faces near the two re-entrant corners only; exact faces chosen from the two photos that show them.",
+  "Pool podium deck 12.5 m and pergola top 19.5 m are read from photos; pergola layout is simplified.",
+  "The sunken garden, sandstone retaining walls, small timber entrance pavilions, the separate red-roofed building and the Business Complex are left out.",
+  "Low wing at the west end taken as 6.5 m, from its small roof lean on the satellite."
+ ]
+}

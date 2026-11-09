@@ -1,0 +1,47 @@
+{
+ "id": "m2_toll_plaza_canopy",
+ "name": "M-2 toll plaza canopy",
+ "lat": 31.5387283,
+ "lon": 74.2634465,
+ "headingDeg": 80.6,
+ "height": 8.8,
+ "suppress": [
+  [
+   31.5388954,
+   74.2632861
+  ],
+  [
+   31.538526,
+   74.2633575
+  ],
+  [
+   31.5385613,
+   74.2636069
+  ],
+  [
+   31.5389307,
+   74.2635355
+  ]
+ ],
+ "glb": "models/m2_toll_plaza_canopy.glb",
+ "glbFar": "models/m2_toll_plaza_canopy_far.glb",
+ "tris": 2090,
+ "trisFar": 152,
+ "bytes": 20488,
+ "bytesFar": 3560,
+ "budget": "plain",
+ "modelTop": 8.75,
+ "assumptions": [
+  "The dossier has no position; placed on OSM way 1445457796 (building=roof, Toll Plaza) at the Lahore end near Babu Sabu, the only M-2 canopy with a mapped outline found.",
+  "Footprint 39.6 by 10.5 m is that OSM polygon; which way it faces is inferred from the east-west link roads under it, with the front on the eastern approach (heading about 80.6).",
+  "OSM tags height 5, taken as a roofline guess; photos give about 5.5 m clear at the belly and 8.75 m to the top of the board (ratios against booths and struts, no measured figure).",
+  "This exact canopy was not found in any photo; its form is the FWO/NHA plaza family seen at other M-2 and M-1 plazas. Ravi plaza is a different, square-columned design and is not modelled.",
+  "Seven lanes, eight islands at 5.4 m pitch: fitted to the 39.6 m polygon, the lane count is not published.",
+  "White struts follow the M-2 plaza photos; the Islamabad plaza has yellow or red struts, so colour varies by plaza.",
+  "Strut section, bow, foot positions (2.7 m each side of the booth) and plinth size are read off oblique photos.",
+  "Belly profile and soffit colour estimated from Islamabad plaza photos; the night glow on the soffit comes from the Ravi aerial photo.",
+  "The green board is left blank because the wording at this canopy is unknown. Only one face has been seen; the back is assumed green.",
+  "Booths 1.8 by 3.0 by 2.55 m on seven islands, one per lane; island length 22 m and all colours are visual estimates.",
+  "No lane barriers, cameras, kerb signs or road surface: the game supplies the road and barriers were not confirmed for this canopy."
+ ]
+}

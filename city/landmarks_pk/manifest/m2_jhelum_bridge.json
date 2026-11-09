@@ -1,0 +1,33 @@
+{
+ "id": "m2_jhelum_bridge",
+ "name": "M-2 long bridge, probable Jhelum River crossing near Bhera",
+ "lat": 32.4769476,
+ "lon": 72.8592135,
+ "headingDeg": 316.4,
+ "height": 12.1,
+ "suppress": [],
+ "glb": "models/m2_jhelum_bridge.glb",
+ "glbFar": "models/m2_jhelum_bridge_far.glb",
+ "tris": 3060,
+ "trisFar": 220,
+ "bytes": 19892,
+ "bytesFar": 3460,
+ "budget": "plain",
+ "modelTop": 12.1,
+ "assumptions": [
+  "No photograph of this bridge from the side, from below or from the deck could be found. Only satellite imagery shows it; the road photos are of other parts of the M-2.",
+  "River identity is unconfirmed by name: Esri imagery shows a large river under the bridge, and the dossier infers the Jhelum from geography.",
+  "Deck level 10.0 m at the south-east end and 11.1 m at the north-west end, read from approach embankments at 196.0 and 197.1 m on z15 terrain, against 186.0 m at the origin; no survey.",
+  "Deck width 13.6 m, gap under 1 m, 9.6 m dark surface and 2 m pale edge bands measured on Esri at about 0.5 m per pixel. That surface is narrower than three standard lanes would need, and the true split may differ.",
+  "Span count 18 (45.4 m spans) is a guess; no source gives it and the deck hides the piers in the imagery.",
+  "Single-cell concrete box girder of constant 3.0 m depth is inferred from Structurae's note of incremental launching for a 'Bhaira bridge', which is not confirmed to be this bridge.",
+  "One chamfered wall pier 6.0 by 1.8 m under each deck is the plainest plausible form; the pier type is unknown. Foundations and footings are not modelled, and piers run 2.5 m below the origin to cover terrain differences.",
+  "Barrier profile (1.0 m concrete safety barrier on both edges of each deck) is taken from other M-2 road photos; the barrier positions match the pale edge bands on Esri.",
+  "Colours: road surfaces sampled from Esri, barrier hue from M-2 road photos, girder and pier greys estimated.",
+  "Yellow edge lines come from M-2 road photos of other sections. Two dashed lane lines per deck are visible on Esri; the 6 m dash and 12 m gap are estimated.",
+  "Abutments are plain walls with 9.5 m of fill behind them on 1 in 1.25 slopes; the real wing walls and embankment slopes are unknown, and the approach road is left to the game.",
+  "No lamp columns, signs or expansion joints are modelled because none can be seen on Esri at this resolution.",
+  "suppress is empty on purpose: the dossier footprint is only a centreline, and flattening a strip of river bed and banks under it is not wanted.",
+  "No night lighting: no source describes any."
+ ]
+}

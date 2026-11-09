@@ -1,0 +1,270 @@
+{
+ "id": "faisal_mosque",
+ "name": "Faisal Mosque",
+ "lat": 33.7299087,
+ "lon": 73.038067,
+ "headingDeg": 75.8,
+ "height": 90.0,
+ "suppress": [
+  [
+   33.7300537,
+   73.0364682
+  ],
+  [
+   33.7300817,
+   73.036577
+  ],
+  [
+   33.730229,
+   73.037235
+  ],
+  [
+   33.7302997,
+   73.0375506
+  ],
+  [
+   33.7303432,
+   73.0375352
+  ],
+  [
+   33.7303348,
+   73.0374869
+  ],
+  [
+   33.7303616,
+   73.0374788
+  ],
+  [
+   33.7303577,
+   73.0374554
+  ],
+  [
+   33.7304408,
+   73.0374326
+  ],
+  [
+   33.7304531,
+   73.0374943
+  ],
+  [
+   33.7305083,
+   73.0374815
+  ],
+  [
+   33.7307406,
+   73.0385458
+  ],
+  [
+   33.7306913,
+   73.0385626
+  ],
+  [
+   33.7307192,
+   73.0386873
+  ],
+  [
+   33.7307694,
+   73.0386706
+  ],
+  [
+   33.7308476,
+   73.039045
+  ],
+  [
+   33.7307983,
+   73.0390553
+  ],
+  [
+   33.7308101,
+   73.039117
+  ],
+  [
+   33.7307587,
+   73.0391428
+  ],
+  [
+   33.7307673,
+   73.0391865
+  ],
+  [
+   33.7302709,
+   73.0393524
+  ],
+  [
+   33.7302602,
+   73.0392894
+  ],
+  [
+   33.7302024,
+   73.0393074
+  ],
+  [
+   33.7302484,
+   73.0395326
+  ],
+  [
+   33.7301436,
+   73.0395621
+  ],
+  [
+   33.730104,
+   73.039337
+  ],
+  [
+   33.7300569,
+   73.0393486
+  ],
+  [
+   33.7300697,
+   73.0394078
+  ],
+  [
+   33.7295637,
+   73.0395711
+  ],
+  [
+   33.7295508,
+   73.0395055
+  ],
+  [
+   33.7295059,
+   73.0395274
+  ],
+  [
+   33.7294888,
+   73.0394605
+  ],
+  [
+   33.7294449,
+   73.0394785
+  ],
+  [
+   33.7293614,
+   73.0391144
+  ],
+  [
+   33.7293443,
+   73.039063
+  ],
+  [
+   33.7293903,
+   73.0390411
+  ],
+  [
+   33.729354,
+   73.0388649
+  ],
+  [
+   33.7294759,
+   73.0388108
+  ],
+  [
+   33.7295016,
+   73.0389266
+  ],
+  [
+   33.7295872,
+   73.0388983
+  ],
+  [
+   33.7294567,
+   73.0382731
+  ],
+  [
+   33.7293689,
+   73.0383001
+  ],
+  [
+   33.7293893,
+   73.0384082
+  ],
+  [
+   33.7292619,
+   73.0384429
+  ],
+  [
+   33.7292181,
+   73.0382525
+  ],
+  [
+   33.7291699,
+   73.0382654
+  ],
+  [
+   33.729079,
+   73.0378408
+  ],
+  [
+   33.7291261,
+   73.0378254
+  ],
+  [
+   33.7291196,
+   73.0377868
+  ],
+  [
+   33.7292298,
+   73.0377572
+  ],
+  [
+   33.7292459,
+   73.0378318
+  ],
+  [
+   33.729293,
+   73.0378177
+  ],
+  [
+   33.7293122,
+   73.037882
+  ],
+  [
+   33.7293572,
+   73.0378717
+  ],
+  [
+   33.729339,
+   73.0378421
+  ],
+  [
+   33.729324,
+   73.0378537
+  ],
+  [
+   33.7290908,
+   73.0367486
+  ],
+  [
+   33.7291132,
+   73.0367049
+  ],
+  [
+   33.7300237,
+   73.0364283
+  ]
+ ],
+ "glb": "models/faisal_mosque.glb",
+ "glbFar": "models/faisal_mosque_far.glb",
+ "tris": 16054,
+ "trisFar": 536,
+ "bytes": 109216,
+ "bytesFar": 17896,
+ "budget": "hero",
+ "modelTop": 90.0,
+ "assumptions": [
+  "Minaret tips 90 m above the ground (dossier; sources say 79 to 90 m), so 82 m above the hall terrace; the head-on photo measures about 84 m terrace to tip.",
+  "Hall terrace 8 m up (OSM platform tag, south wall photo); courtyard 2 m lower, joined by a flight of 8 steps (photos of the steps; the rise is an estimate).",
+  "Shell apex 36.6 m above the terrace, fitted with a reconstructed camera; Archnet's 40 m is taken as a different datum or the fin tops.",
+  "Gable peak 22 m and girder soffit 20.6 m above the terrace, fitted to head-on and drone photos.",
+  "Shell plan set to a 75.5 m square centred on the OSM apex: OSM traces 75.5 by 81.2 m but the side photos fit the square; satellite lean is assumed for the OSM long side.",
+  "Shell side centres are on the straight side lines; the OSM midpoints agree. Photos support the eave kinks at the side centres.",
+  "Minaret neck, spire and skirt proportions fitted to photos; shaft width 7.1 to 6.0 m (OSM's 10.5 m base part up to 50 m is treated as the skirt only).",
+  "South gable: 24 lancet ribs about 3 m apart from a close photo; the north gable is built the same (not seen directly).",
+  "West (qibla) gable: ribbed, blue-grey from the Esri image only; its exterior was not photographed.",
+  "East lattice cell and mullion spacing counted from the twilight photo; panel count may differ by a few.",
+  "Perimeter wing height 6.8 m above the courtyard, colonnade depth 3.2 m, and the courtyard wing windows drawn as two continuous rows: estimates from aerial photos.",
+  "South stair: position and 18 m width read from one aerial photo; the rise is taken as the courtyard level (6 m).",
+  "Crescent and finial metal (dark gold) unconfirmed; lighting colours and floodlit look estimated from night photos.",
+  "Mausoleum, SE gate fountain, gardens and car parks are outside this model; the OSM north pool is included."
+ ]
+}

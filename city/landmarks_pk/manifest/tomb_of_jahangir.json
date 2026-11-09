@@ -1,0 +1,48 @@
+{
+ "id": "tomb_of_jahangir",
+ "name": "Tomb of Jahangir",
+ "lat": 31.6225755,
+ "lon": 74.303144,
+ "headingDeg": 269.3,
+ "height": 30.5,
+ "suppress": [
+  [
+   31.6221257,
+   74.3036827
+  ],
+  [
+   31.6230365,
+   74.3036697
+  ],
+  [
+   31.6230253,
+   74.3026053
+  ],
+  [
+   31.6221145,
+   74.3026183
+  ]
+ ],
+ "glb": "models/tomb_of_jahangir.glb",
+ "glbFar": "models/tomb_of_jahangir_far.glb",
+ "tris": 26284,
+ "trisFar": 588,
+ "bytes": 216876,
+ "bytesFar": 9624,
+ "budget": "normal",
+ "modelTop": 30.48,
+ "assumptions": [
+  "Bay rhythm of five arches, block, five arches is confirmed on two opposite sides in photos; the other two sides are built to the same design.",
+  "Podium half side 46.5 m, estimated from photos; the published platform figures conflict.",
+  "Terrace 1.3 m above the ground from four steps and a person for scale; the same flight is assumed on all four sides.",
+  "The 257 ft (78.33 m) side is read as across the tower faces; the arcade wall stands 0.97 m behind them from a corner photo.",
+  "Wall, parapet and block heights fitted to head-on photos; the dossier 6.7 m arcaded storey is taken as the parapet top on the side runs.",
+  "Roof tessellation drawn as a simple repeated star on the dossier colour; no clear photo of the roof pattern was available.",
+  "Raised square on the roof is 24 m a side and 0.75 m high with a low rail: the dossier confirms it exists, the size and rail are plain guesses, no roof photo was obtained.",
+  "Inlay is a simplified painted version of the real panels, keeping their placement and rhythm, not each individual motif.",
+  "Verandahs are one bay deep with plain plaster backs; vault forms are simplified and the interior chamber is not modelled.",
+  "Slits in the minaret shafts are placed on the diagonal faces from one corner photo.",
+  "Minaret shaft widths and balcony heights measured from head-on photos at about 0.1 m per pixel; balcony rail shown as a band with posts.",
+  "Finial material is a dark metal by appearance; the garden, sarai and gateways are outside this model."
+ ]
+}

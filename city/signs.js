@@ -25,6 +25,8 @@ import { U } from "./materials.js";
 const SANS = '"Segoe UI", Tahoma, Arial, sans-serif';
 const AR_FONT = '"Segoe UI", Tahoma, Arial, sans-serif';
 const NUM_FONT = 'Arial, "Segoe UI", Helvetica, sans-serif';
+const PK_MAP = typeof window !== "undefined" && !!window.CITY && window.CITY.region === "pakistan";
+const UR_FONT = '"Urdu Typesetting", "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", "Segoe UI", Tahoma, sans-serif';
 const PLATE_BLUE = "#0b4f9c";
 const GUIDE_BLUE = "#0d4d9e";
 
@@ -161,6 +163,29 @@ const CLASS = {
   hairdresser: "hair", beauty: "hair", barber: "hair", beauty_salon: "hair", laundry: "laundry", dry_cleaning: "laundry",
   lodging: "lodging", hotel: "lodging", hostel: "lodging", guest_house: "lodging", motel: "lodging", apartment: "lodging",
 };
+// Flex-print panels on Pakistani bazaar fronts (art_direction.md section 6, estimated colours)
+const FLEX = [
+  { bg: "#d5202e", fg: "#ffffff", bar: "#f6c400" }, { bg: "#1d4fb5", fg: "#ffffff", bar: "#f6c400" }, { bg: "#1a8a4a", fg: "#ffffff", bar: "#ffffff" },
+  { bg: "#f6c400", fg: "#111111", bar: "#d5202e" }, { bg: "#ffffff", fg: "#d5202e", bar: "#1d4fb5" }, { bg: "#ffffff", fg: "#1a5fb5", bar: "#d5202e" },
+  { bg: "#111827", fg: "#f6c400", bar: "#d5202e" }, { bg: "#e8641b", fg: "#ffffff", bar: "#ffffff" },
+];
+function layoutFlex(p, fit) {
+  const en = String(p.en || "").trim(), ar = String(p.ar || "").trim();
+  if (!en && !ar) return null;
+  const h = hash32(en + "|" + ar + "|flex"), A = Math.max(1.5, Math.min(8, fit > 0 ? fit : 4));
+  return { flex: 1, en: en && (h >>> 3) & 1 ? en.toUpperCase() : en, ar, S: p.cls === "flexu" ? FLEX_UNIFORM : FLEX[h % FLEX.length], aspect: A, edge: "#2a2a2a", fam: FAMS[(h >>> 12) % 5] };
+}
+function drawFlex(g, L, W, H) {
+  const S = L.S, m = 0.06 * H, bar = 0.09 * H;
+  g.fillStyle = S.bg; g.fillRect(0, 0, W, H);
+  g.fillStyle = S.bar; g.fillRect(0, H - bar, W, bar); g.fillRect(0, 0, W, bar * 0.45);
+  const cx = W / 2, mw = W - 2 * m - 0.08 * H, inner = H - bar * 1.45, top = bar * 0.45;
+  g.fillStyle = S.fg;
+  const enLine = (t, y, fs) => { g.font = font(fs, L.fam.f, L.fam.w); g.textAlign = "center"; g.textBaseline = "alphabetic"; g.direction = "ltr"; const w = g.measureText(t).width, by = y + 0.355 * fs; if (w > mw) { g.save(); g.translate(cx, by); g.scale(mw / w, 1); g.fillText(t, 0, 0); g.restore(); } else g.fillText(t, cx, by); };
+  if (L.en && L.ar) { enLine(L.en, top + inner * 0.3, inner * 0.3); drawText(g, L.ar, cx, top + inner * 0.72, inner * 0.36, UR_FONT, mw, "center", true); }
+  else if (L.en) enLine(L.en, top + inner * 0.5, inner * 0.46);
+  else drawText(g, L.ar, cx, top + inner * 0.5, inner * 0.56, UR_FONT, mw, "center", true);
+}
 // families with their natural weight (Impact and Arial Black are heavy already)
 const FAMS = [
   { f: SANS, w: "bold" }, { f: "Arial, Helvetica, sans-serif", w: "bold" }, { f: "Tahoma, Verdana, sans-serif", w: "bold" },
@@ -170,6 +195,10 @@ const FAMS = [
 ];
 const SERIF = { f: 'Georgia, "Times New Roman", serif', w: "bold" };
 const FIT_BUCKETS = [1.2, 1.6, 2.1, 2.8, 3.6, 4.7, 6.2, 8.2, 11, 15];
+// The revamped Raja Bazaar stretch: the same sign for every shop (art_direction.md S20; colours estimated)
+const FLEX_UNIFORM = { bg: "#f3efe4", fg: "#1f3a2c", bar: "#7a1f1f" };
+// Pakistani flex boards come in two shapes only, so hundreds of signs share atlas entries
+function flexFit(a) { return a >= 3.2 ? 4.7 : 2.8; }
 function fitBucket(a) {
   if (!(a > 0)) return 0;
   let best = FIT_BUCKETS[0], bd = 1e9;
@@ -177,6 +206,7 @@ function fitBucket(a) {
   return best;
 }
 function layoutShop(p, fit) {
+  if (p.cls === "flex" || p.cls === "flexu") return layoutFlex(p, fit);
   const enRaw = String(p.en || "").trim(), ar = String(p.ar || "").trim();
   if (!enRaw && !ar) return null;
   const h = hash32(enRaw + "|" + ar);
@@ -210,6 +240,7 @@ function layoutShop(p, fit) {
   return Object.assign(best, { en, ar, S, fam, c: c / R, px: px / R, em: em / R, edge: S.casing });
 }
 function drawShop(g, L, W, H) {
+  if (L.flex) return drawFlex(g, L, W, H);
   const S = L.S, k = H / 100, c = L.c * H;
   g.fillStyle = S.casing; g.fillRect(0, 0, W, H);
   const face = g.createLinearGradient(0, c, 0, H - c);
@@ -293,7 +324,7 @@ function drawSpeed(g, L, W, H, p) {
 
 const STYLES = {
   street: { tiers: [16, 40, 80], layout: layoutStreet, draw: drawStreet },
-  shop: { tiers: [16, 40, 80], layout: layoutShop, draw: drawShop },
+  shop: { tiers: PK_MAP ? [16, 40, 80, 160] : [16, 40, 80], layout: layoutShop, draw: drawShop },
   tower: { tiers: [16, 40, 80], layout: layoutTower, draw: drawTower },
   speed: { tiers: [80], layout: () => ({ aspect: 1, edge: METAL }), draw: drawSpeed },
 };
@@ -315,7 +346,7 @@ export class TextAtlas {
     // GPU except three's one full upload (and a re-upload after a lost context)
     this.ctx = this.canvas.getContext("2d", { willReadFrequently: true });
     const t = new THREE.CanvasTexture(this.canvas);
-    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.flipY = false;
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = PK_MAP ? 8 : 4; t.flipY = false;
     t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter;
     this.texture = t;
     this.entries = new Map();          // key -> entry
@@ -334,7 +365,9 @@ export class TextAtlas {
     // milliseconds, which is better paid at load than in the middle of a drive.
     const g = this._scratch(64, 32).getContext("2d");
     for (const f of [...FAMS, SERIF, { f: NUM_FONT, w: "bold" }]) { g.font = `${f.w} 20px ${f.f}`; g.fillText("Ag 0", 0, 20); }
-    g.font = font(20, AR_FONT); g.direction = "rtl"; g.fillText("شارع مخرج", 60, 20); g.direction = "ltr";
+    g.font = font(20, AR_FONT); g.direction = "rtl"; g.fillText("شارع مخرج", 60, 20);
+    if (PK_MAP) { g.font = font(20, UR_FONT); g.fillText("موبائل سنٹر", 60, 20); }
+    g.direction = "ltr";
     this.pool.push(g.canvas);
   }
   static styles() { return Object.keys(STYLES); }
@@ -342,7 +375,7 @@ export class TextAtlas {
   // Key of a payload independent of the tier. fit is the box aspect (w / h) for shop and tower.
   baseKey(style, p, fit = 0) {
     if (style === "speed") return "speed\u0001" + Math.round(+p.kmh || 0);
-    const fb = style === "shop" || style === "tower" ? fitBucket(fit) : 0;
+    const fb = style === "shop" || style === "tower" ? ((p.cls === "flex" || p.cls === "flexu") ? flexFit(fit) : fitBucket(fit)) : 0;
     const c = this._bk.get(p);                                   // payload objects persist per tile
     if (c && c.s === style && c.fb === fb) return c.k;
     const k = style + "\u0001" + fb + "\u0001" + (p.en || "") + "\u0001" + (p.ar || "") + "\u0001" + (p.ref || "") + "\u0001" + (p.cls || "");
@@ -382,7 +415,7 @@ export class TextAtlas {
     if (e) { e.lastUsed = frameNo; return e; }
     let L = this.layouts.get(base);
     if (L === undefined) {
-      L = st.layout(p, style === "shop" || style === "tower" ? fitBucket(opts.fit) : 0) || null;
+      L = st.layout(p, style === "shop" || style === "tower" ? ((p.cls === "flex" || p.cls === "flexu") ? flexFit(opts.fit) : fitBucket(opts.fit)) : 0) || null;
       if (this.layouts.size > 8000) this.layouts.clear();
       this.layouts.set(base, L);
     }
@@ -552,6 +585,7 @@ function plateGeometry() { const B = builder(); panel(B, -0.0125, 0.0125, true);
 function fasciaGeometry() { const B = builder(); panel(B, 0, 0.07, false); return finish(B); }
 // Lettering: letters stand 25 cm proud of the facade.
 function letterGeometry() { const B = builder(); quad(B, [-.5, -.5, .25], [.5, -.5, .25], [.5, .5, .25], [-.5, .5, .25], [0, 0, 1], [0, 0], [1, 0], [1, 1], [0, 1]); return finish(B); }
+function stockGeometry() { const B = builder(); quad(B, [-.5, -.5, 0], [.5, -.5, 0], [.5, .5, 0], [-.5, .5, 0], [0, 0, 1], [0, 0], [1, 0], [1, 1], [0, 1]); return finish(B); }
 function poleGeometry() {
   const g = new THREE.CylinderGeometry(0.045, 0.05, 1, 10, 1, false);
   g.translate(0, 0.5, 0); g.deleteAttribute("uv");
@@ -628,8 +662,57 @@ export function makeSignMaterial(map, lettering = false) {
   return m;
 }
 
+// ------------------------------------------------------------------ Pakistan open-shop stock
+// One 5 x 5 sheet of painted shop interiors, drawn once in a 512 unit square per cell. No lettering and no brands. Cell 15 is the glow of a street lamp, 16 a steel shutter.
+const STOCK_N = 5, STOCK_PX = 409, STOCK_GLOW = 15, STOCK_SHUT = 16, STOCK_OFFICE = 17;
+function drawStock(g, kind) {
+  const P = 512; let sd = (kind + 1) * 7919; g.scale(STOCK_PX / P, STOCK_PX / P);
+  const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647, B = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, pick = a => a[Math.floor(r() * a.length) % a.length];
+  const BR = ["#7a2a24", "#2c466e", "#a67e2a", "#2f5a41", "#5e3553", "#8a5630", "#b5ac94", "#3a3f47", "#2e6660", "#8a4a58"], PALE = ["#b9b3a4", "#aeb3b6", "#b5a88f", "#a6ada8", "#bcae9b"];   // dull stock colours, estimated (REVIEW3 item 3)
+  const room = g.createLinearGradient(0, 0, 0, P); room.addColorStop(0, "#3a3024"); room.addColorStop(0.65, "#231d16"); room.addColorStop(1, "#14110d"); B(0, 0, P, P, room);
+  B(P * 0.16, 12, P * 0.68, 9, "#fff7df");                                                          // tube light
+  const wash = g.createRadialGradient(P / 2, 20, 10, P / 2, 20, P * 0.75); wash.addColorStop(0, "rgba(255,240,205,0.34)"); wash.addColorStop(1, "rgba(255,240,205,0)"); B(0, 0, P, P, wash);
+  const shelves = (y0, rows, rh, c, fn) => { for (let j = 0; j < rows; j++) { const y = y0 + j * rh; fn(y, rh - 10, j); B(18, y + rh - 10, P - 36, 7, c); } };
+  const counter = (c, top) => { const h = top; B(0, P - h, P, h, c); B(0, P - h, P, 7, "rgba(255,255,255,0.28)"); B(0, P - h + 7, P, 5, "rgba(0,0,0,0.35)"); };
+  switch (kind) {
+    case 0: shelves(44, 4, 92, "#6b4a2e", (y, h) => { for (let x = 22; x < P - 44;) { const w = 24 + r() * 16, c = pick(BR); B(x, y + 4, w, h - 4, c); B(x, y + 4, 5, h - 4, "rgba(255,255,255,0.22)"); B(x + w - 5, y + 4, 5, h - 4, "rgba(0,0,0,0.3)"); x += w + 2; } }); counter("#7a5c3a", 96); for (let x = 30; x < P - 90; x += 92) B(x, P - 124, 80, 28, pick(BR)); break;
+    case 1: for (const y of [52, 252]) { B(16, y, P - 32, 6, "#b9bcbf"); for (let x = 24; x < P - 50; x += 42 + r() * 10) { const c = pick(BR); B(x + 16, y + 4, 4, 16, "#c9cdd2"); g.fillStyle = c; g.beginPath(); g.moveTo(x, y + 26); g.lineTo(x + 36, y + 26); g.lineTo(x + 42, y + 174); g.lineTo(x - 6, y + 174); g.closePath(); g.fill(); B(x + 14, y + 26, 8, 148, "rgba(0,0,0,0.16)"); } } break;
+    case 2: shelves(44, 5, 76, "#8f8a7d", (y, h) => { for (let x = 24 + r() * 14; x < P - 70; x += 56 + r() * 18) { const c = pick(["#20201f", "#5a3a22", "#7b5a3a", "#e7e2d6", "#b3261e", "#1f5aa6"]); g.fillStyle = c; g.fillRect(x, y + h - 26, 24, 26); g.fillRect(x + 28, y + h - 26, 24, 26); B(x, y + h - 6, 52, 6, "rgba(255,255,255,0.28)"); } }); break;
+    case 3: B(20, 44, P - 40, 220, "#2a2d33"); for (let y = 58; y < 240; y += 62) for (let x = 34 + r() * 8; x < P - 60; x += 42 + r() * 12) { B(x, y, 34, 52, "#0c0e12"); B(x + 3, y + 4, 28, 40, pick(["#2c5f8f", "#2f7a74", "#5a4a86", "#8f7a3c"])); } counter("#d9dde2", 150); for (let x = 30; x < P - 70; x += 64) { B(x, P - 128, 52, 34, "#0c0e12"); B(x + 3, P - 125, 46, 26, "#2f7fd1"); } break;
+    case 4: B(20, 40, P - 40, 240, "#3b1216"); for (let y = 60; y < 250; y += 58) for (let x = 40; x < P - 60; x += 58) { g.strokeStyle = "#e0b83a"; g.lineWidth = 5; g.beginPath(); g.arc(x, y + 14, 18, 0, Math.PI); g.stroke(); g.fillStyle = "#f3d671"; g.beginPath(); g.arc(x, y + 34, 6, 0, 6.3); g.fill(); } counter("#1d1a22", 170); B(16, P - 164, P - 32, 66, "rgba(190,220,235,0.3)"); for (let x = 40; x < P - 50; x += 44) { g.fillStyle = "#e0b83a"; g.beginPath(); g.arc(x, P - 130, 12, 0, 6.3); g.fill(); } break;
+    case 5: B(14, 36, P - 28, 300, "#a9a79c"); shelves(46, 5, 62, "#8f8c80", (y, h) => { for (let x = 24; x < P - 46;) { const w = 18 + r() * 22; if (r() > 0.18) B(x, y + 10 + r() * 10, w, h - 12, pick(["#c9c7bd", "#aeb7bf", "#8fa4b0", "#9eb0a2", "#bda892", "#3f5f86"])); x += w + 3; } }); counter("#c2bfb3", 128); B(0, P - 128, P, 16, "#2e7d4f"); break;
+    case 6: shelves(44, 5, 70, "#a98a5f", (y, h) => { for (let x = 22; x < P - 40;) { const w = 18 + r() * 34, t = 8 + r() * 14; B(x, y + t, w, h - t, pick(BR)); B(x + 3, y + t + 8, w - 6, 8, "rgba(255,255,255,0.5)"); x += w + 2; } }); for (let x = 16; x < P - 90; x += 104) { B(x, P - 104, 92, 104, "#c9b38a"); B(x + 12, P - 104, 68, 12, "#a8926a"); } break;
+    case 7: B(16, 40, P - 32, 200, "#4a4d50"); for (let y = 54; y < 220; y += 42) for (let x = 28; x < P - 40; x += 40 + r() * 14) { B(x + 8, y, 3, 14, "#d7d7d2"); B(x, y + 14, 20, 20, pick(["#7a2f28", "#8f7430", "#6f757b", "#3a5a43", "#3a5578"])); } for (let x = 20; x < P - 60; x += 62) { const c = pick(BR); B(x, P - 190, 52, 76, "#c9cdd2"); B(x + 2, P - 170, 48, 40, c); B(x, P - 114, 52, 114, "#3a3a3a"); } break;
+    case 8: shelves(44, 4, 92, "#857b68", (y, h) => { for (let x = 28 + r() * 10; x < P - 50; x += 50 + r() * 14) { g.fillStyle = pick(PALE); g.beginPath(); g.arc(x + 20, y + h - 30, 25, 0, 6.3); g.fill(); g.strokeStyle = pick(["#2f7fd1", "#b3261e", "#2e7d4f", "#d9a21b"]); g.lineWidth = 4; g.beginPath(); g.arc(x + 20, y + h - 30, 18, 0, 6.3); g.stroke(); } }); counter("#7a5c3a", 92); break;
+    case 9: B(20, 40, P - 40, 150, "#e8dcc4"); shelves(50, 2, 70, "#8a6a3e", (y, h) => { for (let x = 30 + r() * 10; x < P - 56; x += 52 + r() * 12) B(x, y + 18, 46, h - 18, pick(["#e7c58a", "#a8622e", "#efe3cf", "#d68aa0", "#5f3a22"])); }); counter("#b9b2a2", 230); B(14, P - 224, P - 28, 120, "rgba(210,232,240,0.42)"); for (let x = 30; x < P - 60; x += 74) for (let y = 0; y < 2; y++) { g.fillStyle = pick(["#d6a24a", "#f3d3a0", "#e7c58a", "#d68aa0"]); g.fillRect(x, P - 214 + y * 52, 60, 34); } break;
+    case 10: for (let c = 0; c < 3; c++) { const x0 = 16 + c * 164, col = pick(["#d67a1f", "#d6b21f", "#a82a2a", "#8a9a3a", "#c6462a"]); B(x0, P - 160, 150, 160, "#8a6a43"); B(x0 + 10, P - 150, 130, 8, "#6d5233"); for (let j = 0; j < 4; j++) for (let i = 0; i < 6 - j; i++) { g.fillStyle = col; g.beginPath(); g.arc(x0 + 22 + i * 21 + j * 10, P - 172 - j * 19, 12, 0, 6.3); g.fill(); } } for (let x = 30; x < P - 40; x += 60) { B(x + 6, 30, 3, 90, "#c9b38a"); g.fillStyle = "#d6b21f"; g.beginPath(); g.ellipse(x + 8, 136, 22, 34, 0, 0, 6.3); g.fill(); } break;
+    case 11: shelves(44, 5, 76, "#6b4a2e", (y, h) => { for (let x = 22; x < P - 34;) { const w = 7 + r() * 13, t = 4 + r() * 16; B(x, y + t, w, h - t, pick(["#7b2d26", "#254a78", "#2f6a4a", "#b9a26a", "#3a3f47", "#e7e2d6", "#8a5a2e"])); x += w + 1; } }); B(18, P - 122, P - 36, 122, "#57402a"); B(30, P - 112, 170, 6, "#7a5c3a"); break;
+    case 12: for (let j = 0; j < 6; j++) for (let i = 0; i < 2; i++) { const c = pick(["#7b2d26", "#254a78", "#6b3a22", "#2f6a4a", "#a8622e"]), y = 40 + j * 44; g.fillStyle = c; g.fillRect(16 + i * 244, y, 236, 38); B(16 + i * 244, y + 4, 236, 5, "rgba(255,255,255,0.14)"); B(16 + i * 244, y + 28, 236, 7, "rgba(0,0,0,0.3)"); } B(110, 310, 292, 202, "#7b2d26"); B(126, 326, 260, 170, "#a8622e"); B(150, 348, 212, 126, "#254a78"); B(190, 384, 132, 54, "#d9a21b"); break;
+    case 13: B(0, 36, P, 210, "#dfe6e2"); for (let x = 0; x < P; x += 40) B(x, 36, 2, 210, "#bcc6c2"); for (let y = 36; y < 246; y += 40) B(0, y, P, 2, "#bcc6c2"); counter("#b9bcbf", 200); for (let i = 0; i < 2; i++) { const x = 36 + i * 236; g.fillStyle = "#8f9398"; g.beginPath(); g.ellipse(x + 90, P - 240, 96, 34, 0, 0, 6.3); g.fill(); B(x - 6, P - 240, 192, 66, "#9fa3a8"); g.fillStyle = "#c47a2a"; g.beginPath(); g.ellipse(x + 90, P - 240, 82, 24, 0, 0, 6.3); g.fill(); } for (let x = 40; x < P - 90; x += 104) B(x, 150, 72, 54, "#e7c58a"); break;
+    case 17: B(14, 38, P - 28, 250, "#6a6256"); for (const q of [[60, 70, 92, 66], [200, 60, 70, 88], [320, 78, 110, 58]]) { B(q[0] - 5, q[1] - 5, q[2] + 10, q[3] + 10, "#2a241c"); B(q[0], q[1], q[2], q[3], pick(["#8a7a5c", "#556070", "#6a4a3a"])); } counter("#4a3a2a", 150); B(70, P - 214, 140, 62, "#1f2024"); B(84, P - 204, 112, 40, "#3a4a5a"); B(240, P - 190, 90, 38, "#c4bda8"); B(250, P - 186, 70, 3, "#5a5a54"); B(250, P - 176, 56, 3, "#5a5a54"); for (let x = 30; x < P - 40; x += 90) B(x, P - 136, 40, 136, "#2b241b"); break;
+    default: for (let y = 48; y < 300; y += 84) for (let x = 26 + r() * 12; x < P - 70; x += 64 + r() * 18) { const c = pick(["#5a3a22", "#20201f", "#7b2d26", "#254a78", "#b9a26a"]); g.strokeStyle = "#b9bcbf"; g.lineWidth = 3; g.beginPath(); g.arc(x + 28, y + 12, 14, Math.PI, 0); g.stroke(); B(x, y + 12, 56, 58, c); B(x + 8, y + 26, 40, 5, "rgba(255,255,255,0.3)"); } counter("#1d1a22", 150); B(16, P - 144, P - 32, 56, "rgba(190,220,235,0.3)"); for (let x = 34; x < P - 40; x += 34) { g.fillStyle = "#d7d7d2"; g.beginPath(); g.arc(x, P - 116, 10, 0, 6.3); g.fill(); B(x - 3, P - 134, 6, 36, "#6b4a2e"); } break;
+  }
+  { const dim = g.createLinearGradient(0, 0, 0, P); dim.addColorStop(0, "rgba(8,6,4,0.04)"); dim.addColorStop(0.55, "rgba(8,6,4,0.2)"); dim.addColorStop(1, "rgba(8,6,4,0.45)"); B(0, 0, P, P, dim); }   // the back of the shop falls off into shade
+  B(0, 0, P, 7, "#0d0b08"); B(0, 0, 6, P, "#0d0b08"); B(P - 6, 0, 6, P, "#0d0b08");                  // the edge of the opening
+}
+function stockTexture() {
+  const S = STOCK_N * STOCK_PX, c = document.createElement("canvas"); c.width = c.height = S;
+  const cellXY = i => [(i % STOCK_N) * STOCK_PX, Math.floor(i / STOCK_N) * STOCK_PX];
+  const g = c.getContext("2d");
+  for (const i of [...Array(STOCK_GLOW).keys(), STOCK_OFFICE]) { g.save(); const [x, y] = cellXY(i); g.translate(x, y); g.beginPath(); g.rect(0, 0, STOCK_PX, STOCK_PX); g.clip(); drawStock(g, i); g.restore(); }
+  { const [x, y] = cellXY(STOCK_GLOW); g.fillStyle = "#fff4d6"; g.fillRect(x, y, STOCK_PX, STOCK_PX); }
+  { const [x, y] = cellXY(STOCK_SHUT); g.save(); g.translate(x, y); g.scale(STOCK_PX / 512, STOCK_PX / 512); g.fillStyle = "#5a5f65"; g.fillRect(0, 0, 512, 512); for (let k = 0; k < 512; k += 16) { g.fillStyle = "#6c7177"; g.fillRect(0, k, 512, 9); g.fillStyle = "#3e4247"; g.fillRect(0, k + 10, 512, 3); } g.fillStyle = "#2c2e31"; g.fillRect(0, 0, 8, 512); g.fillRect(504, 0, 8, 512); g.fillStyle = "#26282b"; g.fillRect(218, 468, 76, 24); for (let k = 0; k < 40; k++) { g.fillStyle = "rgba(60,44,30," + (0.08 + 0.1 * ((k * 53) % 7) / 7) + ")"; g.fillRect((k * 197) % 496, (k * 89) % 240 + 250, 6 + (k * 7) % 28, 262); } g.restore(); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.flipY = false; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter;
+  return t;
+}
+function stockRect(i) { const d = 1 / STOCK_N, e = 3 / (STOCK_N * STOCK_PX), u = i % STOCK_N, v = Math.floor(i / STOCK_N); return { u0: u * d + e, v0: (v + 1) * d - e, u1: (u + 1) * d - e, v1: v * d + e }; }
+const STOCK_RECTS = []; for (let i = 0; i <= STOCK_OFFICE; i++) STOCK_RECTS.push(stockRect(i));
+
 // ------------------------------------------------------------------ SignLayer
-const CAPS = { shop: 700, plate: 300, pole: 300, tower: 60, speed: 150 };
+const CAPS = { shop: PK_MAP ? 3600 : 700, plate: 300, pole: 300, tower: 60, speed: 150, stock: 900 };
+const NEAR_SIGNS = 14;   // Pakistan: only the closest boards take the 160 px tier, so the shared atlas holds
+const STOCK_R = 120, GLOW_R = 400;
 const LIT = { plate: 0.22, speed: 0.22, unlitShop: 0.07 };   // retroreflective sheeting under street lamps
 const POLE_H = 3.2, PLATE_Y = 2.8, PLATE_GAP = 0.06, POLE_R = 0.045;
 const EMPTY = [];
@@ -639,7 +722,7 @@ export class SignLayer {
     this.scene = scene;
     this.atlas = opts.atlas || new TextAtlas(2048);
     this.src = new Map();
-    this.radius = 450;          // signs further away are not instanced
+    this.radius = PK_MAP ? 300 : 450;          // signs further away are not instanced (Pakistan's bazaars carry tens of thousands, and a board is two pixels high by then)
     this.pxScale = 1300;        // screen px per metre at 1 m, times an oversampling margin
     this.bias = 1;              // lowered automatically when the atlas runs full
     this.budgetMs = 3;          // canvas drawing per refresh; the rest waits for the next frame
@@ -658,6 +741,7 @@ export class SignLayer {
       tower: this._mesh(letterGeometry(), this.letterMat, CAPS.tower, false, false, true),
       speed: this._mesh(speedGeometry(), this.mat, CAPS.speed, true, true, true),
     };
+    if (PK_MAP) { this.stockTex = stockTexture(); this.stockMat = makeSignMaterial(this.stockTex, false); this.meshes.stock = this._mesh(stockGeometry(), this.stockMat, CAPS.stock, false, true, true); }
     this._speedP = new Map();
   }
   _mesh(geo, mat, cap, cast, recv, atlas) {
@@ -702,15 +786,22 @@ export class SignLayer {
   dispose() {
     for (const m of Object.values(this.meshes)) { this.scene.remove(m); m.geometry.dispose(); m.dispose(); }
     this.mat.dispose(); this.letterMat.dispose(); this.poleMat.dispose(); this.atlas.dispose();
+    if (this.stockTex) { this.stockTex.dispose(); this.stockMat.dispose(); }
   }
 
   // Signs within the radius, nearest first and capped, plus one atlas job per sign face.
   _gather(camX, camZ, offsets) {
     const f = this.frameNo, A = this.atlas, R2 = this.radius * this.radius, RT2 = 1600 * 1600;
-    const shop = [], tower = [], poles = [], speed = [];
+    const shop = [], tower = [], poles = [], speed = [], stock = [];
     for (const [key, d] of this.src) {
       const off = offsets && offsets.get(key); if (!off || !d) continue;
       const T = d.texts || EMPTY;
+      // open-shop stock within 120 m, lamp glows further out
+      if (d.stock && this.meshes.stock) for (let i = 0, a = d.stock; i + 7 < a.length; i += 8) {
+        const x = a[i] + off.x, z = a[i + 2] + off.z, dd = (x - camX) ** 2 + (z - camZ) ** 2, v = a[i + 6] | 0, lim = v === STOCK_GLOW ? GLOW_R : STOCK_R;
+        if (dd > lim * lim) continue;
+        stock.push({ dd, x, y: a[i + 1], z, rot: a[i + 3], w: a[i + 4], h: a[i + 5], r: STOCK_RECTS[v] || STOCK_RECTS[0], lit: a[i + 7] });
+      }
       for (const [arr, out] of [[d.shop, shop], [d.tower, tower]]) {
         if (!arr) continue;
         for (let i = 0; i + 7 < arr.length; i += 8) {
@@ -739,6 +830,7 @@ export class SignLayer {
     }
     const byD = (a, b) => a.dd - b.dd;
     shop.sort(byD); tower.sort(byD); poles.sort(byD); speed.sort(byD);
+    stock.sort(byD); if (stock.length > CAPS.stock) stock.length = CAPS.stock;
     if (shop.length > CAPS.shop) shop.length = CAPS.shop;
     if (tower.length > CAPS.tower) tower.length = CAPS.tower;
     if (speed.length > CAPS.speed) speed.length = CAPS.speed;
@@ -746,19 +838,20 @@ export class SignLayer {
 
     // resolution tier from the projected size (a mip choice), then what the atlas has cached
     const jobs = [], bias = this.bias, pxs = this.pxScale;
-    const job = (c, slot, style, p, hw, y, fit) => {
-      const dist = Math.sqrt(c.dd + (y - 1.8) ** 2), tiers = STYLES[style].tiers, need = hw * pxs * bias / Math.max(dist, 1);
+    const job = (c, slot, style, p, hw, y, fit, maxT) => {
+      const dist = Math.sqrt(c.dd + (PK_MAP ? 0 : (y - 1.8) ** 2)), tiers = STYLES[style].tiers, need = hw * pxs * bias / Math.max(dist, 1);
       let tier = tiers[tiers.length - 1]; for (const t of tiers) if (t >= need) { tier = t; break; }
+      if (maxT && tier > maxT) tier = maxT;
       const j = { c, slot, style, p, fit, tier, dd: c.dd, base: A.baseKey(style, p, fit), e: null, fb: false };
       j.e = A.peek(style, p, j); if (j.e) j.e.lastUsed = f;
       jobs.push(j);
     };
-    for (const c of shop) job(c, "e", "shop", c.p, c.h, c.y, c.w / c.h);
+    shop.forEach((c, i) => job(c, "e", "shop", c.p, c.h, c.y, c.w / c.h, PK_MAP && i >= NEAR_SIGNS ? 80 : 0));
     for (const c of tower) job(c, "e", "tower", c.p, c.h, c.y, c.w / c.h);
     for (const c of poles) { if (c.pA) job(c, "eA", "street", c.pA, STREET_H, c.y + PLATE_Y, 0); if (c.pB) job(c, "eB", "street", c.pB, STREET_H, c.y + PLATE_Y, 0); }
     for (const c of speed) job(c, "e", "speed", c.p, SPEED.diameter, c.y + SPEED.centre, 0);
     jobs.sort(byD);
-    return { shop, tower, poles, speed, jobs };
+    return { shop, tower, poles, speed, stock, jobs };
   }
 
   // Draw missing entries, nearest first, within budgetMs (at least 2 per call). A job without
@@ -791,8 +884,9 @@ export class SignLayer {
   }
 
   _fill(cur) {
-    const M = this.meshes, { shop, tower, poles, speed } = cur;
+    const M = this.meshes, { shop, tower, poles, speed, stock } = cur;
     let n = 0;
+    if (M.stock) { for (const c of stock) this._set(M.stock, n++, c.x, c.y, c.z, c.rot, c.w, c.h, c.r, c.lit); this._done(M.stock, n); n = 0; }
     for (const c of shop) {
       const e = c.e; if (!e) continue;
       let w = c.h * e.aspect, h = c.h; if (w > c.w) { w = c.w; h = w / e.aspect; }
@@ -822,7 +916,7 @@ export class SignLayer {
     n = 0;
     for (const c of speed) { if (c.e) this._set(M.speed, n++, c.x, c.y, c.z, c.rot, 1, 1, c.e, LIT.speed); }
     this._done(M.speed, n);
-    this.stats.instances = { shop: M.shop.count, tower: M.tower.count, plate: M.plate.count, pole: M.pole.count, speed: M.speed.count };
+    this.stats.instances = { shop: M.shop.count, tower: M.tower.count, plate: M.plate.count, pole: M.pole.count, speed: M.speed.count, stock: M.stock ? M.stock.count : 0 };
   }
   // Instance i: translation (x, y, z), rotation rot about +Y, scale (sx, sy, 1).
   _set(im, i, x, y, z, rot, sx, sy, e, lit) {

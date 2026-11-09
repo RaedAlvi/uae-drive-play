@@ -1,0 +1,65 @@
+{
+ "id": "evacuee_trust_complex",
+ "name": "Evacuee Trust Complex",
+ "lat": 33.7332011,
+ "lon": 73.0886301,
+ "headingDeg": 57.4,
+ "height": 45.0,
+ "suppress": [
+  [
+   33.7332171,
+   73.0877925
+  ],
+  [
+   33.7333701,
+   73.0880593
+  ],
+  [
+   33.7332985,
+   73.0883768
+  ],
+  [
+   33.7334392,
+   73.0886316
+  ],
+  [
+   33.7337223,
+   73.0887087
+  ],
+  [
+   33.7338484,
+   73.0889662
+  ],
+  [
+   33.7332485,
+   73.0894473
+  ],
+  [
+   33.733113,
+   73.0891944
+  ],
+  [
+   33.7325981,
+   73.0882329
+  ]
+ ],
+ "glb": "models/evacuee_trust_complex.glb",
+ "glbFar": "models/evacuee_trust_complex_far.glb",
+ "tris": 4239,
+ "trisFar": 36,
+ "bytes": 24616,
+ "bytesFar": 3200,
+ "budget": "plain",
+ "modelTop": 46.4,
+ "assumptions": [
+  "No exterior street photograph could be found; only roof imagery and interior listing photos were available.",
+  "Height 45 m is a judgement between about 30 to 47 m from the Esri shadow (sun elevation not known) and 15 floors listed unsourced on SkyscraperPage at 3 m a floor.",
+  "One height across the whole outline; the imagery shows one continuous roof but cannot show steps.",
+  "Wall colour is a neutral concrete guess; no facade has been seen.",
+  "Windows are plain punched openings on a 3.2 m bay; their form, size and spacing are a guess.",
+  "Entrance position, in the recessed side facing Agha Khan Road, and its 8 m width are a guess.",
+  "The red roof rectangle is taken to be the atrium canopy named in ETPB tender notices; the link is inferred.",
+  "Roof plant boxes and the tank are simplified from imagery; their heights are guessed.",
+  "Night window glow is generic; no lighting source exists."
+ ]
+}

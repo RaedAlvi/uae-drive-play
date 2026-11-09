@@ -1,0 +1,68 @@
+{
+ "id": "murree_gpo",
+ "name": "General Post Office, Murree",
+ "lat": 33.9072164,
+ "lon": 73.3946719,
+ "headingDeg": 298.0,
+ "height": 12.9,
+ "suppress": [
+  [
+   33.9074551,
+   73.3946943
+  ],
+  [
+   33.9073978,
+   73.3948773
+  ],
+  [
+   33.9072426,
+   73.3948092
+  ],
+  [
+   33.9071463,
+   73.3947469
+  ],
+  [
+   33.9071361,
+   73.3947619
+  ],
+  [
+   33.9069524,
+   73.3945846
+  ],
+  [
+   33.9070401,
+   73.3944545
+  ],
+  [
+   33.9071515,
+   73.3945846
+  ],
+  [
+   33.9071953,
+   73.3945236
+  ]
+ ],
+ "glb": "models/murree_gpo.glb",
+ "glbFar": "models/murree_gpo_far.glb",
+ "tris": 4304,
+ "trisFar": 150,
+ "bytes": 42300,
+ "bytesFar": 12328,
+ "budget": "plain",
+ "modelTop": 12.9,
+ "assumptions": [
+  "Footprint taken from the restoration plan on the board in the building (photo DSC_0347) and scaled by the OSM way 406084294 (60 m long), which contains the GPO node; the dossier found no way tagged as the GPO, so assigning it is an inference.",
+  "Plan scale 0.093 m per board pixel; the gable width of 7.6 m comes from that and a door width assumed at 2.2 m.",
+  "Heading 298 degrees (front north-west) inferred from OSM, the road alignment and the board plan's road layout; no source states it.",
+  "Main gable apex 12.8 m and eave 8.1 m measured from the front photos with a 2.2 m door as scale; no published height exists.",
+  "Wing eave 6.8 m and ridge 10 m measured from DSC_0402 only.",
+  "Terrace, retaining wall and the 2.6 m flight are estimated; about 13 risers are visible in the photos and the road level is a guess.",
+  "No photo shows the rear or the far south-west end: rear walls, rear windows and block C are built plainly from the plan, block C's height and hipped roof are guesses.",
+  "Rear toilet annexes from the plan, heights and roofs guessed.",
+  "North-east wing end drawn as a hipped roof from the slanted edge in DSC_0402 only; main gable roof covering assumed to be the same red as the wings, which is the only roof colour seen.",
+  "Right wing window and pier rhythm beyond the first bay is extrapolated from the left wing; trees hide it in every photo.",
+  "Colours sampled from DSC_0402 in strong sun and adjusted by eye; lattice and stone coursing are tile textures, not geometry; lettering, emblem and signage are left out.",
+  "Night lighting: no source; windows carry a faint glow only."
+ ]
+}

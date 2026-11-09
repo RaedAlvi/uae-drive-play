@@ -1,4 +1,4 @@
-/* Shared by city.html and shanghai.html: the route-preview card, menu stacking, and the phone and tablet
+/* Shared by city.html, shanghai.html and pakistan.html: the route-preview card, menu stacking, and the phone and tablet
    layout (portrait and landscape, iPhone safe areas). Loaded after each page's own <style>. */
 
 /* menus sit above the HUD and the touch controls */
@@ -49,6 +49,7 @@ html.pv #tc .pad, html.pv #tc .gas, html.pv #tc .brk, html.pv #tc .hb { display:
   #toasts { right: 8px; left: 8px; align-items: center; }
   .toast { max-width: 100%; font-size: 12.5px; }
   #intro { display: none !important; }
+  html.pv #nav { display: none !important; }      /* the preview card takes that corner on a narrow screen */
 }
 
 /* ---------------------------------------------------------------- phones held sideways (short screens) */
@@ -84,4 +85,55 @@ html.pv #tc .pad, html.pv #tc .gas, html.pv #tc .brk, html.pv #tc .hb { display:
 html.touch .kbdhelp { display: none; }
 @media (pointer: coarse) {
   .tabs button, .btn, .seg button, .card { touch-action: manipulation; }
+}
+
+/* ---------------------------------------------------------------- Pakistan only (html.pk is set by main.js) */
+html.pk .lbl.poi small { display: inline; margin-left: 6px; color: #475569; font-weight: 500; font-size: 10.5px; }
+/* portrait is playable here, so the "turn your phone" gate stays off */
+html.pk.touch #rot, html.pk.touch #rot.on { display: none !important; }
+
+@media (orientation: portrait) and (max-width: 820px) {
+  html.pk.touch { --u: min(100vw, 460px); --st: max(8px, env(safe-area-inset-top)); --sb: max(14px, env(safe-area-inset-bottom)); }
+  /* direction card across the top */
+  html.pk.touch #nav { width: calc(100vw - 16px) !important; left: 8px !important; top: var(--st) !important; transform: none !important; gap: 4px; }
+  html.pk.touch #nav .card { padding: 7px 12px 7px 8px; gap: 10px; border-radius: 12px; }
+  html.pk.touch #nav .ic { width: 46px; height: 46px; }
+  html.pk.touch #nav .dist { font-size: 22px; }
+  html.pk.touch #nav .verb { font-size: 12px; }
+  html.pk.touch #nav .road { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.pk.touch #nav .sub { display: none; }
+  html.pk.touch #nav .row { max-width: calc(100vw - 232px); flex-wrap: wrap; }
+  html.pk.touch #nav .lanes svg { width: 22px; height: 22px; }
+  html.pk.touch #nav .then { font-size: 12px; padding: 3px 8px; }
+  html.pk.touch #nav .then .ic2 { width: 20px; height: 20px; }
+  /* small buttons under the card, map and speed below them */
+  html.pk.touch #tc .top { top: calc(var(--st) + 84px); right: 8px; gap: 4px; }
+  html.pk.touch #tc .top .b { width: 38px; height: 34px; font-size: 11px; border-radius: 9px; border-width: 1.5px; }
+  html.pk.touch #mini:not(.big) { width: 104px !important; height: 104px !important; top: calc(var(--st) + 126px) !important; right: 8px !important; bottom: auto !important; border-width: 2px !important; border-radius: 12px !important; }
+  html.pk.touch #mini.big { width: calc(100vw - 16px) !important; height: calc(100vw - 16px) !important; top: calc(var(--st) + 126px) !important; right: 8px !important; bottom: auto !important; }
+  html.pk.touch #speed { top: calc(var(--st) + 126px) !important; left: 8px !important; right: auto !important; bottom: auto !important; transform: scale(.72) !important; transform-origin: top left; }
+  /* controls along the bottom; the world keeps the rest */
+  html.pk.touch #tc .pad { left: 10px; bottom: var(--sb); width: calc(var(--u) * .43 + 8px); height: calc(var(--u) * .22); }
+  html.pk.touch #tc .pad .b { width: calc(var(--u) * .215); height: calc(var(--u) * .22); border-radius: 18px; font-size: 28px; }
+  html.pk.touch #tc .gas { right: 10px; bottom: var(--sb); width: calc(var(--u) * .24); height: calc(var(--u) * .24); font-size: 14px; }
+  html.pk.touch #tc .brk { right: calc(18px + var(--u) * .24); bottom: var(--sb); width: calc(var(--u) * .19); height: calc(var(--u) * .19); font-size: 12px; }
+  html.pk.touch #tc .hb { right: calc(18px + var(--u) * .24); bottom: calc(var(--sb) + var(--u) * .19 + 8px); width: calc(var(--u) * .19); height: 32px; border-radius: 10px; font-size: 11px; }
+  html.pk.touch #bottomc { bottom: calc(var(--sb) + var(--u) * .24 + 46px) !important; transform: translateX(-50%) !important; gap: 4px !important; max-width: calc(100vw - 16px); }
+  html.pk.touch #street { min-width: 0; padding: 3px 12px; max-width: calc(100vw - 16px); }
+  html.pk.touch #street .nm { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.pk.touch #street .area { font-size: 9.5px; }
+  html.pk.touch #street .meta { display: none; }
+  html.pk.touch #mission { font-size: 12px; padding: 4px 12px; gap: 8px; }
+  html.pk.touch #mission .min { font-size: 17px; }
+  html.pk.touch #mission .dest { display: none; }
+  html.pk.touch #toasts { top: calc(var(--st) + 240px); }
+}
+
+/* phones held sideways: fewer lines on the card, a smaller street pill */
+@media (orientation: landscape) and (max-height: 460px) {
+  html.pk.touch #nav .verb, html.pk.touch #nav .sub { display: none; }
+  html.pk.touch #street { min-width: 0; padding: 2px 12px; }
+  html.pk.touch #street .nm { font-size: 14px; }
+  html.pk.touch #street .area, html.pk.touch #street .meta { display: none; }
+  html.pk.touch #mission .dest { display: none; }
 }

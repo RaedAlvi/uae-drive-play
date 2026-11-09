@@ -1,0 +1,29 @@
+{
+ "id": "m2_salt_range_viaducts",
+ "name": "M-2 Salt Range bridges and viaducts",
+ "lat": 32.6800395,
+ "lon": 72.7549577,
+ "headingDeg": 358.9,
+ "height": 29.0,
+ "suppress": [],
+ "glb": "models/m2_salt_range_viaducts.glb",
+ "glbFar": "models/m2_salt_range_viaducts_far.glb",
+ "tris": 8552,
+ "trisFar": 576,
+ "bytes": 55228,
+ "bytesFar": 5908,
+ "budget": "normal",
+ "modelTop": 28.95,
+ "assumptions": [
+  "No photograph of this bridge from the side or below could be found, so the pier form is inferred: two chamfered rectangular columns under a cap beam for each carriageway. Esri shows only lit pier faces about 3 m wide at the middle joints; a single stem or wall pier would fit that too.",
+  "Pier and column dimensions (2.6 by 1.8 m columns, 11.6 by 1.9 by 1.5 m cap) are estimates.",
+  "Superstructure of five precast I girders 1.8 m deep under a 0.22 m slab is an estimate: Esri shows simply supported 29.9 m spans with joints at every pier, and no source gives the section.",
+  "Deck levels 557.5 m south and 558.5 m north read from the z15 terrain at the abutments; the deck is about 32 m above the 526 m valley floor by that terrain, not by a survey.",
+  "This is taken as the longest mapped bridge in the stretch; no source confirms that it is the 'highest pillared bridge' Wikipedia mentions, and the other mapped M-2 bridges are not modelled here.",
+  "Parapet shape, the pale median parapet on the deck, the ochre striped barrier on the approaches and the lane markings come from a road photo of another short bridge in the same Salt Range section, not this bridge.",
+  "Outer strip colour and the width split of pale and dark surface are read from Esri tiles at about 0.5 m per pixel.",
+  "Column foundations continue 2 m below the sampled ground so that terrain differences do not expose them; footings are not modelled.",
+  "suppress is empty on purpose: the dossier footprint is a line along a 30 m deep valley, and flattening the ground under it would cut the valley sides.",
+  "No night lighting: no source describes any."
+ ]
+}

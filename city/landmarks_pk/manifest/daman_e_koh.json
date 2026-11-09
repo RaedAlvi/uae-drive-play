@@ -1,0 +1,115 @@
+{
+ "id": "daman_e_koh",
+ "name": "Daman-e-Koh viewpoint",
+ "lat": 33.7380089,
+ "lon": 73.056965,
+ "headingDeg": 180.0,
+ "height": 23.2,
+ "suppress": [
+  [
+   33.7385266,
+   73.0559331
+  ],
+  [
+   33.7385713,
+   73.0561745
+  ],
+  [
+   33.738627,
+   73.0565768
+  ],
+  [
+   33.7386159,
+   73.0569524
+  ],
+  [
+   33.7387051,
+   73.0570865
+  ],
+  [
+   33.7387051,
+   73.0574083
+  ],
+  [
+   33.738627,
+   73.0576363
+  ],
+  [
+   33.7383928,
+   73.0576363
+  ],
+  [
+   33.7382701,
+   73.0575156
+  ],
+  [
+   33.7380917,
+   73.0574083
+  ],
+  [
+   33.7380025,
+   73.057301
+  ],
+  [
+   33.7378397,
+   73.0571723
+  ],
+  [
+   33.7378174,
+   73.0568987
+  ],
+  [
+   33.737853,
+   73.0566788
+  ],
+  [
+   33.7379423,
+   73.0565715
+  ],
+  [
+   33.7380136,
+   73.0564106
+  ],
+  [
+   33.7381207,
+   73.0563837
+  ],
+  [
+   33.7381586,
+   73.0563354
+  ],
+  [
+   33.7381363,
+   73.0561745
+  ],
+  [
+   33.7381698,
+   73.0559331
+  ]
+ ],
+ "glb": "models/daman_e_koh.glb",
+ "glbFar": "models/daman_e_koh_far.glb",
+ "tris": 49991,
+ "trisFar": 704,
+ "bytes": 370420,
+ "bytesFar": 24228,
+ "budget": "normal",
+ "modelTop": 43.6,
+ "assumptions": [
+  "Origin and suppress ring are the visitor core traced from satellite tiles, not the dossier's 412 m park outline, which runs up a steep hillside; lawns and the upper road are left to the game.",
+  "Deck heights: upper deck 3.3 m above the lower, read from the aerial photo; pavilion plaza 0.9 m above the upper deck; the dome platform 6 m above it is a visual estimate.",
+  "The real plaza and terrace levels are unsurveyed; roundabout and paths are placed at the lower-deck datum.",
+  "Rail height 1.1 m (dossier assumption); post spacing about 2.3 m and cable layout estimated from the 2008 deck photo; the photo's crossed cable infill is drawn one X to a bay.",
+  "Upper deck colour is the dossier value; lower deck is a dry pale pink-tan from the aerial photo and satellite, and the wet deck photo shows it much redder when wet.",
+  "Dome diameter 23 m, between the satellite's 21 by 27 m white patch and the aerial photo's ratio to the deck. Height over width 0.59 from the aerial photo: wall 4.6 m and shell 9 m are estimates. The photo shows about 4 windows on the visible half, so 10 evenly spaced windows are drawn; the unseen north side is assumed the same. The dark crown is a small closed cap from the satellite.",
+  "Two telescopes placed on the lower rim where one photo shows two pedestals; the real count is unknown and the head shape is generic.",
+  "Map board position inferred from a white upright in the aerial photo; the map face is a simplified colour diagram from a blurred photo of the board.",
+  "Pavilion outline from the satellite; posts, core and the ribbed Dutch-gable roof from one oblique aerial photo. Roof heights, rib spacing and lattice pattern are estimates, and the east gable is assumed to match the west one.",
+  "Annex, white block and masts north of the dome are read from one aerial photo. The photo crops the mast tops: 34 and 32 m are lower bounds scaled against the dome, so the masts end plainly with no invented top equipment. Lattice is drawn as a plain three-legged section. The manifest height is the occupied top, the dome crown; modelTop follows the masts in both LODs.",
+  "The separate mast cluster on the walled compound about 65 m north-west of the dome is outside the model and left out.",
+  "Hillside is one continuous estimated surface, joining the deck to the dome knoll as the aerial photo shows; no survey exists, so its slopes (about 0.55), the -16 m floor and the tree positions are invented to that general form. The game flattens the suppress ring at z 0, so only the parts above it show.",
+  "Roundabout radius from satellite, tiers and palm from one photo, palm height about 5 m and frond count estimated; six spiral lamps around it (four are visible), and lamp height 4.6 m estimated. Flower beds are drawn as a mass of low clumps; bloom colours vary by season. The plaza-side hedge beds are placed from two ground photos, their arcs are estimated.",
+  "Restaurant tables and umbrellas on the brick ring are movable and left out. Pots follow the dossier colours (red, white, purple); the three-row order red back, purple middle, white front comes from the review and could not be confirmed in the photos on disk.",
+  "Individual decked trees are limited to four standing on the decks; the forest is a mottled hill surface with low-poly crowns."
+ ]
+}

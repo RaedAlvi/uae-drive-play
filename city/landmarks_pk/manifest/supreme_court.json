@@ -1,0 +1,103 @@
+{
+ "id": "supreme_court",
+ "name": "Supreme Court of Pakistan",
+ "lat": 33.7278158,
+ "lon": 73.0984552,
+ "headingDeg": 240.4,
+ "height": 47.5,
+ "suppress": [
+  [
+   33.7285797,
+   73.0990495
+  ],
+  [
+   33.7283441,
+   73.0986289
+  ],
+  [
+   33.7285012,
+   73.0985002
+  ],
+  [
+   33.728237,
+   73.0979938
+  ],
+  [
+   33.7280229,
+   73.0981483
+  ],
+  [
+   33.7279015,
+   73.0979509
+  ],
+  [
+   33.7279015,
+   73.0977706
+  ],
+  [
+   33.7280586,
+   73.0976505
+  ],
+  [
+   33.7279015,
+   73.0973415
+  ],
+  [
+   33.7269022,
+   73.0980367
+  ],
+  [
+   33.7270878,
+   73.0983714
+  ],
+  [
+   33.7272448,
+   73.0982427
+  ],
+  [
+   33.7274518,
+   73.0983199
+  ],
+  [
+   33.7275446,
+   73.0985002
+  ],
+  [
+   33.7272948,
+   73.0986804
+  ],
+  [
+   33.7275803,
+   73.0992297
+  ],
+  [
+   33.7277159,
+   73.0991182
+  ],
+  [
+   33.7279372,
+   73.0995216
+  ]
+ ],
+ "glb": "models/supreme_court.glb",
+ "glbFar": "models/supreme_court_far.glb",
+ "tris": 6596,
+ "trisFar": 165,
+ "bytes": 56560,
+ "bytesFar": 8884,
+ "budget": "normal",
+ "modelTop": 47.5,
+ "assumptions": [
+  "Heading set to 240.4 degrees, not the dossier 238.4: the OSM wing edges and the two axial star pavings measure a 2 degree turn.",
+  "No height is published. Portal top 25.5 m, towers 31 m, triangular roof 30.5 m at its front point and 43 m at its back edge were fitted to telephoto photos, with the portal width of 25.5 m from the satellite view as the only scale; expect a few metres of error.",
+  "Ground plan corrected for satellite lean of about 0.45 x height; the OSM ring stops the back of the wings at the 44 m line, but the satellite view shows them running the full length, so the satellite was followed.",
+  "Tower plan (a splayed front face about 45 degrees from the axis) inferred from photo perspective and the satellite view; the backs of the towers were not seen.",
+  "Side terraces, inner courts and their gardens are simplified from the satellite view; the inner court walls and storeys were not photographed.",
+  "Wings drawn with three storeys and 22 window bays per long side, an estimate from aerial photos.",
+  "Rear elevation is a plain window bank: no photo of the back was found.",
+  "Rear of the triangular hall is a plain marble wall to the rim height: not seen.",
+  "Marble colour, emblem detail and flag proportions are estimates from photos; the emblem is a simplified disc and balance.",
+  "Entry level 6 m above the star plaza, three equal flights: step counts are estimated.",
+  "Side forecourt pads are plain; the small guard building at the south of the frontage is left out."
+ ]
+}

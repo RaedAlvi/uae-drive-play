@@ -1,0 +1,89 @@
+{
+ "id": "convention_centre",
+ "name": "Jinnah Convention Centre",
+ "lat": 33.7133988,
+ "lon": 73.1054426,
+ "headingDeg": 152.0,
+ "height": 32.3,
+ "suppress": [
+  [
+   33.7127102,
+   73.1057535
+  ],
+  [
+   33.713029,
+   73.1051296
+  ],
+  [
+   33.7132597,
+   73.1049541
+  ],
+  [
+   33.7133217,
+   73.104907
+  ],
+  [
+   33.7133957,
+   73.104927
+  ],
+  [
+   33.713588,
+   73.104979
+  ],
+  [
+   33.7136595,
+   73.1049984
+  ],
+  [
+   33.7136997,
+   73.1050747
+  ],
+  [
+   33.7138447,
+   73.1053502
+  ],
+  [
+   33.7137687,
+   73.1057563
+  ],
+  [
+   33.7137158,
+   73.1057966
+  ],
+  [
+   33.713547,
+   73.105925
+  ],
+  [
+   33.7134761,
+   73.1059789
+  ],
+  [
+   33.7128568,
+   73.1060438
+  ]
+ ],
+ "glb": "models/convention_centre.glb",
+ "glbFar": "models/convention_centre_far.glb",
+ "tris": 22162,
+ "trisFar": 616,
+ "bytes": 172080,
+ "bytesFar": 8964,
+ "budget": "normal",
+ "modelTop": 32.3,
+ "assumptions": [
+  "Height is not published: wall 18.2 m and dome rise 11.8 m (top about 31 m) are fitted to photos, scaling from the 22 m arched face in the OSM footprint.",
+  "Dome is centred on the footprint: the dossier's satellite dome point sits about 10 m off, attributed to image lean because all photos show it concentric.",
+  "Dome diameter 65 m is the dossier value; the panel layout is a six-sector triangulated grid of ten rings, matching the photos' triangles but not counted panel by panel.",
+  "All eight arched faces get four arches and all corner piers one column of three diamond windows per half, seen on about five faces; the north and north-west sides were not photographed.",
+  "Arch glass takes the blue tone of the April 2026 photo; older photos show it darker.",
+  "Cladding colour is a photo estimate; it reads white in older photos and warm stone in 2026.",
+  "Porch height 8.1 m fitted to its 6.2 m bay width; 5 by 5 outer arches counted; inner ring of 3 arches a side and the open centre size are estimates.",
+  "Sunken court floor level is a guess at 1.2 m below ground.",
+  "Red canopy between the building and porch comes from the satellite image only; its 6 m height and posts are guesses.",
+  "West and south-west glazed annexes are read from the satellite image only; their two-step form, depth and heights are estimates.",
+  "Green awning follows one 2024 aerial photo; it may be temporary.",
+  "Facade lettering seen in one 2026 photo is left out because it could not be read.",
+  "Roof-top plant, flag masts and the 2026 banners are not modelled; a CDA upgrade reported in Sept 2026 may change the look."
+ ]
+}

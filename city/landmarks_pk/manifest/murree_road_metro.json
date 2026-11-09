@@ -1,0 +1,61 @@
+{
+ "id": "murree_road_metro",
+ "name": "Murree Road Metrobus viaduct and typical elevated station",
+ "lat": 33.6137868,
+ "lon": 73.0650784,
+ "headingDeg": 1.0,
+ "height": 21.0,
+ "suppress": [
+  [
+   33.6143094,
+   73.0650702
+  ],
+  [
+   33.6143067,
+   73.0651298
+  ],
+  [
+   33.6135859,
+   73.065093
+  ],
+  [
+   33.6132522,
+   73.0651006
+  ],
+  [
+   33.6132477,
+   73.0650475
+  ],
+  [
+   33.6136834,
+   73.0650356
+  ],
+  [
+   33.613954,
+   73.0650562
+  ]
+ ],
+ "glb": "models/murree_road_metro.glb",
+ "glbFar": "models/murree_road_metro_far.glb",
+ "tris": 21716,
+ "trisFar": 536,
+ "bytes": 113600,
+ "bytesFar": 10376,
+ "budget": "normal",
+ "modelTop": 21.04,
+ "assumptions": [
+  "No photograph of Committee Chowk station itself was found: the station design is taken from photos of 6th Road station, assuming the elevated stations share one design, as the matching photo captions and repair reports suggest.",
+  "Which end of the Committee Chowk roof is high is unknown: the high end and entrance canopy are placed at the north.",
+  "Road deck 9.5 m above the origin, fitted to vehicles and riders beside the piers; no published deck height.",
+  "Road level is held flat; the real deck rises and falls over the Murree Road underpass and terrain.",
+  "Pier spacing 26 m from the audit girder length; pier phase along the road is arbitrary and the same in the split section.",
+  "Deck section (two trapezoid boxes, a third under the island, cantilevers) is read from soffit photos; the audit also lists I and inverted-T girders.",
+  "Width at the station: OSM leg spacing 12 m plus a lane and parapet each side, about 17.6 m in all; the single deck is 9.2 m (audit).",
+  "Roof profile: hump 6.6 m, valley 3.8 m and peak 8.0 m above the road at the side walls, and their positions along the 117.8 m length, are fitted to one telephoto photo with a perspective correction.",
+  "Six pergola portals counted from three photos; pergola top 7.3 m above the road.",
+  "Concourse block in the median, its 3.0 to 4.5 m slab, the truss and the escalator housing follow 6th Road photos; layout at Committee Chowk and access bridges are unknown, and the steel pedestrian bridges are left out.",
+  "Platform screen doors are not modelled: Wikipedia confirms they exist but no source or photo shows their layout.",
+  "All colours are estimates from photos. Night glow of glass and street lamps is a guess; no source describes station lighting.",
+  "Model covers about 352 m centred on the station; the rest of the corridor is outside this landmark."
+ ]
+}

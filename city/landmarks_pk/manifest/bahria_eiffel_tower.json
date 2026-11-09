@@ -1,0 +1,46 @@
+{
+ "id": "bahria_eiffel_tower",
+ "name": "Eiffel Tower replica, Bahria Town Lahore",
+ "lat": 31.3557305,
+ "lon": 74.1847369,
+ "headingDeg": 358.0,
+ "height": 80.0,
+ "suppress": [
+  [
+   31.3554693,
+   74.1844531
+  ],
+  [
+   31.3554869,
+   74.1850413
+  ],
+  [
+   31.3559917,
+   74.1850207
+  ],
+  [
+   31.3559741,
+   74.1844325
+  ]
+ ],
+ "glb": "models/bahria_eiffel_tower.glb",
+ "glbFar": "models/bahria_eiffel_tower_far.glb",
+ "tris": 58602,
+ "trisFar": 410,
+ "bytes": 385620,
+ "bytesFar": 9920,
+ "budget": "normal",
+ "modelTop": 80.0,
+ "assumptions": [
+  "Heading 358: the tower is taken as square with the OSM park ring; the photos cannot give a bearing.",
+  "Base 31.25 m outer square is derived from 1:4 scale and agrees with the aerial and far views.",
+  "Height 80 m to the mast tip from the dossier; mast length is estimated.",
+  "Platform levels (frieze 15.2 to 17.8 m, canopy 21 m, second deck 33.6 m, gallery 72 m) were read from photos and may be out by about 1 m.",
+  "Raised plaza 1.8 m high and 47 m square, from one aerial photo; step count is an estimate.",
+  "All four sides of the plaza have the same planter, stairs and planting; only two sides are visible in photos.",
+  "Lattice panel counts are close to the photos but are not counted bar by bar; the upper shaft has 13 panels.",
+  "Lift shaft glazing height in the upper stage is read from a single photo.",
+  "Night colours follow the magenta, blue and red scheme in one photo; the scheme appears to change between dates.",
+  "The small kiosks, lamp posts, gardens and pools in the park are outside this model."
+ ]
+}

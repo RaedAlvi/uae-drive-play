@@ -1,0 +1,64 @@
+{
+ "id": "one_constitution_avenue",
+ "name": "One Constitution Avenue",
+ "lat": 33.713163,
+ "lon": 73.107824,
+ "headingDeg": 149.6,
+ "height": 105.5,
+ "suppress": [
+  [
+   33.714322,
+   73.1065539
+  ],
+  [
+   33.7148371,
+   73.1074382
+  ],
+  [
+   33.7145012,
+   73.1080546
+  ],
+  [
+   33.7136949,
+   73.1088049
+  ],
+  [
+   33.7127095,
+   73.107867
+  ],
+  [
+   33.71262,
+   73.1074114
+  ],
+  [
+   33.7131574,
+   73.1069023
+  ]
+ ],
+ "glb": "models/one_constitution_avenue.glb",
+ "glbFar": "models/one_constitution_avenue_far.glb",
+ "tris": 26447,
+ "trisFar": 313,
+ "bytes": 92948,
+ "bytesFar": 9360,
+ "budget": "normal",
+ "modelTop": 105.5,
+ "assumptions": [
+  "Plan: centre, axis and 41.4 m length from OSM; the OSM width (25.7 m) and spacing (53 m) are overridden by the head-on photos and satellite crowns: 29 m end faces, 45 m centre to centre, 16 m gap (0.55 of the face). No survey exists; the likely error is 1 to 2 m.",
+  "End-face fins set at 51% of the face width and the crown frames at 56%, from the head-on photos; drawn symmetric on every face although perspective varies the photo readings.",
+  "Crown top 105.5 m from the Wikipedia list and OSM (no survey); main roof 94 m and podium deck 11 m fitted to the head-on photo with the tower width as the scale.",
+  "22 storeys above the podium counted on the end faces, about 3.8 m each; sources give 20, 24, 26 or 30 floors in total, so the count may be off by one or two.",
+  "Bridge level (76.5 to 83.4 m) from the head-on photo, near the 20th or 21st floor the sources give; its 10 m width and its position at mid-depth of the towers are estimates.",
+  "No third tower: the dossier and the satellite image show none, so the Grand Hyatt is not built.",
+  "Outer long faces taken as blue glazing (satellite) and inner long faces as grey cladding (highway photo); the three central window columns are read from the satellite image and repeated on all four long faces.",
+  "Balcony stagger: alternating sides from the aerial and highway photos; the actual pattern per floor varies and is simplified.",
+  "Crown: seen from the avenue, the white balustrade bars are on the left crown (Tower 2) only and the right crown (Tower 1) is open with one diagonal member, from zoom_g_news. That diagonal may be temporary. The south east crowns are left open because no photo shows bars there. Penthouse blocks are from the satellite image, their heights estimated.",
+  "Podium outline traced from one satellite image, corrected for image lean; heights 11 to 14 m are estimates, and the raw-concrete look is the unfinished state of the photos. Open frames are pale concrete with mid-grey set-back walls (zoom_e_scene); the actual walls behind the columns are not visible.",
+  "North west block roof simplified from esri_z19: an upper deck with the four planters, one estimated storey (4 m) above a lower deck, and a sunken court on the gap axis at an estimated 5.5 m level containing the two boxes. Rust marks, small roof kit and the true stepped outline are left out. Much of the court is hidden by tower shadow in the image, so its edges are approximate.",
+  "South west wing roof: two long slots stand for the dashed line of roof openings in esri_z19; their count, depth and exact ends are approximate.",
+  "North east wing: kept as a narrow 9 m open frame because f_ary and zoom_e_scene show a concrete frame beside Tower 2 reaching the front, while esri_z19 shows only its small near end, with red soil and rust lines at ground level further out. Its width and depth are estimates, and it may have changed since those photos.",
+  "Front wall: stone colour, tan recessed panels, the ONE sign size and the Tower 1 canopy read from the highway and aerial photos; the fins over the service door come from a ground photo whose location on the building is unconfirmed, so the door is placed at the Tower 2 end clear of the panels.",
+  "Colours are visual estimates (dossier confidence low): glass uses the daylight sky blue of zoom_k_dawn26b as a near-non-metallic base colour, and fins and floor bands are near white, lighter than the dossier hexes, so the identity holds without an environment map.",
+  "Night glow on the towers is a placeholder (the dossier records no night scheme, and the 2026 evacuation may leave them dark); the unfinished blocks stay unlit."
+ ]
+}

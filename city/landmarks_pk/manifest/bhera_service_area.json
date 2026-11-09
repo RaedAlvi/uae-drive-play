@@ -1,0 +1,63 @@
+{
+ "id": "bhera_service_area",
+ "name": "Bhera Service Area, M-2 (north and south)",
+ "lat": 32.4545017,
+ "lon": 72.8870088,
+ "headingDeg": 222.0,
+ "height": 27.0,
+ "suppress": [
+  [
+   32.4572183,
+   72.8879519
+  ],
+  [
+   32.4557554,
+   72.8900383
+  ],
+  [
+   32.4534297,
+   72.8877612
+  ],
+  [
+   32.4517585,
+   72.8860849
+  ],
+  [
+   32.4532648,
+   72.8840011
+  ],
+  [
+   32.4556054,
+   72.886258
+  ]
+ ],
+ "glb": "models/bhera_service_area.glb",
+ "glbFar": "models/bhera_service_area_far.glb",
+ "tris": 2575,
+ "trisFar": 248,
+ "bytes": 49936,
+ "bytesFar": 13372,
+ "budget": "plain",
+ "modelTop": 27.0,
+ "assumptions": [
+  "Dossier has no footprint or building positions: every plan was traced from one Esri zoom 18 image (about 0.5 m per pixel), so outlines may be off by 2 to 3 m and the image may predate recent changes.",
+  "Heading 222 is the south block's car-park front; the north site shares the frame.",
+  "No published heights: south block parapets 5.3 to 9.6 m, McDonald's tower 9 m and the rest are read from one oblique drone photo using people and cars for scale.",
+  "Shop front widths are scaled off that one drone photo at a constant 17.1 px per metre; perspective is ignored.",
+  "Brand logos are left out on purpose: shop signs are plain colour panels at the positions in the photo.",
+  "Rear walls, the service yard and the back of the south block were not seen; they are plain charcoal.",
+  "The cream house with maroon roof: the satellite shows a pale north part and a red middle part, the photo a hip roof; the roof is a simple pyramid over the middle part, the north part flat with a maroon skirt.",
+  "Fuel canopies: two columns, a shallow gable and 5.6 m clearance are estimates; pump islands are simplified.",
+  "Canopy positions are from the satellite; the 2010 photo shows a different older pump layout, not used.",
+  "North site pale pink-cream walls and terracotta pyramids come from 2010 and 2011 photos, and the orange row and red band from the drone photo, colours judged by eye; only the satellite confirms the current plan, and matching each block to the drone photo is approximate. Which blocks have pyramid roofs is inferred from orange patches in the satellite.",
+  "The colonnade in the 2011 garden photo is left out: its current position could not be confirmed from the satellite.",
+  "Water tower form comes from the 2010 photo of the north tower. No height is published: 27 m with a 13.2 m tank is an estimate from the drone photo framing (at least 24 m) and horizon geometry in the 2010 photo (23 to 34 m). The south tower is assumed identical. Positions are OSM nodes.",
+  "Brand pylons: three plain masts for the red pole by the south site and the red and yellow pylons at the north site, as seen in the drone photo. Heights are matched by eye against that photo; positions are projected from it onto the satellite and may be off by about 10 m. Mast thickness is a guess, the brand panels are blank and their true head shapes are simplified.",
+  "Crane and lattice frames seen by the motorway in the drone photo look temporary and are left out, as is the grey totem and pump layout in the 2010 photo.",
+  "Darker ring roads are traced from the satellite as flat strips, so widths are approximate; the tone is judged by eye.",
+  "Solar shade rows from the satellite; 3.0 to 3.7 m height and tilt are estimates.",
+  "Aprons and bay rows traced from the satellite, with the zigzag spacing from the drone photo; staff housing and buildings outside the aprons are left out.",
+  "The manifest takes one suppress ring, so it is the joint outline of the two OSM areas and includes the motorway between them.",
+  "Night glow on shop glass is a guess from the lit shops in the dusk drone photo; no source describes the lighting."
+ ]
+}

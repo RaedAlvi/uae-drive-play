@@ -1,0 +1,79 @@
+{
+ "id": "christ_church",
+ "name": "Christ Church, Rawalpindi",
+ "lat": 33.5876579,
+ "lon": 73.0558508,
+ "headingDeg": 90.0,
+ "height": 16.4,
+ "suppress": [
+  [
+   33.5877089,
+   73.0555921
+  ],
+  [
+   33.5876039,
+   73.0555948
+  ],
+  [
+   33.5876083,
+   73.0558416
+  ],
+  [
+   33.5875107,
+   73.0558346
+  ],
+  [
+   33.5875061,
+   73.0559616
+  ],
+  [
+   33.5875923,
+   73.0559599
+  ],
+  [
+   33.5875968,
+   73.0560672
+  ],
+  [
+   33.5876817,
+   73.0560618
+  ],
+  [
+   33.5876817,
+   73.055976
+  ],
+  [
+   33.5878113,
+   73.0559706
+  ],
+  [
+   33.5878113,
+   73.0558419
+  ],
+  [
+   33.587713,
+   73.0558419
+  ]
+ ],
+ "glb": "models/christ_church.glb",
+ "glbFar": "models/christ_church_far.glb",
+ "tris": 14377,
+ "trisFar": 175,
+ "bytes": 85028,
+ "bytesFar": 7024,
+ "budget": "normal",
+ "modelTop": 16.38,
+ "assumptions": [
+  "The entrance is the west end although the dossier heading is 90: heading only records the long axis, so the kit front (+Y) is the chancel end; the geometry is placed by coordinates, not by that label.",
+  "No height is published. Wall, ridge, pinnacle and bellcote heights come from a 1.9 m door width on the Dawn front (about 38 px per metre) and two south-west views; expect errors of about a metre.",
+  "West wing, aisles and nave widths follow the aerial and photos (nave plus aisles 13.8 m); OSM traces the west arm as one 11.6 m strip, so the aisles overhang the OSM ring by about one metre.",
+  "Nave gable and aisle west walls are set flush at 5.7 m behind the west face, read from the aerial, whose parallax is about 0.18 m of eastward lean per metre of height.",
+  "Six nave bays counted from the clerestory windows in both south-west photos; the far bays are partly hidden by trees. The north side is mirrored from the south.",
+  "Transept end walls and all east-facing and north-facing elevations were not photographed: two large windows and an oculus per gable, and the same two-window side walls, are the plainest repeat of the seen west walls.",
+  "Chancel side and east windows (three each) are assumed; the dossier only says the chancel has stained glass. Chancel eaves and ridge are estimates. Its centre sits 1.8 m south of the nave axis because both OSM and the aerial show that.",
+  "North-east vestry block seen on the aerial only: position, size and low hipped roof are the plainest form.",
+  "Colours are sampled from the December 2025 Dawn photos (bare brick, grey dressings), which differ from the older cream and red-painted views.",
+  "Chapel position is the red-roofed building on the aerial, corrected for the same image shift as the church; not confirmed by a source. Its door side and hipped form come from one Dawn photo; the side away from it is mirrored.",
+  "The lawn cross stands by the chapel at an estimated position, and its height is estimated from the photo. The mean-sea-level stone, the compound railing and the forecourt beyond a 10 m paved strip are left out."
+ ]
+}

@@ -1,0 +1,85 @@
+{
+ "id": "rawal_dam_spillway",
+ "name": "Rawal Dam spillway",
+ "lat": 33.6937534,
+ "lon": 73.122897,
+ "headingDeg": 79.6,
+ "height": 35.2,
+ "suppress": [
+  [
+   33.6937193,
+   73.1224358
+  ],
+  [
+   33.693848,
+   73.1226347
+  ],
+  [
+   33.6939145,
+   73.122866
+  ],
+  [
+   33.6939338,
+   73.1230709
+  ],
+  [
+   33.693936,
+   73.1231552
+  ],
+  [
+   33.6939373,
+   73.1232094
+  ],
+  [
+   33.6939159,
+   73.1233507
+  ],
+  [
+   33.6939072,
+   73.1233457
+  ],
+  [
+   33.6936125,
+   73.1231878
+  ],
+  [
+   33.6936253,
+   73.1229473
+  ],
+  [
+   33.6936076,
+   73.1227783
+  ],
+  [
+   33.6935191,
+   73.122581
+  ]
+ ],
+ "glb": "models/rawal_dam_spillway.glb",
+ "glbFar": "models/rawal_dam_spillway_far.glb",
+ "tris": 13467,
+ "trisFar": 755,
+ "bytes": 127700,
+ "bytesFar": 37736,
+ "budget": "normal",
+ "modelTop": 40.62,
+ "assumptions": [
+  "Eight bays: Dawn (Jun 2016 photo caption) states eight gates and three photos show seven piers between two abutments; the dossier's six was a low-confidence count.",
+  "The crest follows the OSM dam line way/238431936 and the deck follows the OSM road way/1046148216 (bridge=yes), about 6 m downstream of that line; the outline's upstream edge therefore falls near the deck, not at the ogee crest.",
+  "z = 0 is the tailrace pad. Structure top is 35.2 m (road 35 m) and only the lamp tips reach 40.7 m. The dossier's 40.7 m is the maximum dam height, likely from foundations, so the manifest states the 35.2 m massing height.",
+  "In-game levels do not match this structure: the DEM gives about 523.8 m at the model origin, the game's lake about 527 m and the game road about 526 to 530 m, so the game's lake lies near z = 3.5 and its road near z = 3 to 6, far below this deck at 35 m. The real reservoir is about 534 m. No water surface is modelled because it would float; the lake side is a closed concrete wall down to the pad.",
+  "Ogee crest 11.5 m below the road, gate height 7.5 m, trunnion position and arm layout are engineering estimates fitted to photos; no drawings were found.",
+  "Gates are radial, inferred from the dark diagonal struts on the pier sides in the photos, and are modelled closed.",
+  "Pier thickness 2.9 m is about 30 percent of the bay spacing: the near-frontal Dawn 2016 view shows slender piers and open bays, and oblique photos look bulkier because they show the long pier sides. The half-round downstream ends are from Dawn 2020 and APP Aug 2025.",
+  "Upstream pier noses (rounded, 5.5 m upstream of the crest), abutment length 6 m and deck width 6.8 m are estimates; the upstream side was not photographed close up.",
+  "The curved line on each pier side in Dawn 2020 is modelled as a thin dark rib. The Dawn 2016 frontal view shows flat-topped bay openings, so no arched haunches span the bays.",
+  "Chute colour sits between the dossier #7A5B47 (one Commons photo) and the dry chute in Dawn 2016, which reads about #C2B29C through haze; all close photos show it spilling, so streak contrast is kept low.",
+  "Chute length and bucket are estimated from photos and the outline depth; the stilling basin and end sill are the plainest form, as no photo shows them dry.",
+  "Eight hoist housings, one per bay, read from small boxes on the deck in photos; their exact size and contents are unknown.",
+  "East of the gates the crest wall follows the OSM road about 17 m to the bank, with the walkway ledge and three dark recesses seen in APP Aug 2025; its full length and the ledge height are estimates.",
+  "Earth banks close both ends of the crest and a grass slope runs down the west side: photos show the hill reaching deck level there, but the game terrain near the dam is only 5 to 8 m above the pad, so these banks stand in for ground the DEM lacks. Their shape is plain and not surveyed.",
+  "East terraces are simplified to four stepped walls with soil and bushes and one stair; they lie outside the OSM outline because the photos show them east of the chute, and their 13 m width from the training wall is an estimate.",
+  "The tree-shaped lamp and paved Old Picnic Point viewing platform lie outside the modelled structure and are left out.",
+  "Lamp posts stand at each pier on the downstream rail, spacing read from photos; the double heads follow the dossier."
+ ]
+}

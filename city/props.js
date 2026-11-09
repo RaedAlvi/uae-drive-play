@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { U } from "./materials.js";
+import { PkTrees } from "./pktrees.js";
 
 function colorize(g, hex) {
   const c = new THREE.Color(hex); const n = g.attributes.position.count; const a = new Float32Array(n * 3);
@@ -107,6 +108,7 @@ function treeGeometry(lod = 0) {
   return mergeGeometries(parts.map(p => p.index ? p.toNonIndexed() : p));
 }
 
+
 // Desert scrub (young ghaf, arfaj): a low grey-green mound of a few flattened lumps.
 function shrubGeometry() {
   const parts = [];
@@ -146,7 +148,84 @@ function shelterGeometry() {
   return { frame: m(frame), glass: m(glass) };
 }
 function unitBox() { const g = new THREE.BoxGeometry(1, 1, 1); g.translate(0, 0.5, 0); return g; }
-function unitCyl() { const g = new THREE.CylinderGeometry(0.5, 0.5, 1, 10); g.translate(0, 0.5, 0); return g; }
+function unitCyl(n = 10) { const g = new THREE.CylinderGeometry(0.5, 0.5, 1, n); g.translate(0, 0.5, 0); return g; }
+
+const PK_MAP = typeof window !== "undefined" && window.CITY && window.CITY.region === "pakistan";
+// Green bilingual boards on the M-2 (art_direction.md section 2: green, white border and text, English with Urdu). The tile worker places them
+// (msg.roofs entries of kind 9); only the nearest few are live panels, each with its own canvas. Every name and kilometre comes from city/m2data.js.
+const BOARD_BG = "#0e6b3f", BOARD_FG = "#f4f4ee", BOARD_EN = '"Segoe UI", Tahoma, Arial, sans-serif', BOARD_UR = '"Urdu Typesetting", "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", "Segoe UI", Tahoma, sans-serif';
+const BOARD_POOL = 10, BOARD_W = 768, BOARD_H = 320;
+function boardName(n) { return n.replace(/,\s*near\s.*$/i, ""); }
+function boardShort(n) { return boardName(n).replace(/\s+Interchange$/i, ""); }
+function boardShortU(u) { return u.replace(/\s*انٹر\s?چینج\s*$/, ""); }
+function boardLine(g, t, x, cy, fs, fam, maxW, align, rtl) {
+  if (!t) return;
+  g.font = `bold ${fs}px ${fam}`; g.textAlign = align; g.direction = rtl ? "rtl" : "ltr"; g.textBaseline = "alphabetic";
+  const m = g.measureText(t), sx = m.width > maxW ? maxW / m.width : 1, by = rtl ? cy + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2 : cy + 0.355 * fs;
+  g.save(); g.translate(x, by); g.scale(sx, 1); g.fillText(t, 0, 0); g.restore(); g.direction = "ltr";
+}
+function drawBoard(g, nodes, kind, a, b, val) {
+  const W = BOARD_W, H = BOARD_H;
+  g.fillStyle = BOARD_BG; g.fillRect(0, 0, W, H);
+  g.strokeStyle = BOARD_FG; g.lineWidth = 7; g.beginPath(); g.roundRect(13, 13, W - 26, H - 26, 22); g.stroke();
+  g.fillStyle = BOARD_FG;
+  const A = nodes[a], B = nodes[b];
+  if (kind === 2) {             // distance board: the next interchange and the end of the motorway
+    const rows = a === b ? [[A, Math.floor(val / 1000)]] : [[A, Math.floor(val / 1000)], [B, val % 1000]], rh = (H - 64) / rows.length;
+    rows.forEach(([n, km], i) => { const cy = 32 + rh * (i + 0.5); boardLine(g, boardShort(n[0]), 42, cy, 54, BOARD_EN, 300, "left", false); boardLine(g, km + " km", W - 262, cy, 52, BOARD_EN, 140, "right", false); boardLine(g, boardShortU(n[1]), W - 40, cy, 60, BOARD_UR, 202, "right", true); });
+    return;
+  }
+  if (kind === 1) {             // at the exit: keep left, up the slip road
+    g.lineWidth = 22; g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = BOARD_FG;
+    g.beginPath(); g.moveTo(112, 250); g.lineTo(112, 130); g.lineTo(82, 100); g.stroke();
+    g.beginPath(); g.moveTo(62, 148); g.lineTo(62, 78); g.lineTo(132, 78); g.stroke();
+    boardLine(g, boardName(A[0]), 190, A[1] ? 112 : 160, 60, BOARD_EN, W - 232, "left", false);
+    boardLine(g, A[1], W - 42, 222, 74, BOARD_UR, W - 232, "right", true);
+    return;
+  }
+  // advance board: English above Urdu, the distance on the right
+  const dist = val >= 1000 ? (val / 1000) + " km" : val + " m", tw = W - 276;
+  boardLine(g, boardName(A[0]), 44, A[1] ? 108 : 160, 58, BOARD_EN, tw, "left", false);
+  boardLine(g, A[1], 44 + tw - 24, 218, 76, BOARD_UR, tw - 24, "right", true);
+  g.fillStyle = BOARD_FG; g.beginPath(); g.roundRect(W - 204, 44, 150, 76, 12); g.fill();
+  g.fillStyle = BOARD_BG; boardLine(g, "M-2", W - 129, 82, 54, BOARD_EN, 130, "center", false);
+  g.fillStyle = BOARD_FG; boardLine(g, dist, W - 129, 212, 76, BOARD_EN, 196, "center", false);
+}
+class M2Boards {
+  constructor(scene) {
+    this.nodes = null; this.items = [];
+    import("./m2data.js").then(m => { this.nodes = m.M2_NODES; }).catch(e => console.warn("m2 boards", e));
+    const geo = new THREE.PlaneGeometry(1, 1);
+    this.pool = [];
+    for (let i = 0; i < BOARD_POOL; i++) {
+      const c = document.createElement("canvas"); c.width = BOARD_W; c.height = BOARD_H;
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter;
+      const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6, metalness: 0, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0 });
+      const mesh = new THREE.Mesh(geo, mat); mesh.frustumCulled = false; mesh.visible = false; scene.add(mesh);
+      this.pool.push({ g: c.getContext("2d"), tex, mat, mesh, key: "" });
+    }
+    // one panel stays in the scene, out of sight, so the program is compiled at load and not on the first board you meet
+    const w = this.pool[0].mesh; w.visible = true; w.position.set(0, -2000, 0); w.scale.set(0.001, 0.001, 0.001);
+  }
+  // items are [dd, x, y, z, rot, w, h, code, val] nearest first
+  update(list, night) {
+    if (!this.nodes) return;
+    let drawn = 0;
+    for (let i = 0; i < BOARD_POOL; i++) {
+      const P = this.pool[i], it = list[i];
+      if (!it) { P.mesh.visible = i === 0; if (i === 0) { P.mesh.position.set(0, -2000, 0); P.mesh.scale.set(0.001, 0.001, 0.001); } continue; }
+      const key = it[7] + "|" + it[8];
+      if (P.key !== key) {
+        if (drawn >= 2) { P.mesh.visible = false; continue; }
+        const code = it[7], kind = Math.floor(code / 1e6), a = Math.floor((code % 1e6) / 1e3), b = code % 1e3;
+        if (!this.nodes[a] || !this.nodes[b]) { P.mesh.visible = false; continue; }
+        drawBoard(P.g, this.nodes, kind, a, b, it[8]); P.tex.needsUpdate = true; P.key = key; drawn++;
+      }
+      P.mesh.position.set(it[1], it[2], it[3]); P.mesh.rotation.set(0, it[4], 0); P.mesh.scale.set(it[5], it[6], 1); P.mesh.visible = true; P.mat.emissiveIntensity = 0.32 * night;
+    }
+    this.dirty = drawn >= 2;
+  }
+}
 
 export class Props {
   constructor(scene) {
@@ -158,8 +237,8 @@ export class Props {
     this.kinds = {
       palm: this.make(palmGeometry(0), veg, 450, true),
       palmFar: this.make(palmGeometry(1), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }), 1800, false),
-      tree: this.make(treeGeometry(0), veg, 260, true),
-      treeFar: this.make(treeGeometry(1), veg, 900, false),
+      tree: PK_MAP ? null : this.make(treeGeometry(0), veg, 260, true),      // Pakistan has its own trees: pktrees.js
+      treeFar: PK_MAP ? null : this.make(treeGeometry(1), veg, 900, false),
       shrub: this.make(shrubGeometry(), veg, 1600, false),
       lamp: this.make(lamp.body, metal, 1600, true),
       head: this.make(lamp.head, this.headMat, 1600, false),
@@ -167,10 +246,13 @@ export class Props {
     // rooftop plant (boxes: condensers, stair houses, panel tanks; cylinders: round tanks, antennas)
     const plant = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, metalness: 0.15 });
     this.roofBox = this.make(unitBox(), plant, 3000, false); this.roofBox.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(3000 * 3), 3);
-    this.roofCyl = this.make(unitCyl(), plant, 1200, false); this.roofCyl.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(1200 * 3), 3);
+    const cylCap = PK_MAP ? 2200 : 1200;       // Pakistan: every roof has its water tank, so more of them and fewer sides
+    this.roofCyl = this.make(unitCyl(PK_MAP ? 7 : 10), plant, cylCap, false); this.roofCyl.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cylCap * 3), 3);
     const sh = shelterGeometry();
     this.shelter = this.make(sh.frame, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.2 }), 80, true);
     this.shelterGlass = this.make(sh.glass, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.08, metalness: 0.3, transparent: true, opacity: 0.42, depthWrite: false }), 80, false);
+    if (PK_MAP) this.pk = new PkTrees(scene, (geo, mat, cap, shadow) => this.make(geo, mat, cap, shadow));
+    if (PK_MAP) this.boards = new M2Boards(scene);
     this._c = new THREE.Color();
     this.src = new Map();   // tileKey -> { palm: Float32Array world [x,z,rot,s], tree, lamp }
     this.frame = 0;
@@ -180,46 +262,50 @@ export class Props {
     const im = new THREE.InstancedMesh(geo, mat, cap); im.count = 0; im.castShadow = shadow; im.receiveShadow = false; im.frustumCulled = false;
     im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.scene.add(im); return im;
   }
-  setTile(key, data) { this.src.set(key, data); this.dirty = true; }
+  setTile(key, data) {
+    if (PK_MAP && data.pk) { const a = data.pk; for (let i = 3; i < a.length; i += 4) { const sc = a[i] % 10; if (sc >= 5) a[i] = 40 + sc - 5; } }   // planted M-2 strips: eucalyptus (species 4 in pktrees.js), whatever the zone's mix
+    this.src.set(key, data); this.dirty = true;
+  }
   dropTile(key) { this.src.delete(key); this.dirty = true; }
   // data arrays are in tile-local metres; `off` gives the tile's world offset at call time
   update(camX, camZ, offsets, night) {
     this.headMat.emissiveIntensity = 3.2 * night;
     if (++this.frame % 20 !== 0 && !this.dirty) return;
+    if (this.pk) this.pk.update(this.src, camX, camZ, offsets, this.groundAt, this.dirty);
     this.dirty = false;
     const R = { palm: 420, tree: 380, lamp: 700, shrub: 420 };
-    for (const kind of ["palm", "tree", "lamp", "shrub"]) {
+    for (const kind of PK_MAP ? ["palm", "lamp", "shrub"] : ["palm", "tree", "lamp", "shrub"]) {
       const cand = [];
       for (const [key, d] of this.src) {
         const off = offsets.get(key); if (!off) continue;
         const a = d[kind]; if (!a) continue;
         for (let i = 0; i < a.length; i += 4) {
           const x = a[i] + off.x, z = a[i + 1] + off.z; const dx = x - camX, dz = z - camZ; const dd = dx * dx + dz * dz;
-          if (dd < R[kind] * R[kind]) cand.push(dd, x, z, a[i + 2], a[i + 3]);
+          if (dd < R[kind] * R[kind]) cand.push(dd, x, z, a[i + 2], a[i + 3], this.groundAt && kind !== "lamp" ? this.groundAt(key, a[i], a[i + 1]) : 0);
         }
       }
-      const n = cand.length / 5; const order = new Array(n); for (let i = 0; i < n; i++) order[i] = i;
-      order.sort((p, q) => cand[p * 5] - cand[q * 5]);
+      const n = cand.length / 6; const order = new Array(n); for (let i = 0; i < n; i++) order[i] = i;
+      order.sort((p, q) => cand[p * 6] - cand[q * 6]);
       const im = this.kinds[kind], cap = im.instanceMatrix.count;
       const head = kind === "lamp" ? this.kinds.head : null;
       let m = Math.min(n, cap);
       // palms and trees: the nearest ones in full detail, the rest as a light far version
       if (kind === "palm" || kind === "tree") {
         const nearR = kind === "palm" ? 130 : 110;
-        let nearN = 0; while (nearN < m && cand[order[nearN] * 5] < nearR * nearR) nearN++;
+        let nearN = 0; while (nearN < m && cand[order[nearN] * 6] < nearR * nearR) nearN++;
         const far = kind === "palm" ? this.kinds.palmFar : this.kinds.treeFar, fcap = far.instanceMatrix.count; let fj = 0;
         for (let j = nearN; j < n && fj < fcap; j++) {
-          const o = order[j] * 5; const sc = cand[o + 4] % 10;
-          this._p.set(cand[o + 1], 0, cand[o + 2]); this._q.setFromEuler(this._e.set(0, cand[o + 3], 0)); this._s.set(sc, sc, sc);
+          const o = order[j] * 6; const sc = cand[o + 4] % 10;
+          this._p.set(cand[o + 1], cand[o + 5], cand[o + 2]); this._q.setFromEuler(this._e.set(0, cand[o + 3], 0)); this._s.set(sc, sc, sc);
           this._m.compose(this._p, this._q, this._s); far.setMatrixAt(fj++, this._m);
         }
         far.count = fj; far.visible = fj > 0; far.instanceMatrix.needsUpdate = true;
         m = nearN;
       }
       for (let j = 0; j < m; j++) {
-        const o = order[j] * 5; const x = cand[o + 1], z = cand[o + 2], rot = cand[o + 3], s = cand[o + 4] % 10;
+        const o = order[j] * 6; const x = cand[o + 1], z = cand[o + 2], rot = cand[o + 3], s = cand[o + 4] % 10;
         // lamps carry their base height in the 4th slot (they stand on ramps and bridges)
-        this._p.set(x, kind === "lamp" ? Math.max(0, cand[o + 4] - 0.07) : 0, z); this._q.setFromEuler(this._e.set(0, rot, 0));
+        this._p.set(x, kind === "lamp" ? Math.max(0, cand[o + 4] - 0.07) : cand[o + 5], z); this._q.setFromEuler(this._e.set(0, rot, 0));
         const sc = kind === "lamp" ? 1 : s; this._s.set(sc, sc, sc);
         this._m.compose(this._p, this._q, this._s);
         im.setMatrixAt(j, this._m); if (head) head.setMatrixAt(j, this._m);
@@ -227,12 +313,12 @@ export class Props {
       im.count = m; im.visible = m > 0; im.instanceMatrix.needsUpdate = true;
       if (head) { head.count = m; head.visible = m > 0; head.instanceMatrix.needsUpdate = true; }
     }
-    this.updatePlant(camX, camZ, offsets);
+    this._night = night; this.updatePlant(camX, camZ, offsets);
   }
   // rooftop plant within 450 m and bus shelters within 600 m, nearest first
   updatePlant(camX, camZ, offsets) {
     const cand = [];
-    const R2 = 450 * 450;
+    const R2 = PK_MAP ? 300 * 300 : 450 * 450;     // Pakistan: every roof has a tank, and from the road they are specks past 300 m
     for (const [key, d] of this.src) {
       const off = offsets.get(key); if (!off || !d.roof) continue;
       const a = d.roof;
@@ -240,15 +326,17 @@ export class Props {
     }
     const n = cand.length / 3, order = new Array(n); for (let i = 0; i < n; i++) order[i] = i;
     order.sort((p, q) => cand[p * 3] - cand[q * 3]);
-    let nb = 0, nc = 0; const cb = this.roofBox.instanceMatrix.count, cc = this.roofCyl.instanceMatrix.count;
+    let nb = 0, nc = 0; const cb = this.roofBox.instanceMatrix.count, cc = this.roofCyl.instanceMatrix.count, board = this.boards ? [] : null;
     for (let j = 0; j < n; j++) {
       const o = order[j] * 3, key = cand[o + 2], i = cand[o + 1], a = this.src.get(key).roof, off = offsets.get(key);
       const kind = a[i + 7], cyl = kind === 2 || kind === 3;
+      if (kind === 9) { if (board && board.length < BOARD_POOL) board.push([cand[o], a[i] + off.x, a[i + 1], a[i + 2] + off.z, a[i + 3], a[i + 4], a[i + 5], a[i + 6], a[i + 8]]); continue; }
       if (cyl ? nc >= cc : nb >= cb) continue;
       this._p.set(a[i] + off.x, a[i + 1], a[i + 2] + off.z); this._q.setFromEuler(this._e.set(0, a[i + 3], 0)); this._s.set(a[i + 4], a[i + 5], a[i + 6]);
       this._m.compose(this._p, this._q, this._s); this._c.setHex(a[i + 8]);
       if (cyl) { this.roofCyl.setMatrixAt(nc, this._m); this.roofCyl.setColorAt(nc++, this._c); } else { this.roofBox.setMatrixAt(nb, this._m); this.roofBox.setColorAt(nb++, this._c); }
     }
+    if (board) { this.boards.update(board, this._night); if (this.boards.dirty) this.dirty = true; }
     for (const [im, k] of [[this.roofBox, nb], [this.roofCyl, nc]]) { im.count = k; im.visible = k > 0; im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; }
     let ns = 0; const cs = this.shelter.instanceMatrix.count;
     for (const [key, d] of this.src) {

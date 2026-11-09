@@ -85,6 +85,23 @@ function turnAngle(geom, cum, sIn, sOut) {
   const a = pointAt(geom, cum, sIn - 22), b = pointAt(geom, cum, sIn), c = pointAt(geom, cum, sOut), d = pointAt(geom, cum, sOut + 22);
   let x = bearing(c, d) - bearing(a, b); while (x > 180) x -= 360; while (x < -180) x += 360; return x;
 }
+function adiff(a, b) { let x = a - b; while (x > 180) x -= 360; while (x < -180) x += 360; return x; }
+const roadKey = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+// Pakistan: a bare city name in a street-name field is a destination on a sign, not a road ("Bear left onto Peshawar")
+const PK_DEST_ONLY = /^(Peshawar|Lahore|Islamabad|Rawalpindi|Murree|Karachi|Multan|Faisalabad|Muzaffarabad|Abbottabad|Sargodha|Kohala|Srinagar|Gujranwala|Sialkot|Mianwali|Attock|Taxila|Jhelum|Chakwal|Mansehra|Hasan Abdal)$/i;
+// Pakistan: a route number is how a map labels a road, not what anyone calls it. Valhalla's sentence carries the name after it ("Bear left onto N-5/Grand Trunk Road").
+const PK_NUM = /^[A-Z]{1,3}-?\s?\d+[A-Z]?$/;
+function pkNameIn(text, num) {
+  const m = String(text || "").match(/\b(?:onto|to take|stay on|on)\s+(.+?)\.?$/i); if (!m) return "";
+  const parts = m[1].split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
+  return parts.some(p => roadKey(p) === roadKey(num)) ? parts.find(p => !PK_NUM.test(p)) || "" : "";
+}
+// the name this route's own steps give a numbered road, from the step nearest to k (a "Take the N-5 exit" sentence has none, and one number has different names along its length)
+function pkNameFor(steps, k, num) {
+  let best = "", bd = 1e9;
+  for (let j = 0; j < steps.length; j++) { if (steps[j].en !== num && steps[j].ref !== num) continue; const nm = pkNameIn(steps[j].text, num), d = Math.abs(j - k); if (nm && d < bd) { bd = d; best = nm; } }
+  return best;
+}
 function roundDist(m) {
   if (m >= 1000) return (m / 1000).toFixed(m >= 10000 ? 0 : 1) + " km";
   if (m >= 300) return Math.round(m / 50) * 50 + " m";
@@ -106,6 +123,8 @@ export class Nav {
     this.lanesEl = this.el.querySelector(".lanes");
     this.thenEl = this.el.querySelector(".then");
     this.mans = []; this.cur = null; this._h = {};
+    this.pk = false; this.fix = x => x;              // Pakistan only (set by main.js): spellings and the stale-step rules below
+    this.m2 = null; this.m2Stops = [];               // Pakistan only: the M-2 interchanges (m2data.js) and where this route passes them
     this.voice = true; this.voiceObj = null;
     try { const pick = () => { const vs = speechSynthesis.getVoices(); this.voiceObj = vs.find(v => /en-GB/i.test(v.lang) && /female|libby|sonia|hazel|susan/i.test(v.name)) || vs.find(v => /en-GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null; }; pick(); speechSynthesis.onvoiceschanged = pick; } catch (e) {}
   }
@@ -136,6 +155,25 @@ export class Nav {
           if (/onto/i.test(mt[1])) road = names[0] || ""; else towardL = names.slice(0, 2);
         }
       }
+      // Pakistan: "toward M2" while already on the M-2 says nothing. Drop it, and drop the whole step
+      // when the route simply carries on along the same road.
+      let onM2 = false, exitSelf = false, destOnly = false, numRef = "";
+      if (this.pk) {
+        if (PK_DEST_ONLY.test(road)) { towardL = [road, ...towardL.filter(x => x !== road)]; road = ""; destOnly = true; }
+        let onS = null; for (let j = k - 1; j >= 0 && !onS; j--) if (steps[j].en || steps[j].ref) onS = steps[j];
+        const on = onS ? [roadKey(onS.en), roadKey(onS.ref)].filter(Boolean) : [], same = x => on.includes(roadKey(x));
+        onM2 = on.some(x => /^M2/.test(x));
+        if (on.length && (shape === "exit" || shape === "ramp")) {
+          const nx = steps[k + 1], nxName = nx && (nx.en || nx.ref), hadT = towardL.length > 0, kept = towardL.filter(x => !same(x)), selfOnly = (hadT && !kept.length) || (road && same(road));
+          towardL = kept;
+          if (selfOnly && (!nxName || same(nxName)) && Math.abs(turnAngle(geom, cum, at, at)) < 18) continue;
+          if (road && same(road)) road = "";
+          // "Take exit 2 toward M2" while on the M-2: the junction number means nothing here, so name the road it leads to
+          if (selfOnly && shape === "exit" && onM2) { exitSelf = true; shape = "keep"; road = nxName || ""; towardL = []; }
+        }
+        if (road && PK_NUM.test(road) && !/^M-?\d/.test(road)) { const nm = pkNameFor(steps, k, road); if (nm) { numRef = road; road = nm; } }
+        road = this.fix(road); towardL = towardL.map(this.fix);
+      }
       // still nothing: name the next road the route follows
       const nextNamed = !road && !towardL.length ? steps.slice(k + 1).find(t => t.en || t.ref) : null;
       const dirW = x => x > 0 ? "right" : "left";
@@ -151,23 +189,58 @@ export class Nav {
       else verb = "Continue";
       const toward = towardL.slice(0, 2).join(" / ");
       const onto = shape === "arrive" ? destName : road;
-      const sub = [toward && (onto ? "toward " + toward : ""), s.exit_no.length && shape !== "exit" ? "Exit " + s.exit_no.join("/") : "", nextNamed && shape !== "arrive" ? "then " + (nextNamed.en || nextNamed.ref) : ""].filter(Boolean).join(" · ");
+      const xn = exitSelf ? [] : s.exit_no;
+      const sub = [toward && (onto ? "toward " + toward : ""), xn.length && shape !== "exit" ? "Exit " + xn.join("/") : "", nextNamed && shape !== "arrive" ? "then " + this.fix(nextNamed.en || nextNamed.ref) : ""].filter(Boolean).join(" · ");
       const main = onto || (toward ? "toward " + toward : "");
       const clean = x => x.replace(/\s+\.$/, ".").replace(/\.$/, "");
-      const say = shape === "arrive" ? `${clean(verb)}${destName ? ", " + destName : ""}` : clean(s.text || verb);
+      let say = shape === "arrive" ? `${clean(verb)}${destName ? ", " + destName : ""}` : this.fix(clean(s.text || verb));
+      if (exitSelf) say = verb + (road ? " for " + road : "");
+      else if (destOnly) say = say.replace(/\bonto\b/, "toward");
+      else if (numRef) say = `${verb} ${shape === "keep" || shape === "exit" || shape === "ramp" ? "for" : "onto"} ${road}`;
       // lane guidance: the lane record at or just before the maneuver point
       let ln = null;
       if (lanes) for (const L of lanes) { if (L.at <= s.idx + 3 && at - cum[Math.min(cum.length - 1, L.at)] < 450) { if (!ln || L.at > ln.at) ln = L; } }
-      mans.push({ at, shape, ang, side, verb, main, ref: s.ref && s.ref !== main ? s.ref : "", sub, say, lanes: ln ? ln.lanes : null, said: 0, idx: s.idx,
-        toward: towardL, exitNo: (s.exit_no || [])[0] || "", roadRef: s.ref || "", road });
+      mans.push({ at, shape, ang, side, verb, main, ref: numRef || (s.ref && s.ref !== main ? s.ref : ""), sub, say, lanes: ln ? ln.lanes : null, said: 0, idx: s.idx,
+        toward: towardL, exitNo: (xn || [])[0] || "", roadRef: s.ref || "", road, onM2,
+        inB: this.pk ? bearing(pointAt(geom, cum, at - 26), pointAt(geom, cum, at - 4)) : 0, outB: this.pk ? bearing(pointAt(geom, cum, at + 4), pointAt(geom, cum, at + 26)) : 0 });
     }
     this.mans = mans; this.cur = null; this._h = {};
+    this.m2Stops = this.pk && this.m2 ? this.findM2Stops(geom, cum) : [];
     this.el.hidden = false;
+  }
+  // Pakistan: where this route passes each real M-2 interchange, in metres along the route
+  findM2Stops(geom, cum) {
+    const out = [];
+    for (const n of this.m2.nodes) {
+      if (n[5] !== 0) continue;
+      const kx = Math.cos(n[2] * Math.PI / 180) * 111320, ky = 110900; let best = 800 ** 2, at = -1;
+      for (let i = 0; i < geom.length - 1; i++) {
+        const ax = (geom[i][1] - n[3]) * kx, ay = (geom[i][0] - n[2]) * ky, dx = (geom[i + 1][1] - geom[i][1]) * kx, dy = (geom[i + 1][0] - geom[i][0]) * ky, l2 = dx * dx + dy * dy;
+        const t = l2 > 0 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0, ex = ax + dx * t, ey = ay + dy * t, d2 = ex * ex + ey * ey;
+        if (d2 < best) { best = d2; at = cum[i] + (cum[i + 1] - cum[i]) * t; }
+      }
+      if (at >= 0) out.push({ at, name: n[0] });
+    }
+    return out.sort((a, b) => a.at - b.at);
   }
   hide() { this.el.hidden = true; this.mans = []; }
   // the next maneuver ahead of `progress` (metres along the route)
-  next(progress) { for (let i = 0; i < this.mans.length; i++) if (this.mans[i].at > progress - 12) return i; return -1; }
-  update(progress, speed, offRoute, rerouting, offDist) {
+  next(progress) {
+    for (let i = 0; i < this.mans.length; i++) {
+      const m = this.mans[i];
+      if (this.pk ? !m.passed && (m.shape === "arrive" ? m.at > progress - 12 : m.at > progress + 2.5) : m.at > progress - 12) return i;   // Pakistan never holds a "0 m" card
+    }
+    return -1;
+  }
+  // Cutting a corner leaves the nearest route point stuck on the corner, so a turn also counts as done once the car points down the new road.
+  markPassed(progress, hdg) {
+    for (const m of this.mans) {
+      if (m.passed) continue;
+      if (m.at - progress < 35 && m.shape !== "arrive" && Math.abs(adiff(m.inB, m.outB)) > 30 && Math.abs(adiff(hdg, m.outB)) < 24) m.passed = true;
+      break;
+    }
+  }
+  update(progress, speed, offRoute, rerouting, offDist, hdg) {
     if (!this.mans.length && !offRoute) { this.el.hidden = true; return null; }
     this.el.hidden = false;
     if (offRoute) {
@@ -176,9 +249,13 @@ export class Nav {
       return null;
     }
     this.card.classList.remove("off");
+    if (this.pk && hdg != null) this.markPassed(progress, hdg);
     const i = this.next(progress); if (i < 0) return null;
     const m = this.mans[i], d = Math.max(0, m.at - progress);
-    this.put("card", `<div class="ic">${maneuverIcon(m)}</div><div class="tx"><div class="dist">${roundDist(d)}</div><div class="verb">${esc(m.verb)}${m.main && m.shape !== "arrive" && !/^toward /.test(m.main) ? (m.shape === "keep" || m.shape === "exit" || m.shape === "ramp" ? " for" : " onto") : ""}</div>${m.main ? `<div class="road">${esc(m.main)}${m.ref ? ` <span class="ref">${esc(m.ref)}</span>` : ""}</div>` : ""}${m.sub ? `<div class="sub">${esc(m.sub)}</div>` : ""}</div>`);
+    // Pakistan, on the M-2 with the next step far off: the next real interchange, not one exit hundreds of kilometres away
+    const stop = this.pk && m.onM2 && d > 3000 ? this.m2Stops.find(x => x.at > progress + 200 && x.at < m.at - 1500) : null;
+    if (stop) this.put("card", `<div class="ic">${maneuverIcon({ shape: "continue", ang: 0 })}</div><div class="tx"><div class="dist">${roundDist(stop.at - progress)}</div><div class="verb">Continue on the M-2 to</div><div class="road">${esc(stop.name)}</div><div class="sub">${m.shape === "arrive" ? "Destination" : "Leave the M-2"} in ${roundDist(d)}</div></div>`);
+    else this.put("card", `<div class="ic">${maneuverIcon(m)}</div><div class="tx"><div class="dist">${roundDist(d)}</div><div class="verb">${esc(m.verb)}${m.main && m.shape !== "arrive" && !/^toward /.test(m.main) ? (m.shape === "keep" || m.shape === "exit" || m.shape === "ramp" ? " for" : " onto") : ""}</div>${m.main ? `<div class="road">${esc(m.main)}${m.ref ? ` <span class="ref">${esc(m.ref)}</span>` : ""}</div>` : ""}${m.sub ? `<div class="sub">${esc(m.sub)}</div>` : ""}</div>`);
     // lanes, within a kilometre of the turn
     if (m.lanes && d < 1000) { this.lanesEl.hidden = false; this.put("lanes", m.lanes.map(l => laneIcon(l.ind || [], !!l.valid)).join("")); } else this.lanesEl.hidden = true;
     // "then": the following maneuver comes quickly after this one

@@ -1,0 +1,216 @@
+{
+ "id": "giga_mall",
+ "name": "Giga Mall / World Trade Center Islamabad",
+ "lat": 33.5212474,
+ "lon": 73.1581116,
+ "headingDeg": 20.0,
+ "height": 56.4,
+ "suppress": [
+  [
+   33.521507,
+   73.156795
+  ],
+  [
+   33.5216662,
+   73.1568188
+  ],
+  [
+   33.5217974,
+   73.1568615
+  ],
+  [
+   33.5218824,
+   73.156925
+  ],
+  [
+   33.521949,
+   73.1570384
+  ],
+  [
+   33.5219387,
+   73.157179
+  ],
+  [
+   33.5219216,
+   73.1572124
+  ],
+  [
+   33.52185,
+   73.1573523
+  ],
+  [
+   33.5217943,
+   73.1574879
+  ],
+  [
+   33.5217639,
+   73.1575861
+  ],
+  [
+   33.5217041,
+   73.1576755
+  ],
+  [
+   33.5216575,
+   73.1577643
+  ],
+  [
+   33.521628,
+   73.1578786
+  ],
+  [
+   33.5216202,
+   73.1579889
+  ],
+  [
+   33.5215881,
+   73.1581741
+  ],
+  [
+   33.521532,
+   73.1583483
+  ],
+  [
+   33.521492,
+   73.1585159
+  ],
+  [
+   33.5214226,
+   73.1587214
+  ],
+  [
+   33.5213206,
+   73.1590196
+  ],
+  [
+   33.5212606,
+   73.1591419
+  ],
+  [
+   33.5211673,
+   73.1592634
+  ],
+  [
+   33.5210224,
+   73.1593958
+  ],
+  [
+   33.520819,
+   73.1595529
+  ],
+  [
+   33.5205938,
+   73.159653
+  ],
+  [
+   33.5205298,
+   73.1596599
+  ],
+  [
+   33.5205241,
+   73.1596032
+  ],
+  [
+   33.5206199,
+   73.1592606
+  ],
+  [
+   33.5207187,
+   73.1589343
+  ],
+  [
+   33.5207368,
+   73.1587922
+  ],
+  [
+   33.5207677,
+   73.1586866
+  ],
+  [
+   33.5208794,
+   73.1584484
+  ],
+  [
+   33.5209053,
+   73.1583782
+  ],
+  [
+   33.5209183,
+   73.1583106
+  ],
+  [
+   33.5209066,
+   73.1582055
+  ],
+  [
+   33.5209311,
+   73.158096
+  ],
+  [
+   33.5209615,
+   73.1579412
+  ],
+  [
+   33.5210129,
+   73.1577801
+  ],
+  [
+   33.5209981,
+   73.1576902
+  ],
+  [
+   33.5210161,
+   73.1575869
+  ],
+  [
+   33.521054,
+   73.1574955
+  ],
+  [
+   33.5210908,
+   73.1574412
+  ],
+  [
+   33.5211109,
+   73.1572862
+  ],
+  [
+   33.5211545,
+   73.1571354
+  ],
+  [
+   33.5212211,
+   73.1569308
+  ],
+  [
+   33.5212452,
+   73.1568437
+  ],
+  [
+   33.521357,
+   73.1568032
+  ]
+ ],
+ "glb": "models/giga_mall.glb",
+ "glbFar": "models/giga_mall_far.glb",
+ "tris": 33867,
+ "trisFar": 1100,
+ "bytes": 129808,
+ "bytesFar": 9532,
+ "budget": "normal",
+ "modelTop": 57.8,
+ "assumptions": [
+  "Street front is on the SSW side (local -Y): in the drone photo the Extension is to the right and the Boutique Mall to the left with the road in front, and the DHA gate stands to the left in the 2015 photo. The dossier heading of 20 is therefore kept as a frame only and points at the rear.",
+  "Height 51 m to the parapet and 57 m to the plant room, scaled from a street photo at a 4.25 m ribbon pitch; the dossier 84.1 m refers to the Extension. Floor pitch itself is an estimate.",
+  "Section read from one photo crop: ground, band, tall glazed level, band, then 7 ribbon floors. 14 storeys in Wikipedia and OSM are taken to include basements or plant levels not visible.",
+  "Upper plan wave is fitted to photos from the street side only, with the waist near mid length; OSM traces only the outer outline. Rear facade is assumed to follow the OSM outline with the same banding (not photographed).",
+  "East end pulls in about 16 percent of its projection from first ribbon to roof, estimated from two photos.",
+  "Waist colonnade depth 4 m, column spacing 8.4 m and the east corner columns' spacing are estimates.",
+  "Two entrance canopies placed from a night drone photo; their form is the plainest slab on posts.",
+  "Roof treated as flat with two plant rooms; plant room plan sizes and positions estimated. Developer renders show pools and gardens that were not built as drawn, so they are not modelled.",
+  "GIGA MALL rooftop letters and the Carrefour fascia positions are unlocated in the dossier and placed plausibly; letterforms are plain block capitals, Cinepax likewise.",
+  "Terrace planting drawn as a plain green strip on the setback.",
+  "Giga Boutique Mall, the sky bridge and the Extension tower are separate buildings and are not part of this model.",
+  "Colours: bands and glass from dossier; stone, cream strip and plant rooms estimated from photos. Night glow colours are estimates; the real facade LED scheme varies."
+ ]
+}

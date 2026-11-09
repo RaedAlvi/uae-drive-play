@@ -1,0 +1,31 @@
+{
+ "id": "kohala_bridge",
+ "name": "Kohala Bridge (Jhelum River)",
+ "lat": 34.0961159,
+ "lon": 73.4990212,
+ "headingDeg": 230.1,
+ "height": 38.3,
+ "suppress": [],
+ "glb": "models/kohala_bridge.glb",
+ "glbFar": "models/kohala_bridge_far.glb",
+ "tris": 3616,
+ "trisFar": 144,
+ "bytes": 26328,
+ "bytesFar": 3204,
+ "budget": "plain",
+ "modelTop": 38.29,
+ "assumptions": [
+  "Pier positions come from side-on photos scaled to the OSM length, so each is good to a few metres.",
+  "Span layout is modelled symmetric; the second pier at the far bank is seen clearly in only one photo, partly hidden by trees in the others.",
+  "Deck width 10.6 m is an estimate from two lanes; no published width was found.",
+  "Girder depth, pier plan and parapet height are estimated by eye from photos.",
+  "Box girder section comes from the Wikipedia list of bridges; the inside was not seen and is not modelled.",
+  "Deck levels come from public terrain at the hillside ends and the photos; no published height exists.",
+  "Colours are estimated by eye from photos in mixed light.",
+  "Hazard band stripe length of 1.2 m is an estimate from a low resolution aerial photo.",
+  "Lamp poles are plain shafts on one side at even spacing; their side, spacing and heads could not be confirmed.",
+  "Plinths are given to both river piers; the far one is only partly visible in the photos.",
+  "suppress is empty on purpose: the footprint is a line over a deep valley and flattening under it would cut the valley sides.",
+  "No night lighting is modelled because no source describes it."
+ ]
+}

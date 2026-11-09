@@ -1,0 +1,150 @@
+{
+ "id": "gpo_high_court",
+ "name": "Lahore GPO and High Court",
+ "lat": 31.565773,
+ "lon": 74.313076,
+ "headingDeg": 103.6,
+ "height": 29.4,
+ "suppress": [
+  [
+   31.5655135,
+   74.3133918
+  ],
+  [
+   31.5645655,
+   74.3146748
+  ],
+  [
+   31.5642659,
+   74.3143182
+  ],
+  [
+   31.563992,
+   74.3146314
+  ],
+  [
+   31.5638707,
+   74.3144867
+  ],
+  [
+   31.5634732,
+   74.3140126
+  ],
+  [
+   31.5635183,
+   74.313961
+  ],
+  [
+   31.5633795,
+   74.3137954
+  ],
+  [
+   31.5632184,
+   74.3139797
+  ],
+  [
+   31.5633572,
+   74.3141452
+  ],
+  [
+   31.5633765,
+   74.3141231
+  ],
+  [
+   31.5637741,
+   74.3145972
+  ],
+  [
+   31.5634054,
+   74.3150188
+  ],
+  [
+   31.5635375,
+   74.3151763
+  ],
+  [
+   31.5632533,
+   74.3155013
+  ],
+  [
+   31.5635387,
+   74.3158418
+  ],
+  [
+   31.564562,
+   74.3146714
+  ],
+  [
+   31.5645586,
+   74.314668
+  ],
+  [
+   31.5655067,
+   74.3133849
+  ],
+  [
+   31.5655854,
+   74.313466
+  ],
+  [
+   31.565752,
+   74.313513
+  ],
+  [
+   31.5658493,
+   74.3134842
+  ],
+  [
+   31.5658614,
+   74.3134259
+  ],
+  [
+   31.566299,
+   74.312961
+  ],
+  [
+   31.566156,
+   74.312784
+  ],
+  [
+   31.565569,
+   74.31259
+  ],
+  [
+   31.565396,
+   74.312643
+  ],
+  [
+   31.5655222,
+   74.31333
+  ]
+ ],
+ "glb": "models/gpo_high_court.glb",
+ "glbFar": "models/gpo_high_court_far.glb",
+ "tris": 10505,
+ "trisFar": 553,
+ "bytes": 78416,
+ "bytesFar": 11372,
+ "budget": "plain",
+ "modelTop": 29.4,
+ "assumptions": [
+  "The frame heading is 103.6, the normal of the OSM porch edge, confirmed on the image; the dossier's 166.6 is a footprint axis, as its note says.",
+  "GPO front width 38.6 m from the tower spacing on the Esri image (32.9 m) and the head-on photo; Dawn's 130 ft (39.6 m) agrees. The OSM ring omits the outer halves of the towers and is replaced on the front only.",
+  "Scale: 34.3 mm per pixel of the head-on photo at the tower plane. Eaves 10.7 m, first floor line 5.25 m, front towers 17.7 m to the finial, all derived from that; no source gives a height.",
+  "Clock tower top 26 m, corrected for perspective from photos; its position 11 m behind the front is read from the image, with satellite lean, and could be off by 3 m.",
+  "OSM traces the roofs; the image lean suggests feet could sit about 2.5 m south-east of them. Not corrected, so the model stays on OSM.",
+  "Wing bay count is one arch per 4.5 m, estimated from the Dawn wing photo; the courtyard faces and wing ends are not photographed: courtyard arcades are copied from the outer faces, seen as brick arches on the image.",
+  "Mid-wing gables are shown on the outer faces in photos; none is drawn on the courtyard side because none is seen.",
+  "Wing-end towers: positions from the image and the painting; drawn smaller than the front towers, heights estimated.",
+  "The separate rear range closing the GPO courtyard on the west is a different OSM building, not part of this model; lawn, fountain and red boundary fence are outside the OSM ring and left out.",
+  "Clock face drawn on the front only; the other three faces are not seen. Corner turrets on the clock stage simplified.",
+  "High Court: all positions come from the Esri image and OSM side blocks; only one exterior photo (from the Mall, north-east) was found. Heights scale from the 16.8 m tower spacing on the image: towers 29.4 m to the finial, eaves 10 m, gable 15.8 m.",
+  "High Court ground storey arcades: pointed arches from one close NPR view; bay count and the upper storey blank walls are estimates. Rear and side elevations are plain walls.",
+  "High Court rear range and end block: plan from roofs on the image, walls 8.5 m by estimate.",
+  "High Court side blocks are OSM ways 613586112 and 762198674, confirmed by matching red roofs on the image; tiled ranges cover their outer 55 percent as on the image, with heights assumed 9 m.",
+  "The two white-domed junction towers are seen only from above: plain square shaft and dome, 19 m shaft by estimate.",
+  "The dossier OSM block way 613586110 is mostly trees on the image, so it is not modelled.",
+  "All colours are starting tints from dossier samples or photos, affected by daylight and camera.",
+  "The game takes one suppress ring per landmark: this ring is the GPO (courtyard closed) and the modelled High Court buildings joined by a 1 m hairline over GPO Chowk."
+ ]
+}

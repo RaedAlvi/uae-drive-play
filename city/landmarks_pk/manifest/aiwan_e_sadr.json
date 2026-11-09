@@ -1,0 +1,49 @@
+{
+ "id": "aiwan_e_sadr",
+ "name": "Aiwan-e-Sadr (President House), public exterior only",
+ "lat": 33.7320413,
+ "lon": 73.0982716,
+ "headingDeg": 237.6,
+ "height": 43.4,
+ "suppress": [
+  [
+   33.7319885,
+   73.0995514
+  ],
+  [
+   33.7330389,
+   73.0987535
+  ],
+  [
+   33.7319568,
+   73.0967127
+  ],
+  [
+   33.7309063,
+   73.0975106
+  ]
+ ],
+ "glb": "models/aiwan_e_sadr.glb",
+ "glbFar": "models/aiwan_e_sadr_far.glb",
+ "tris": 2404,
+ "trisFar": 100,
+ "bytes": 18508,
+ "bytesFar": 4416,
+ "budget": "plain",
+ "modelTop": 43.4,
+ "assumptions": [
+  "No published height: stage heights fitted to one long-lens front photo, scaled by the 4.9 m slot rhythm and the 134 m front width; roof at 36.9 m, flag masts to about 43 m.",
+  "Esri imagery leans about 31 degrees toward the front; every roof position was corrected by 0.6 m per metre of height, so ground positions carry an error of a few metres.",
+  "Front range wall treated as sitting on level ground at z 0; the real site drops in steps toward Constitution Avenue, which is not modelled.",
+  "Cladding colour is a photo estimate of off-white; no source documents the material.",
+  "Side elevations of the upper stages were not photographed clearly: the window positions on them are guesses.",
+  "Rear elevation of the upper stages is built the same as the front (not seen directly).",
+  "Rear range heights, window positions and the 3.4 m column spacing are read from one oblique garden-side photo.",
+  "Side wings at 11 m and the skylit spine at 4 m are estimates: neither is visible from a side in any photo found.",
+  "Rear pavilion walls and the height of their pyramid roofs are guesses; only the terracotta plan squares are seen, from above.",
+  "Blue skylights drawn as flat panels; the round fittings seen in the imagery are left out.",
+  "Two flag masts on the cap are placed from the front photos; flags are not modelled.",
+  "Gardens, fountains, trees, the solar fields to the SE and all security features are outside this model.",
+  "Night glow values are placeholders: lighting is undocumented."
+ ]
+}

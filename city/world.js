@@ -1,7 +1,8 @@
 // World: projection, floating origin, tile streaming through workers, and the collision
 // index the car physics reads (roads, names, building footprints, water).
 import * as THREE from "three";
-import { makeBuildingMaterial, makeRoadMaterial, makeWalkMaterial, makeAreaMaterial, makeWaterMaterial } from "./materials.js";
+import { makeBuildingMaterial, makeRoadMaterial, makeWalkMaterial, makeAreaMaterial, makeWaterMaterial, makeTerrainMaterial } from "./materials.js";
+import { pkSpecies } from "./pktrees.js";
 
 // ---------------------------------------------------------------- projection
 // Web Mercator metres scaled by cos(24.9 deg), the latitude between Abu Dhabi and Dubai,
@@ -39,15 +40,15 @@ export class Index {
   key(lat, lon) { return Math.floor(lat / this.cell) + "_" + Math.floor(lon / this.cell); }
   cells(a, b, c, d) { const out = []; for (let i = Math.floor(a / this.cell); i <= Math.floor(c / this.cell); i++) for (let j = Math.floor(b / this.cell); j <= Math.floor(d / this.cell); j++) out.push(i + "_" + j); return out; }
   put(store, k, item, reg) { item.__t = this.curKey; let a = store.get(k); if (!a) { a = []; store.set(k, a); } a.push(item); reg.push([store, k]); }
-  addLine(store, flat, item, padM, reg, elev) {
+  addLine(store, flat, item, padM, reg, elev, hs) {
     const pad = padM / 111320;
     for (let i = 0; i < flat.length - 2; i += 2) {
       const a = [flat[i + 1], flat[i]], b = [flat[i + 3], flat[i + 2]];
-      const e0 = elev ? elev[i / 2] : 0, e1 = elev ? elev[i / 2 + 1] : 0;
+      const e0 = elev ? elev[i / 2] : 0, e1 = elev ? elev[i / 2 + 1] : 0, h0 = hs ? hs[i / 2] : 0, h1 = hs ? hs[i / 2 + 1] : 0;
       const n = Math.max(1, Math.ceil(hav(a, b) / 60));
       for (let k = 0; k < n; k++) {
         const p = [a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n], q = [a[0] + (b[0] - a[0]) * (k + 1) / n, a[1] + (b[1] - a[1]) * (k + 1) / n];
-        const seg = Object.assign({ a: p, b: q, ea: e0 + (e1 - e0) * k / n, eb: e0 + (e1 - e0) * (k + 1) / n }, item);
+        const seg = Object.assign({ a: p, b: q, ea: e0 + (e1 - e0) * k / n, eb: e0 + (e1 - e0) * (k + 1) / n, ha: h0 + (h1 - h0) * k / n, hb: h0 + (h1 - h0) * (k + 1) / n }, item);
         for (const c of this.cells(Math.min(p[0], q[0]) - pad, Math.min(p[1], q[1]) - pad, Math.max(p[0], q[0]) + pad, Math.max(p[1], q[1]) + pad)) this.put(store, c, seg, reg);
       }
     }
@@ -71,7 +72,7 @@ export class Index {
     for (const r of coll.r) {
       if (!DRIVABLE.has(r.c)) continue;
       const cls = r.r && CAP[r.c + "_link"] ? r.c + "_link" : r.c;
-      this.addLine(this.roads, r.g, { cls, brunnel: r.b, hw: HALF[cls] || 5, w: r.w || 2 * (HALF[cls] || 5), ow: !!r.o, ln: r.l || 2, lim: r.m || 0 }, (HALF[cls] || 5) + 4, reg, r.e);
+      this.addLine(this.roads, r.g, { cls, brunnel: r.b, hw: HALF[cls] || 5, w: r.w || 2 * (HALF[cls] || 5), ow: !!r.o, ln: r.l || 2, lim: r.m || 0 }, (HALF[cls] || 5) + 4, reg, r.e, r.h);
       if (tick()) { yield; if (this.tiles.get(key) !== reg) return; this.curKey = key; }
     }
     for (const nm of coll.n) {
@@ -107,7 +108,7 @@ export class Index {
       const score = d + (y === undefined ? e * 0.01 : 2.5 * Math.abs(e - y));
       if (score < bd) { bd = score; best = s; bt = t; }
     }
-    if (best) best.eAt = best.ea + (best.eb - best.ea) * bt;
+    if (best) { best.eAt = best.ea + (best.eb - best.ea) * bt; best.hAt = best.ha + (best.hb - best.ha) * bt; }
     return best;
   }
   // Nearest street name; service-road and access-path names lose to a real street nearby
@@ -131,6 +132,8 @@ export class Index {
 function ring(lat, lon, r) { let inside = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const yi = r[i][1], xi = r[i][0], yj = r[j][1], xj = r[j][0]; if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; }
 
 // ---------------------------------------------------------------- tile manager
+// Pakistan: metres from the camera to a chunk at which each near-only layer shows, and how many new vertices one call may send to the GPU
+const PK_NEAR_R = { vf: 130, vn: 280, fpa: 300, vw: 480, fpn: 900 }, PK_UPLOAD = 60000, PK_HELD_BYTES = 5e6;
 export class Tiles {
   constructor(scene, opts) {
     this.scene = scene; this.opts = opts;
@@ -143,6 +146,9 @@ export class Tiles {
     for (let i = 0; i < n; i++) { const w = new Worker(new URL("./tileworker.js", import.meta.url), { type: "module" }); w.onmessage = e => this.onTile(e.data, w); w.onerror = e => console.error("worker", e.message); w.idle = true; this.workers.push(w); }
     this.radius = opts.radius || 2600;
     this.far = new Map(); this.farQueue = []; this.farMat = makeWaterMaterial(true);
+    // Pakistan: the land beyond the loaded tiles, a coarse ring (z12) and a coarser one (z10)
+    this.pk = CITY.region === "pakistan";
+    if (this.pk) { this.warmTerr = makeTerrainMaterial({}); this.holes = { v: Array.from({ length: 16 }, () => new THREE.Vector4()), n: { value: 0 } }; this.farTerr = { 12: makeTerrainMaterial({ far: true, nearR: this.radius - 120, holes: this.holes }), 10: makeTerrainMaterial({ far: true, nearR: 15000 }) }; }
     this.farMat.userData.uNearR.value = Math.max(1200, this.radius - 400);
     this.suppress = [];     // [{ poly: [[lat, lon], ...], bbox: [minLat, minLon, maxLat, maxLon] }]: OSM buildings whose centroid is inside are not drawn (landmarks replace them)
     this.stats = { loaded: 0, ms: 0 };
@@ -152,7 +158,32 @@ export class Tiles {
   }
   url(x, y) { return this.template.replace("{z}", Z).replace("{x}", x).replace("{y}", y); }
   offsetOfZ(z, tx, ty) { const nw = tileNWz(z, tx, ty); return { x: (nw.mx - origin.mx) * K, z: -(nw.my - origin.my) * K }; }
+  // Pakistan's ground beyond the detailed tiles: rings of mesh tiles around the camera.
+  updateFarTerrain(lat, lon) {
+    const want = new Set();
+    for (const [z, r, cin, cout] of [[12, 2, 96, 64], [10, 1, 48, 48]]) {
+      const [cx, cy] = tileOfZ(z, lat, lon);
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        const k = "f" + z + "/" + (cx + dx) + "/" + (cy + dy); want.add(k);
+        if (!this.far.has(k)) { this.far.set(k, { key: k, z, x: cx + dx, y: cy + dy, state: "queued", terr: true, cells: Math.max(Math.abs(dx), Math.abs(dy)) <= 1 ? cin : cout, ord: Math.max(Math.abs(dx), Math.abs(dy)) }); this.farQueue.push(k); }
+      }
+    }
+    for (const [k, t] of this.far) if (!want.has(k) && t.state !== "loading") { if (t.group) { this.scene.remove(t.group); t.group.traverse(o => o.geometry && o.geometry.dispose()); } this.far.delete(k); }
+    this.farQueue.sort((a, b) => { const p = this.far.get(a), q = this.far.get(b); return (p ? p.ord : 9) - (q ? q.ord : 9); });
+    this.pump();
+  }
+  // Pakistan: the z12 ring must show through wherever a near tile is not built yet (or failed), or the road level shows sky
+  syncHoles() {
+    if (!this.holes) return;
+    const list = [], cx = this.camX || 0, cz = this.camZ || 0;
+    for (const t of this.tiles.values()) { if (t.state === "ready" && t.meshes && t.meshes.t && !t.meshes.t.userData.held) continue; const o = this.offsetOf(t.x, t.y); list.push({ o, d: Math.hypot(o.x + TILE / 2 - cx, o.z + TILE / 2 - cz) }); }
+    list.sort((a, b) => a.d - b.d);
+    const v = this.holes.v, n = Math.min(v.length, list.length);
+    for (let i = 0; i < n; i++) v[i].set(list[i].o.x, list[i].o.z, list[i].o.x + TILE, list[i].o.z + TILE);
+    this.holes.n.value = n;
+  }
   updateFar(lat, lon) {
+    if (this.pk) return this.updateFarTerrain(lat, lon);
     const [cx, cy] = tileOfZ(ZF, lat, lon); const want = new Set();
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
       const k = "f" + (cx + dx) + "/" + (cy + dy); want.add(k);
@@ -166,9 +197,11 @@ export class Tiles {
   rebase(lat, lon) {
     origin.mx = mercX(lon); origin.my = mercY(lat);
     for (const t of this.tiles.values()) if (t.group) { const o = this.offsetOf(t.x, t.y); t.group.position.set(o.x, 0, o.z); t.off = o; }
-    for (const t of this.far.values()) if (t.group) { const o = this.offsetOfZ(ZF, t.x, t.y); t.group.position.set(o.x, 0, o.z); }
+    for (const t of this.far.values()) if (t.group) { const o = this.offsetOfZ(t.z || ZF, t.x, t.y); t.group.position.set(o.x, 0, o.z); }
+    this.syncHoles();
   }
   update(lat, lon, camX, camZ) {
+    this.camX = camX; this.camZ = camZ;
     const [cx, cy] = tileOf(lat, lon);
     const want = new Map();
     const span = Math.ceil(this.radius / TILE) + 1;
@@ -186,6 +219,7 @@ export class Tiles {
     for (const [k, w] of todo) { this.tiles.set(k, { key: k, x: w.x, y: w.y, state: "queued" }); this.queue.push(k); }
     // re-prioritise the queue by distance
     this.queue.sort((a, b) => (want.get(a) ? want.get(a).d : 1e9) - (want.get(b) ? want.get(b).d : 1e9));
+    this.syncHoles();
     this.pump();
   }
   // Queue the tiles along a route (lat/lon points) for background download into the cache.
@@ -210,7 +244,8 @@ export class Tiles {
       if (w.idle && !this.queue.length && this.farQueue.length && !this.workers.some(x => x.farBusy)) {
         const k = this.farQueue.shift(); const t = this.far.get(k); if (!t) continue;
         t.state = "loading"; w.idle = false; w.farBusy = true;
-        const size = CIRC / Math.pow(2, ZF) * K;
+        const size = CIRC / Math.pow(2, t.z || ZF) * K;
+        if (t.terr) { w.postMessage({ cmd: "tile", far: true, terrainFar: true, key: k, z: t.z, x: t.x, y: t.y, size, cells: t.cells, region: CITY.region }); continue; }
         w.postMessage({ cmd: "tile", far: true, key: k, z: ZF, x: t.x, y: t.y, url: this.template.replace("{z}", ZF).replace("{x}", t.x).replace("{y}", t.y), size });
         continue;
       }
@@ -222,7 +257,10 @@ export class Tiles {
   }
   // near-only detail (villa walls): chunk by chunk, visible within `r` metres of the camera
   cullNear(camX, camZ, r = 650) {
+    if (this.pk) return this.cullNearPK(camX, camZ);
     for (const t of this.tiles.values()) {
+      const fn = t.meshes && t.meshes.fpn;
+      if (fn && t.off) for (const q of fn.userData.parts || [fn]) { const bb = q.geometry.boundingBox; if (!bb) continue; const dx = Math.max(bb.min.x + t.off.x - camX, 0, camX - (bb.max.x + t.off.x)), dz = Math.max(bb.min.z + t.off.z - camZ, 0, camZ - (bb.max.z + t.off.z)); q.visible = dx * dx + dz * dz < 1300 * 1300; }
       const m = t.meshes && t.meshes.vw; if (!m || !t.off) continue;
       for (const q of m.userData.parts || [m]) {
         const bb = q.geometry.boundingBox; if (!bb) continue;
@@ -230,6 +268,53 @@ export class Tiles {
         q.visible = dx * dx + dz * dz < r * r;
       }
     }
+  }
+  // Pakistan: release held layers, nearest tile first. A tile close to the camera, or a world still behind the loading card, is released whole.
+  stepHeld(camX, camZ, rush) {
+    let list = null;
+    for (const t of this.tiles.values()) if (t.held && t.held.length) (list = list || []).push(t);
+    if (!list) return;
+    const dist = t => { const o = this.offsetOf(t.x, t.y); return Math.hypot(Math.max(o.x - camX, 0, camX - (o.x + TILE)), Math.max(o.z - camZ, 0, camZ - (o.z + TILE))); };
+    const order = list.map(t => [dist(t), t]).sort((a, b) => a[0] - b[0]);
+    let left = rush ? Infinity : PK_HELD_BYTES, ground = false;
+    for (const [d, t] of order) {
+      while (t.held.length && (d < 900 || left > 0)) {
+        const m = t.held.shift();
+        for (const q of m.userData.parts) { q.visible = true; q.userData.held = false; }
+        for (const a of Object.values(m.geometry.attributes)) left -= a.array.byteLength;
+        if (m === t.meshes.t) { ground = true; left -= PK_HELD_BYTES; }          // its 512 px ground texture and mipmaps are the slowest single upload: one a frame
+      }
+      if (left <= 0 && d >= 900) break;
+    }
+    if (ground) this.syncHoles();
+  }
+  // Pakistan: each near-only layer has its own range. A chunk seen for the first time still has to go to the GPU, so at most PK_UPLOAD vertices are let through per call, nearest first.
+  cullNearPK(camX, camZ) {
+    const fresh = [];
+    for (const t of this.tiles.values()) {
+      if (!t.meshes || !t.off) continue;
+      for (const k in PK_NEAR_R) {
+        const m = t.meshes[k]; if (!m) continue;
+        const r2 = PK_NEAR_R[k] * PK_NEAR_R[k];
+        for (const q of m.userData.parts) {
+          const bb = q.geometry.boundingBox, dx = Math.max(bb.min.x + t.off.x - camX, 0, camX - (bb.max.x + t.off.x)), dz = Math.max(bb.min.z + t.off.z - camZ, 0, camZ - (bb.max.z + t.off.z)), d2 = dx * dx + dz * dz, on = d2 < r2;
+          if (on && q.userData.cold) fresh.push([d2, q]); else q.visible = on;
+        }
+      }
+    }
+    fresh.sort((a, b) => a[0] - b[0]);
+    let sent = 0;
+    for (const [, q] of fresh) { if (sent && sent + q.geometry.attributes.position.count > PK_UPLOAD) break; sent += q.geometry.attributes.position.count; q.visible = true; q.userData.cold = false; }
+  }
+  // Height of the drawn ground (Pakistan). Local: tile key and tile metres. Returns NaN until that tile is built.
+  groundLocal(t, lx, lz) {
+    const g = t && t.tgrid; if (!g) return NaN;
+    const n = g.n, m = n + 1, fx = Math.max(0, Math.min(n - 1e-3, lx / g.c)), fz = Math.max(0, Math.min(n - 1e-3, lz / g.c)), i = Math.floor(fx), j = Math.floor(fz), tx = fx - i, tz = fz - j, k = j * m + i, h = g.h;
+    return (h[k] * (1 - tx) + h[k + 1] * tx) * (1 - tz) + (h[k + m] * (1 - tx) + h[k + m + 1] * tx) * tz;
+  }
+  groundAt(lat, lon) {
+    const [x, y] = tileOf(lat, lon), t = this.tiles.get(x + "/" + y); if (!t || !t.off || !t.tgrid) return NaN;
+    return this.groundLocal(t, (mercX(lon) - origin.mx) * K - t.off.x, -(mercY(lat) - origin.my) * K - t.off.z);
   }
   pending() { let n = 0; for (const t of this.tiles.values()) if (t.state !== "ready") n++; return n; }
   onTile(msg, w) {
@@ -241,6 +326,17 @@ export class Tiles {
     if (msg.far || (msg.key && msg.key[0] === "f")) {
       w.farBusy = false;
       const t = this.far.get(msg.key);
+      if (msg.terrainFar) {
+        if (t && !msg.error && msg.mesh && msg.mesh.count) {
+          const d = msg.mesh, geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.BufferAttribute(d.position, 3)); geo.setAttribute("normal", new THREE.BufferAttribute(d.normal, 3));
+          geo.setIndex(new THREE.BufferAttribute(d.index, 1)); geo.computeBoundingSphere();
+          const mesh = new THREE.Mesh(geo, this.farTerr[t.z]); mesh.matrixAutoUpdate = false; mesh.updateMatrix(); mesh.receiveShadow = false;
+          const g = new THREE.Group(); g.add(mesh); const o = this.offsetOfZ(t.z, t.x, t.y); g.position.set(o.x, 0, o.z);
+          this.scene.add(g); t.group = g; t.state = "ready";
+        } else if (t) t.state = msg.error ? "error" : "ready";
+        this.pump(); return;
+      }
       if (t && !msg.error && msg.water && msg.water.count) {
         const geo = new THREE.BufferGeometry();
         for (const [name, size] of [["position", 3], ["normal", 3], ["color", 3]]) geo.setAttribute(name, new THREE.BufferAttribute(msg.water[name], size));
@@ -255,11 +351,23 @@ export class Tiles {
     if (msg.prefetched) { this.pump(); return; }
     const t = this.tiles.get(msg.key);
     if (!t) { this.pump(); return; }
-    if (msg.error) { console.warn("tile", msg.key, msg.error); t.state = "error"; setTimeout(() => { if (this.tiles.get(msg.key) === t) { this.tiles.delete(msg.key); } }, 8000); this.pump(); return; }
+    if (msg.error) { console.warn("tile", msg.key, msg.error); t.state = "error"; this.syncHoles(); setTimeout(() => { if (this.tiles.get(msg.key) === t) { this.tiles.delete(msg.key); } }, 8000); this.pump(); return; }
     const g = new THREE.Group(); g.name = "tile " + msg.key;
     const o = this.offsetOf(t.x, t.y); g.position.set(o.x, 0, o.z); t.off = o;
     const mk = (d, attrs, mat, cast, recv) => {
       if (!d || !d.count) return null;
+      if (d.parts) {                                                          // Pakistan near-only layers: buffers per chunk, shown by cullNearPK
+        const meshes = d.parts.map(p => {
+          const geo = new THREE.BufferGeometry();
+          for (const [name, size] of attrs) geo.setAttribute(name, new THREE.BufferAttribute(p[name], size));
+          geo.setIndex(new THREE.BufferAttribute(p.index, 1));
+          geo.boundingBox = new THREE.Box3(new THREE.Vector3(p.b[0], p.b[1], p.b[2]), new THREE.Vector3(p.b[3], p.b[4], p.b[5])); geo.boundingSphere = geo.boundingBox.getBoundingSphere(new THREE.Sphere());
+          const m = new THREE.Mesh(geo, mat); m.castShadow = cast; m.receiveShadow = recv; m.matrixAutoUpdate = false; m.updateMatrix(); m.visible = false; m.userData.cold = true;
+          g.add(m); return m;
+        });
+        meshes[0].userData.parts = meshes;
+        return meshes[0];
+      }
       const shared = attrs.map(([name, size]) => [name, new THREE.BufferAttribute(d[name], size)]);
       // chunked meshes: one Mesh per chunk sharing the vertex buffers, each with its own box so
       // the camera and the shadow pass cull them separately
@@ -279,20 +387,38 @@ export class Tiles {
     };
     t.meshes = {
       b: mk(msg.buildings, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3], ["facade", 4]], this.mats.b, true, true),
+      fpn: mk(msg.fpn, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3], ["facade", 4]], this.mats.b, true, true),
       r: mk(msg.roads, [["position", 3], ["normal", 3], ["uv", 2], ["road", 4], ["junc", 4]], this.mats.r, false, true),
       w: mk(msg.walks, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3]], this.mats.w, true, true),
       vw: mk(msg.vwalls, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3]], this.mats.w, true, true),
+      vn: mk(msg.vnear, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3]], this.mats.w, false, true),
+      vf: mk(msg.vfine, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3]], this.mats.w, false, true),
+      fpa: mk(msg.fpa, [["position", 3], ["normal", 3], ["uv", 2], ["color", 3], ["facade", 4]], this.mats.b, false, true),
       a: mk(msg.areas, [["position", 3], ["normal", 3], ["color", 3]], this.mats.a, false, true),
       wa: mk(msg.water, [["position", 3], ["normal", 3], ["color", 3]], this.mats.wa, false, false),
     };
+    if (msg.terrain) {
+      const tex = new THREE.DataTexture(msg.splat, msg.splatN, msg.splatN, THREE.RGBAFormat);
+      tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.generateMipmaps = true; tex.anisotropy = 4; tex.needsUpdate = true;
+      let trailTex = null;
+      if (msg.trail) { trailTex = new THREE.DataTexture(msg.trail, msg.trailN, msg.trailN, THREE.RedFormat); trailTex.magFilter = THREE.LinearFilter; trailTex.minFilter = THREE.LinearMipmapLinearFilter; trailTex.generateMipmaps = true; trailTex.anisotropy = 4; trailTex.needsUpdate = true; }
+      const mat = makeTerrainMaterial({ splat: tex, trail: trailTex, ts: TILE, ox: ((t.x * TILE) % 40960), oz: ((t.y * TILE) % 40960), lat: msg.tileLat });
+      t.terrTex = tex; t.trailTex = trailTex; t.terrMat = mat; t.meshes.t = mk(msg.terrain, [["position", 3], ["normal", 3]], mat, false, true);
+      t.tgrid = msg.tgrid;
+    }
 
+    if (this.pk) {                                                            // a new tile's ground, roads and buildings go to the GPU one layer at a time (stepHeld), or they all land in the frame it comes into view
+      t.held = ["t", "a", "r", "w", "b"].map(k => t.meshes[k]).filter(Boolean);
+      for (const m of t.held) for (const q of m.userData.parts) { q.visible = false; q.userData.held = true; }
+    }
     this.scene.add(g);
-    t.group = g; t.state = "ready"; t.buildingsRaw = msg.buildings;
+    t.group = g; t.state = "ready"; t.buildingsRaw = msg.buildings; t.fpCount = msg.fpCount || 0; this.syncHoles();
     // props: split park trees into palms and broadleaf
-    const palms = [], trees = [], shrubs = [];
+    const palms = [], trees = [], shrubs = [], pines = [];
     for (let i = 0; i < msg.palms.length; i += 4) palms.push(msg.palms[i], msg.palms[i + 1], msg.palms[i + 2], msg.palms[i + 3]);
-    for (let i = 0; i < msg.parkTrees.length; i += 4) { const kind = Math.floor(msg.parkTrees[i + 3] / 10); (kind === 2 ? shrubs : kind ? trees : palms).push(msg.parkTrees[i], msg.parkTrees[i + 1], msg.parkTrees[i + 2], msg.parkTrees[i + 3] % 10); }
-    t.props = { palm: new Float32Array(palms), tree: new Float32Array(trees), shrub: new Float32Array(shrubs), lamp: msg.lamps, roof: msg.roofs, shelter: msg.shelters };
+    for (let i = 0; i < msg.parkTrees.length; i += 4) { const kind = Math.floor(msg.parkTrees[i + 3] / 10); (kind === 3 ? pines : kind === 2 ? shrubs : kind ? trees : palms).push(msg.parkTrees[i], msg.parkTrees[i + 1], msg.parkTrees[i + 2], msg.parkTrees[i + 3] % 10); }
+    t.props = { pine: new Float32Array(pines), palm: new Float32Array(palms), tree: new Float32Array(trees), shrub: new Float32Array(shrubs), lamp: msg.lamps, roof: msg.roofs, shelter: msg.shelters };
+    if (this.pk) t.props.pk = this.pkTrees(t, trees, pines);
     t.signs = msg.signs; t.signals = msg.signals; t.labels = msg.labels || []; t.places = msg.places || []; t.cuts = msg.cuts && msg.cuts.length ? msg.cuts : null;
     t.traffic = msg.traffic;
     t.coll = msg.coll;
@@ -300,10 +426,23 @@ export class Tiles {
     if (this.opts.onReady) this.opts.onReady(t);
     this.pump();
   }
+  // Pakistan: every broadleaf and pine gets its species from where it stands: [x, z, rotation, species * 10 + scale]
+  pkTrees(t, trees, pines) {
+    const out = new Float32Array(trees.length + pines.length), nw = toLatLon(t.off.x, t.off.z), se = toLatLon(t.off.x + TILE, t.off.z + TILE);
+    let o = 0;
+    for (const [a, pine] of [[trees, false], [pines, true]]) for (let i = 0; i < a.length; i += 4) {
+      const lat = nw[0] + (se[0] - nw[0]) * a[i + 1] / TILE, lon = nw[1] + (se[1] - nw[1]) * a[i] / TILE, h = this.groundLocal(t, a[i], a[i + 1]);
+      out[o++] = a[i]; out[o++] = a[i + 1]; out[o++] = a[i + 2]; out[o++] = pkSpecies(lat, lon, h === h ? h : 0, pine) * 10 + a[i + 3];
+    }
+    return out;
+  }
   drop(k) {
     const t = this.tiles.get(k); if (!t) return;
     if (t.group) { this.scene.remove(t.group); t.group.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
+    if (t.terrTex) { t.terrTex.dispose(); t.terrMat.dispose(); }
+    if (t.trailTex) t.trailTex.dispose();
     this.tiles.delete(k);
+    this.syncHoles();
     this.queue = this.queue.filter(q => q !== k);
     if (this.opts.onDrop) this.opts.onDrop(t);
   }

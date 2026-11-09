@@ -1,0 +1,305 @@
+{
+ "id": "minar_e_pakistan",
+ "name": "Minar-e-Pakistan",
+ "lat": 31.592511,
+ "lon": 74.309485,
+ "headingDeg": 0.0,
+ "height": 70.0,
+ "suppress": [
+  [
+   31.5921301,
+   74.3091305
+  ],
+  [
+   31.5921523,
+   74.3091002
+  ],
+  [
+   31.5921762,
+   74.3090718
+  ],
+  [
+   31.5922018,
+   74.3090454
+  ],
+  [
+   31.5922289,
+   74.3090212
+  ],
+  [
+   31.5922574,
+   74.3089993
+  ],
+  [
+   31.5922871,
+   74.3089797
+  ],
+  [
+   31.5923179,
+   74.3089627
+  ],
+  [
+   31.5923497,
+   74.3089482
+  ],
+  [
+   31.5923822,
+   74.3089363
+  ],
+  [
+   31.5924154,
+   74.3089271
+  ],
+  [
+   31.5924491,
+   74.3089206
+  ],
+  [
+   31.5924831,
+   74.308917
+  ],
+  [
+   31.5925172,
+   74.3089161
+  ],
+  [
+   31.5925512,
+   74.308918
+  ],
+  [
+   31.5925851,
+   74.3089227
+  ],
+  [
+   31.5926186,
+   74.3089301
+  ],
+  [
+   31.5926516,
+   74.3089403
+  ],
+  [
+   31.5926839,
+   74.3089531
+  ],
+  [
+   31.5927153,
+   74.3089685
+  ],
+  [
+   31.5927458,
+   74.3089865
+  ],
+  [
+   31.5927751,
+   74.3090069
+  ],
+  [
+   31.5928031,
+   74.3090297
+  ],
+  [
+   31.5928296,
+   74.3090547
+  ],
+  [
+   31.5928546,
+   74.3090818
+  ],
+  [
+   31.5928779,
+   74.3091109
+  ],
+  [
+   31.5928995,
+   74.3091418
+  ],
+  [
+   31.5929191,
+   74.3091744
+  ],
+  [
+   31.5929367,
+   74.3092086
+  ],
+  [
+   31.5929522,
+   74.309244
+  ],
+  [
+   31.5929655,
+   74.3092807
+  ],
+  [
+   31.5929767,
+   74.3093184
+  ],
+  [
+   31.5929855,
+   74.3093569
+  ],
+  [
+   31.592992,
+   74.309396
+  ],
+  [
+   31.5929962,
+   74.3094355
+  ],
+  [
+   31.5929979,
+   74.3094753
+  ],
+  [
+   31.5929973,
+   74.3095152
+  ],
+  [
+   31.5929943,
+   74.3095549
+  ],
+  [
+   31.592989,
+   74.3095942
+  ],
+  [
+   31.5929812,
+   74.3096331
+  ],
+  [
+   31.5929712,
+   74.3096711
+  ],
+  [
+   31.5929589,
+   74.3097083
+  ],
+  [
+   31.5929445,
+   74.3097444
+  ],
+  [
+   31.5929278,
+   74.3097792
+  ],
+  [
+   31.5929092,
+   74.3098126
+  ],
+  [
+   31.5928886,
+   74.3098443
+  ],
+  [
+   31.5928661,
+   74.3098743
+  ],
+  [
+   31.5928419,
+   74.3099024
+  ],
+  [
+   31.5928161,
+   74.3099285
+  ],
+  [
+   31.5927888,
+   74.3099523
+  ],
+  [
+   31.5927601,
+   74.3099739
+  ],
+  [
+   31.5927302,
+   74.3099931
+  ],
+  [
+   31.5926992,
+   74.3100097
+  ],
+  [
+   31.5926673,
+   74.3100239
+  ],
+  [
+   31.5926347,
+   74.3100353
+  ],
+  [
+   31.5926014,
+   74.3100441
+  ],
+  [
+   31.5925677,
+   74.3100501
+  ],
+  [
+   31.5925337,
+   74.3100534
+  ],
+  [
+   31.5924996,
+   74.3100538
+  ],
+  [
+   31.5924655,
+   74.3100515
+  ],
+  [
+   31.5924317,
+   74.3100464
+  ],
+  [
+   31.5923983,
+   74.3100385
+  ],
+  [
+   31.5923654,
+   74.3100279
+  ],
+  [
+   31.5923332,
+   74.3100147
+  ],
+  [
+   31.5923019,
+   74.3099989
+  ],
+  [
+   31.5922716,
+   74.3099805
+  ],
+  [
+   31.5922425,
+   74.3099597
+  ],
+  [
+   31.5917984,
+   74.3096169
+  ]
+ ],
+ "glb": "models/minar_e_pakistan.glb",
+ "glbFar": "models/minar_e_pakistan_far.glb",
+ "tris": 31005,
+ "trisFar": 520,
+ "bytes": 160120,
+ "bytesFar": 11832,
+ "budget": "hero",
+ "modelTop": 70.0,
+ "assumptions": [
+  "Total 70 m and tower 62 m above the base are the dossier values; the star top is therefore 8 m up, though photos suggest the visible plinth may be lower.",
+  "Intermediate tier heights (1.8, 3.4, 5.0, 6.4, 7.7 m) are estimates that climb to the sourced 8 m.",
+  "Plan radii, the teardrop outline, bridges and rostrum position were measured on one satellite image and may carry about 1 m of error.",
+  "Tier order of the four sourced stones is taken as outermost uncut to innermost marble; colours are photo estimates.",
+  "Petal height is 9.9 m as measured in the telephoto photo; sources say 9 m.",
+  "Ten petals and ten ribs: counted on the aerial image; rib phase is set so one arch is centred on the plaza axis.",
+  "Tower radii and floor bands were read from one telephoto photo and ignore perspective.",
+  "Core treated as a dark glazed cylinder with a helical stair; its true construction was not seen.",
+  "Lantern has six arches, inferred from two visible arch spacings; dome flute count is an estimate.",
+  "Red pool assigned to the arc facing the teardrop and green to the far arc, from one oblique aerial; the actual division is unconfirmed.",
+  "Rostrum drawn as a low tiled wedge at the teardrop point; its height and pattern are unknown.",
+  "Door on the axis and plaques on the drum faces: the positions of the ten plaques are not published.",
+  "Night glow is a neutral white wash; the real LED colours vary."
+ ]
+}

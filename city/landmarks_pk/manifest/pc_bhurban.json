@@ -1,0 +1,90 @@
+{
+ "id": "pc_bhurban",
+ "name": "Pearl Continental Hotel Bhurban",
+ "lat": 33.9556252,
+ "lon": 73.4596686,
+ "headingDeg": 357.4,
+ "height": 23.0,
+ "suppress": [
+  [
+   33.9547475,
+   73.459382
+  ],
+  [
+   33.9547647,
+   73.4595851
+  ],
+  [
+   33.9551502,
+   73.4595094
+  ],
+  [
+   33.9553615,
+   73.4597056
+  ],
+  [
+   33.9556441,
+   73.4600051
+  ],
+  [
+   33.9561467,
+   73.4599776
+  ],
+  [
+   33.9561381,
+   73.4598295
+  ],
+  [
+   33.9561981,
+   73.4597779
+  ],
+  [
+   33.9562495,
+   73.4598605
+  ],
+  [
+   33.9564722,
+   73.4596023
+  ],
+  [
+   33.9563494,
+   73.4594474
+  ],
+  [
+   33.9561267,
+   73.459685
+  ],
+  [
+   33.9557898,
+   73.4597745
+  ],
+  [
+   33.9555071,
+   73.4595197
+  ],
+  [
+   33.9552101,
+   73.4593166
+  ]
+ ],
+ "glb": "models/pc_bhurban.glb",
+ "glbFar": "models/pc_bhurban_far.glb",
+ "tris": 3856,
+ "trisFar": 98,
+ "bytes": 28240,
+ "bytesFar": 3104,
+ "budget": "plain",
+ "modelTop": 23.0,
+ "assumptions": [
+  "Storey height 3.3 m is assumed; six storeys come from a booking site and match the valley side in the photos.",
+  "No published height: floors plus the roof fitted to the photos give the eaves at 12.5 m and the main ridge at 20 m above the footprint ground.",
+  "The lowest terrace floor is placed 4 m below the footprint ground: the hillside falls to the east but its exact profile under the building is unknown (coarse elevation model only).",
+  "Terrace reach of 3.5, 7 and 10.5 m beyond the wall is read from the satellite tile at about 0.5 m per pixel and the photos; the real tiers vary from wing to wing.",
+  "Roof colour is a pale metal grey from daylight photos and the satellite; the blue in one dusk photo is treated as light, not paint.",
+  "Road (west) side: no photo found. Its massing follows the footprint and the satellite; the window rows there and on the rear block are plain guesses.",
+  "Rear block E: only its roof is visible in the sources, so its walls are plain.",
+  "No main entrance or porch is modelled because no source shows it.",
+  "Wing C upper roof height 23 m is estimated from the aerial photo; the skirt roof, short wall and skylight are simplified.",
+  "Corner towers and stair cores are placed from photos; their plan sizes are estimated."
+ ]
+}

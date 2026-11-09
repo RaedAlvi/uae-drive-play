@@ -1,0 +1,305 @@
+{
+ "id": "shalimar_gardens",
+ "name": "Shalimar Gardens",
+ "lat": 31.5869254,
+ "lon": 74.3823218,
+ "headingDeg": 168.7,
+ "height": 22.7,
+ "suppress": [
+  [
+   31.589537,
+   74.380055
+  ],
+  [
+   31.589507,
+   74.380062
+  ],
+  [
+   31.589492,
+   74.380095
+  ],
+  [
+   31.588413,
+   74.380356
+  ],
+  [
+   31.588369,
+   74.380319
+  ],
+  [
+   31.58829,
+   74.380337
+  ],
+  [
+   31.588264,
+   74.38039
+  ],
+  [
+   31.586513,
+   74.380812
+  ],
+  [
+   31.586487,
+   74.38078
+  ],
+  [
+   31.586457,
+   74.380787
+  ],
+  [
+   31.586444,
+   74.380828
+  ],
+  [
+   31.585379,
+   74.381071
+  ],
+  [
+   31.58537,
+   74.381018
+  ],
+  [
+   31.585306,
+   74.381034
+  ],
+  [
+   31.585302,
+   74.381011
+  ],
+  [
+   31.585257,
+   74.381022
+  ],
+  [
+   31.585261,
+   74.381045
+  ],
+  [
+   31.585194,
+   74.381061
+  ],
+  [
+   31.585204,
+   74.381114
+  ],
+  [
+   31.584146,
+   74.381361
+  ],
+  [
+   31.58412,
+   74.381332
+  ],
+  [
+   31.58409,
+   74.381339
+  ],
+  [
+   31.584075,
+   74.381367
+  ],
+  [
+   31.58408,
+   74.3814
+  ],
+  [
+   31.584113,
+   74.381417
+  ],
+  [
+   31.584325,
+   74.382647
+  ],
+  [
+   31.584237,
+   74.382668
+  ],
+  [
+   31.584273,
+   74.38288
+  ],
+  [
+   31.58436,
+   74.38286
+  ],
+  [
+   31.584571,
+   74.384101
+  ],
+  [
+   31.584541,
+   74.384132
+  ],
+  [
+   31.584547,
+   74.384165
+  ],
+  [
+   31.58457,
+   74.384184
+  ],
+  [
+   31.5846,
+   74.384177
+  ],
+  [
+   31.584614,
+   74.384137
+  ],
+  [
+   31.584699,
+   74.384117
+  ],
+  [
+   31.584725,
+   74.384244
+  ],
+  [
+   31.584706,
+   74.384249
+  ],
+  [
+   31.584819,
+   74.384871
+  ],
+  [
+   31.585414,
+   74.38494
+  ],
+  [
+   31.586453,
+   74.384694
+  ],
+  [
+   31.586374,
+   74.384256
+  ],
+  [
+   31.586399,
+   74.38425
+  ],
+  [
+   31.586387,
+   74.384175
+  ],
+  [
+   31.586361,
+   74.384181
+  ],
+  [
+   31.586288,
+   74.383745
+  ],
+  [
+   31.586913,
+   74.383589
+  ],
+  [
+   31.586934,
+   74.383713
+  ],
+  [
+   31.58702,
+   74.383693
+  ],
+  [
+   31.587018,
+   74.383678
+  ],
+  [
+   31.587256,
+   74.383624
+  ],
+  [
+   31.587238,
+   74.383515
+  ],
+  [
+   31.588739,
+   74.383162
+  ],
+  [
+   31.588793,
+   74.383201
+  ],
+  [
+   31.588863,
+   74.383185
+  ],
+  [
+   31.588899,
+   74.383125
+  ],
+  [
+   31.589968,
+   74.382881
+  ],
+  [
+   31.589994,
+   74.382913
+  ],
+  [
+   31.590024,
+   74.382906
+  ],
+  [
+   31.59004,
+   74.382877
+  ],
+  [
+   31.590034,
+   74.382844
+  ],
+  [
+   31.590001,
+   74.382827
+  ],
+  [
+   31.589544,
+   74.380137
+  ],
+  [
+   31.589567,
+   74.380108
+  ],
+  [
+   31.589561,
+   74.380074
+  ]
+ ],
+ "glb": "models/shalimar_gardens.glb",
+ "glbFar": "models/shalimar_gardens_far.glb",
+ "tris": 59620,
+ "trisFar": 986,
+ "bytes": 271624,
+ "bytesFar": 15124,
+ "budget": "normal",
+ "modelTop": 22.72,
+ "assumptions": [
+  "Terraces rebased so the lowest stays above the game ground: lower terrace 0.3 m, middle 4.77 m, upper 9.24 m (ICOMOS 4.47 m drop; the middle-to-lower drop is not published and is taken as equal).",
+  "The game flattens the ground under the footprint at one height, so sinking the model to put the upper terrace at road level would bury the middle and lower terraces under the terrain. The terraces stay above ground and a graded kacha bank, 8 m wide (all the OSM carriageway allows), carries the road side up to the upper terrace, leaving about 5.4 m of wall showing. The bank stands in for the real ground and is not a historic feature.",
+  "The north, east and west outer walls still reach game ground level instead of following the real fall along the axis.",
+  "Published 611.43 by 266.4 m terraces are fitted inside the OSM wall lines.",
+  "Wall top heights above each terrace are estimates from photos: upper 4.8 m, middle and lower 7.5 m; wall thickness 1.2 m.",
+  "Merlon spacing, niche spacing and two-tier layout estimated from photos.",
+  "Aiwan size 24 by 11 m and 9 m top fitted to photos; no published length.",
+  "Aram Gah, Khwabgah and Naqqar Khana halls share the published Daulat Khana height (6.63 m), the low-confidence 20.3 m length and the Aiwan arch scheme: their own forms were not confirmed.",
+  "Upper and lower central tanks 26 m square, canals 6.2 m, walks 7.4 m: read from photos of the upper terrace, repeated on the lower.",
+  "Quarter lawns have a 5 m perimeter walk, without the internal subdivisions or trees; trees are left to the game.",
+  "Great Tank fountain layout (104 in rows of 13, 48 on the coping) is a reading of the aerial photo adjusted to the published 152.",
+  "Upper 105 and lower 153 fountains are spaced evenly along the canals.",
+  "Island 10.2 by 8.2 m, causeway width 2.7 m and arch counts read from the aerial and side photos.",
+  "Chini Khana is placed in the pit between the Sawan Bhadun pavilions; 4 rows of niches.",
+  "The two gateways are placed on the OSM projections at the middle of the lower terrace side walls; form, 12.5 m height and tile panels are the plainest reading, dimensions are not published.",
+  "Hammam is a plain block on the OSM outline; its form is not documented here.",
+  "East enclosure modelled as walled ground only; Naqqar Khana enclosure buildings are omitted because their positions are unconfirmed.",
+  "South entrance: gate form (pale framed block, kanguras, corner finials, arched opening) is from uncaptioned photo doam824, and its position is the OSM projection on the axis, where the Department of Archaeology puts the present main entrance at the old Aram Gah. The opening is a dark recess; height 12.74 m follows the block, width 13 m is read from the photo.",
+  "The brick forecourt and two domed kiosks in doam824 are omitted: OSM puts the near G.T. Road carriageway about 7 m in front of the projection, so there is no room for them on the road side and their true position is unconfirmed.",
+  "Pale lime plaster is applied to the upper terrace walls, the road wall and the gate (doam823, doam824) and dossier brick to the middle and lower walls (doam821, zameenD). The exact change along the perimeter is not documented.",
+  "The bangla-roofed pavilion in doam823 has no caption. It is modelled as the Khwabgah, in the middle of the west wall as the ICOMOS text places that building, because the photo shows it on a plastered perimeter wall; the identification is by position only. Plan 8 by 13.5 m, 5.2 m walls and about 9 m top are read from the photo.",
+  "Naqqar Khana keeps the plain hall form, since no photo of it was found.",
+  "Canal lotus bulbs are five sided and smooth shaded to stay within the triangle budget, with published counts kept.",
+  "Hedges beside the Great Tank are rows of separate clipped bushes read from zameenA; bush count and spacing are estimates.",
+  "Burj total heights fitted to photos; colours are dossier tints or photo estimates."
+ ]
+}

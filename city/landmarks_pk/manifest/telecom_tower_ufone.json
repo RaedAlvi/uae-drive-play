@@ -1,0 +1,80 @@
+{
+ "id": "telecom_tower_ufone",
+ "name": "Telecom Tower (Ufone Tower)",
+ "lat": 33.7116149,
+ "lon": 73.0572592,
+ "headingDeg": 148.1,
+ "height": 113.0,
+ "suppress": [
+  [
+   33.7114256,
+   73.0575869
+  ],
+  [
+   33.7115943,
+   73.0574614
+  ],
+  [
+   33.7115636,
+   73.0574018
+  ],
+  [
+   33.7116213,
+   73.0573589
+  ],
+  [
+   33.7116587,
+   73.0574314
+  ],
+  [
+   33.7119148,
+   73.0572408
+  ],
+  [
+   33.7117542,
+   73.0569289
+  ],
+  [
+   33.7115025,
+   73.0571162
+  ],
+  [
+   33.7115556,
+   73.0572193
+  ],
+  [
+   33.7115093,
+   73.0572538
+  ],
+  [
+   33.7114857,
+   73.0572081
+  ],
+  [
+   33.7113012,
+   73.0573454
+  ]
+ ],
+ "glb": "models/telecom_tower_ufone.glb",
+ "glbFar": "models/telecom_tower_ufone_far.glb",
+ "tris": 6305,
+ "trisFar": 84,
+ "bytes": 42540,
+ "bytesFar": 10884,
+ "budget": "normal",
+ "modelTop": 113.34,
+ "assumptions": [
+  "Reading the OSM footprint and the south-west elevation photo as one building of two wings joined by a connector; every level was scaled off that one photo at about 13.5 px per metre.",
+  "113 m is taken as the rear glass ridge; allowing for the ridge standing 34 m further from the camera, all south-west elevation levels were scaled by 0.95, which puts the wedge tip near 100.7 m. Near-camera photos make the wedge look highest, and sources do not say which part the 113 m means.",
+  "Floor pitch 4.0 m from the photo gives 12 front and 18 rear fascia bands; sources disagree on the total floor count (20, 24, 28).",
+  "The wedge roof is a single plane rising to the south-west edge, inferred from the front view and the level top seen from the south-west.",
+  "The circular window is sized from the photo as 0.22 of the 26 m front face, so about 5.9 m; the dossier's 7.5 m assumed a wider face.",
+  "North-east face of the rear wing mirrors the south-west face; no photo shows it.",
+  "Rear glass roof pitch and the panel widths are read from two distant photos.",
+  "Podium outline beyond the OSM footprint (about 7.5 m forward and sideways with a rounded corner, and a colonnade block about 10 m past the rear wing) is estimated from photos; depth is unknown.",
+  "The exterior lift strip on the north-east flank follows the dossier; its top (63 m) and width are estimates from one distant photo.",
+  "White strips, orange sweep and big ufone signs are the advertising wrap of the most recent photos, and it changes over the years.",
+  "Glass mullion spacing and the louvre count on the north-west end are representative, not counted exactly.",
+  "Night lighting colours follow the two night photos; the rest of the night look is estimated."
+ ]
+}

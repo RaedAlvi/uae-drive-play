@@ -7,6 +7,13 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { U } from "./materials.js";
+import { TILE, Z } from "./world.js";
+import { roadsForTile } from "./roadsdb.js";
+
+const PK = typeof window !== "undefined" && window.CITY && window.CITY.region === "pakistan";
+// Pakistan: a real signal head is about 0.3 m wide, the shared model is an oversized 0.44 m with a 0.72 m backboard
+const HEAD_K = PK ? 0.68 : 1, HEAD_Y = 3.05;
+const PK_MAX_HEADS = 4, PK_NODE_R = 70;      // one head per approach; a controller must sit on a mapped signal node
 
 export const CYCLE = 64;
 // 0 green, 1 amber, 2 red
@@ -26,11 +33,12 @@ function tint(g, hex) {
 // Pole with the signal head on top, facing local +Z (the approaching drivers).
 function headGeometry() {
   const parts = [];
+  const sized = g => { if (HEAD_K !== 1) { g.translate(0, -HEAD_Y, 0); g.scale(HEAD_K, HEAD_K, HEAD_K); g.translate(0, HEAD_Y, 0); } return g; };
   let g = new THREE.CylinderGeometry(0.085, 0.11, 3.3, 8); g.translate(0, 1.65, 0); parts.push(tint(g, "#b8bcc0"));
   g = new THREE.CylinderGeometry(0.2, 0.24, 0.35, 8); g.translate(0, 0.17, 0); parts.push(tint(g, "#9a9ea2"));
-  g = new THREE.BoxGeometry(0.44, 1.22, 0.3); g.translate(0, 3.05, 0.05); parts.push(tint(g, "#1b1d1f"));        // housing
-  g = new THREE.BoxGeometry(0.72, 1.5, 0.04); g.translate(0, 3.05, -0.12); parts.push(tint(g, "#111213"));       // backboard
-  for (const y of [3.45, 3.05, 2.65]) { g = new THREE.BoxGeometry(0.34, 0.05, 0.16); g.translate(0, y + 0.17, 0.26); parts.push(tint(g, "#1b1d1f")); }   // visors
+  g = new THREE.BoxGeometry(0.44, 1.22, 0.3); g.translate(0, 3.05, 0.05); parts.push(tint(sized(g), "#1b1d1f"));        // housing
+  g = new THREE.BoxGeometry(0.72, 1.5, 0.04); g.translate(0, 3.05, -0.12); parts.push(tint(sized(g), "#111213"));       // backboard
+  for (const y of [3.45, 3.05, 2.65]) { g = new THREE.BoxGeometry(0.34, 0.05, 0.16); g.translate(0, y + 0.17, 0.26); parts.push(tint(sized(g), "#1b1d1f")); }   // visors
   return mergeGeometries(parts);
 }
 
@@ -41,7 +49,7 @@ export class Signals {
     this.pole = new THREE.InstancedMesh(headGeometry(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.3 }), this.cap);
     this.pole.castShadow = true; this.pole.frustumCulled = false; this.pole.count = 0;
     // the three lamps are one quad per head; a per-instance state lights one of them
-    const lampGeo = new THREE.PlaneGeometry(0.3, 1.1); lampGeo.translate(0, 3.05, 0.205);
+    const lampGeo = new THREE.PlaneGeometry(0.3 * HEAD_K, 1.1 * HEAD_K); lampGeo.translate(0, 3.05, 0.05 + 0.155 * HEAD_K);
     this.state = new Float32Array(this.cap);
     lampGeo.setAttribute("aState", new THREE.InstancedBufferAttribute(this.state, 1));
     const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: true });
@@ -71,13 +79,47 @@ vec4 diffuseColor = vec4(col, 1.0);`);
     this._m = new THREE.Matrix4(); this._q = new THREE.Quaternion(); this._p = new THREE.Vector3(); this._s = new THREE.Vector3(1, 1, 1); this._e = new THREE.Euler();
     this.lastPick = -1e9; this.px = 1e9; this.pz = 1e9;
   }
-  setTile(key, data) { if (data && data.c && data.c.length) this.tiles.set(key, data); this.lastPick = -1e9; }
-  dropTile(key) { this.tiles.delete(key); this.lastPick = -1e9; }
-  stateFor(key, cl, group, t) { const d = this.tiles.get(key); if (!d) return 0; return signalState(d.c[4 * cl + 2], group, t); }
+  setTile(key, data) { if (PK) { if (data && data.c && data.c.length) this.pkFilter(key, data); return; } if (data && data.c && data.c.length) this.tiles.set(key, data); this.lastPick = -1e9; }
+  // Pakistan: only a junction with a highway=traffic_signals node in the baked OpenStreetMap data gets a signal, one controller per
+  // node and one head per approach. The tile worker's rule for unmapped tiles invents them, and it heads every carriageway twice.
+  async pkFilter(key, data) {
+    const token = {}; (this.pending ||= new Map()).set(key, token);
+    const [tx, ty] = key.split("/").map(Number);
+    let rt = null; try { rt = await roadsForTile(Z, tx, ty); } catch (e) { rt = null; }
+    if (this.pending.get(key) !== token) return;
+    this.pending.delete(key);
+    const n = 1 << Z, lonOf = fx => (tx + fx) / n * 360 - 180, latOf = fy => Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + fy) / n))) * 180 / Math.PI;
+    const live = new Uint8Array(data.c.length / 4);
+    if (rt) {
+      const nodes = rt.signals(latOf(1) - 0.001, lonOf(0) - 0.001, latOf(0) + 0.001, lonOf(1) + 0.001).filter(q => !q[2]);
+      for (const q of nodes) {
+        let best = -1, bd = PK_NODE_R * PK_NODE_R;
+        for (let i = 0; i < live.length; i++) {
+          const dx = (lonOf(data.c[4 * i] / TILE) - q[1]) * 111320 * Math.cos(q[0] * Math.PI / 180), dy = (latOf(data.c[4 * i + 1] / TILE) - q[0]) * 110900, dd = dx * dx + dy * dy;
+          if (dd < bd) { bd = dd; best = i; }
+        }
+        if (best >= 0) live[best] = 1;
+      }
+    }
+    const kept = new Map();                       // controller + approach sector -> closest head
+    for (let i = 0; i < data.h.length; i += 6) {
+      const cl = data.h[i + 4]; if (!live[cl]) continue;
+      const sector = Math.round(((data.h[i + 3] % (2 * Math.PI)) + 2 * Math.PI) / (Math.PI / 4)) % 8, k = cl * 8 + sector;
+      const dd = (data.h[i] - data.c[4 * cl]) ** 2 + (data.h[i + 1] - data.c[4 * cl + 1]) ** 2, cur = kept.get(k);
+      if (!cur || dd < cur.dd) kept.set(k, { i, dd, cl });
+    }
+    const perCl = new Map(); for (const e of kept.values()) { if (!perCl.has(e.cl)) perCl.set(e.cl, []); perCl.get(e.cl).push(e); }
+    const out = [];
+    for (const list of perCl.values()) for (const e of list.sort((a, b) => a.dd - b.dd).slice(0, PK_MAX_HEADS)) for (let j = 0; j < 6; j++) out.push(data.h[e.i + j]);
+    this.tiles.set(key, { c: data.c, h: new Float32Array(out), live });
+    this.lastPick = -1e9;
+  }
+  dropTile(key) { if (this.pending) this.pending.delete(key); this.tiles.delete(key); this.lastPick = -1e9; }
+  stateFor(key, cl, group, t) { const d = this.tiles.get(key); if (!d) return 0; if (d.live && !d.live[cl]) return 0; return signalState(d.c[4 * cl + 2], group, t); }
   // controllers near a world point: [{ key, i, x, z, seed, ref }] (for the red-light check)
   near(x, z, offsets, r) {
     const out = [];
-    for (const [key, d] of this.tiles) { const off = offsets.get(key); if (!off) continue; for (let i = 0; i < d.c.length; i += 4) { const cx = d.c[i] + off.x, cz = d.c[i + 1] + off.z; if ((cx - x) ** 2 + (cz - z) ** 2 < r * r) out.push({ key, i: i / 4, x: cx, z: cz, seed: d.c[i + 2], ref: d.c[i + 3] }); } }
+    for (const [key, d] of this.tiles) { const off = offsets.get(key); if (!off) continue; for (let i = 0; i < d.c.length; i += 4) { if (d.live && !d.live[i / 4]) continue; const cx = d.c[i] + off.x, cz = d.c[i + 1] + off.z; if ((cx - x) ** 2 + (cz - z) ** 2 < r * r) out.push({ key, i: i / 4, x: cx, z: cz, seed: d.c[i + 2], ref: d.c[i + 3] }); } }
     return out;
   }
   update(camX, camZ, offsets, t) {

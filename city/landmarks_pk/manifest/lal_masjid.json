@@ -1,0 +1,47 @@
+{
+ "id": "lal_masjid",
+ "name": "Lal Masjid (exterior)",
+ "lat": 33.7128012,
+ "lon": 73.0871834,
+ "headingDeg": 58.8,
+ "height": 26.5,
+ "suppress": [
+  [
+   33.7128777,
+   73.086498
+  ],
+  [
+   33.7133349,
+   73.087401
+  ],
+  [
+   33.7126949,
+   73.087867
+  ],
+  [
+   33.7122843,
+   73.0869515
+  ]
+ ],
+ "glb": "models/lal_masjid.glb",
+ "glbFar": "models/lal_masjid_far.glb",
+ "tris": 21431,
+ "trisFar": 260,
+ "bytes": 130368,
+ "bytesFar": 13004,
+ "budget": "normal",
+ "modelTop": 26.5,
+ "assumptions": [
+  "Hall plan 36 by 24.7 m, turned 16.2 degrees off the enclosure to face the qibla: measured from Esri imagery, about 1 m accuracy; the Open Buildings 858 m2 roof agrees.",
+  "Wall height 7 m from the dossier (low confidence); frieze and window heights are fractions read from the 2013 photo.",
+  "Dome base radius 5.75 m from the satellite image; apex 14 m fitted to the 2013 and postcard proportions. No published dimension. No finial is visible in any photo.",
+  "Minaret tips 26.5 m: about 4 times the wall height on the 1971 postcards, trimmed to the 2013 photo; heights not published. Gallery heights fitted to the postcards and the 2018 photo; the lowest gallery is seen only on the 1971 postcards and is assumed to survive.",
+  "Minaret feet placed at the middle of their satellite image strokes, so each may be up to 3 m out; set symmetric about the dome axis.",
+  "The 2013 photo is read as the south-west face (the minaret sits behind the dome shoulder only from there) and the 2018 photo as the north-west face: window and panel order come from those, spacing estimated.",
+  "South-east hall face was not photographed: it repeats the buff wall, frieze and arched windows.",
+  "North-east face, verandah walls, central porch and courtyard wings were not photographed since 1971: buff walls and heights are estimates; the porch arch comes from the 1971 postcards.",
+  "Calligraphy panel is drawn as abstract pale blocks and an ochre disc, and the sign carries no lettering: the real text is not reproduced.",
+  "Grille on the two street boundaries where photographed; the other two sides are a plain 2.2 m red wall. Sheds and the courtyard shade structures inside the enclosure are left out.",
+  "Lighting unknown: window glow is a guess."
+ ]
+}

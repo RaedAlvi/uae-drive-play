@@ -1,0 +1,211 @@
+{
+ "id": "bahria_civic_centre",
+ "name": "Bahria Town Civic Centre, Phase 4",
+ "lat": 33.5502149,
+ "lon": 73.1239603,
+ "headingDeg": 141.0,
+ "height": 31.9,
+ "suppress": [
+  [
+   33.5511246,
+   73.1218064
+  ],
+  [
+   33.5511554,
+   73.1220067
+  ],
+  [
+   33.5512145,
+   73.1222316
+  ],
+  [
+   33.5513146,
+   73.1224411
+  ],
+  [
+   33.5514019,
+   73.1226198
+  ],
+  [
+   33.5515098,
+   73.1228047
+  ],
+  [
+   33.5516484,
+   73.1229649
+  ],
+  [
+   33.5517845,
+   73.1230697
+  ],
+  [
+   33.5519643,
+   73.123196
+  ],
+  [
+   33.552162,
+   73.1233316
+  ],
+  [
+   33.5521646,
+   73.1234825
+  ],
+  [
+   33.552085,
+   73.1237537
+  ],
+  [
+   33.5520208,
+   73.1240494
+  ],
+  [
+   33.5519489,
+   73.124376
+  ],
+  [
+   33.5518385,
+   73.1247766
+  ],
+  [
+   33.5517357,
+   73.1250231
+  ],
+  [
+   33.5516228,
+   73.1252295
+  ],
+  [
+   33.5514661,
+   73.1254883
+  ],
+  [
+   33.5512222,
+   73.1257748
+  ],
+  [
+   33.5510399,
+   73.1259535
+  ],
+  [
+   33.5507497,
+   73.1260768
+  ],
+  [
+   33.5504699,
+   73.1261322
+  ],
+  [
+   33.5502953,
+   73.1261538
+  ],
+  [
+   33.5500256,
+   73.1261137
+  ],
+  [
+   33.5498536,
+   73.1260799
+  ],
+  [
+   33.5496482,
+   73.126009
+  ],
+  [
+   33.5493914,
+   73.1259166
+  ],
+  [
+   33.5491988,
+   73.1257563
+  ],
+  [
+   33.5490165,
+   73.125553
+  ],
+  [
+   33.5489087,
+   73.1254328
+  ],
+  [
+   33.5487982,
+   73.1252603
+  ],
+  [
+   33.5486544,
+   73.1250077
+  ],
+  [
+   33.5485543,
+   73.1247858
+  ],
+  [
+   33.5484824,
+   73.1244161
+  ],
+  [
+   33.5484233,
+   73.1239786
+  ],
+  [
+   33.5484387,
+   73.1236397
+  ],
+  [
+   33.5484644,
+   73.1233624
+  ],
+  [
+   33.5486057,
+   73.1229557
+  ],
+  [
+   33.5487751,
+   73.1226168
+  ],
+  [
+   33.5489164,
+   73.1224411
+  ],
+  [
+   33.5492091,
+   73.1221361
+  ],
+  [
+   33.5495147,
+   73.1219759
+  ],
+  [
+   33.5497637,
+   73.1218804
+  ],
+  [
+   33.5501925,
+   73.1218003
+  ],
+  [
+   33.5506419,
+   73.1218126
+  ]
+ ],
+ "glb": "models/bahria_civic_centre.glb",
+ "glbFar": "models/bahria_civic_centre_far.glb",
+ "tris": 8895,
+ "trisFar": 695,
+ "bytes": 69408,
+ "bytesFar": 11368,
+ "budget": "plain",
+ "modelTop": 31.9,
+ "assumptions": [
+  "Every block outline is a coarse trace of one off-nadir Esri satellite image, aligned to the OSM roundabout (Esri sits about 6 m east of OSM here); edges may be 5 m out.",
+  "Roofs were moved back to their bases with one lean ratio measured on a few corners, so base positions depend on the guessed block height.",
+  "Each traced block is one solid mass; real blocks are rows of separately built plazas, and small gaps between them are not modelled.",
+  "Heights of 18 to 30 m are estimates from shadow lengths and listing photos (G+3 to G+6); no surveyed height exists.",
+  "Which facade type belongs to which plaza is unknown: colours and glazing are assigned pseudo-randomly from types seen in listing photos, so no individual plaza matches its real elevation.",
+  "Which plazas stand a storey above their neighbours is chosen at random; the step itself is seen in listing photos. Window counts, 3.8 m storeys, shopfront and pale sign bands are generic; real signage, balconies, arches and pediments are omitted.",
+  "Rooftop stair and tank rooms and solar panel fields are placed generically on blocks; satellite shows such clutter but not at these exact spots.",
+  "The long pale slab on the north rim is given 6 m and no openings; its use and height are unknown.",
+  "The glazed domed block on the south-west rim is placed from satellite only; its dome is a plain white hemisphere of about 6.5 m radius.",
+  "Roundabout island is kerb and lawn only; a small object at its centre is visible in satellite but could not be identified, so it is omitted.",
+  "No site paving is modelled, so the game's own roads remain visible; Basti Food Street lies outside the site polygon and is not included."
+ ]
+}

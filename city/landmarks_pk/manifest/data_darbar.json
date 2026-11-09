@@ -1,0 +1,205 @@
+{
+ "id": "data_darbar",
+ "name": "Data Darbar",
+ "lat": 31.578901,
+ "lon": 74.3046431,
+ "headingDeg": 80.4,
+ "height": 44.0,
+ "suppress": [
+  [
+   31.578826,
+   74.303266
+  ],
+  [
+   31.578398,
+   74.303352
+  ],
+  [
+   31.578435,
+   74.303617
+  ],
+  [
+   31.578455,
+   74.303612
+  ],
+  [
+   31.57846,
+   74.303647
+  ],
+  [
+   31.578435,
+   74.303658
+  ],
+  [
+   31.578435,
+   74.303679
+  ],
+  [
+   31.578441,
+   74.303703
+  ],
+  [
+   31.578473,
+   74.3037
+  ],
+  [
+   31.578481,
+   74.303733
+  ],
+  [
+   31.578355,
+   74.303754
+  ],
+  [
+   31.578384,
+   74.303915
+  ],
+  [
+   31.578503,
+   74.303888
+  ],
+  [
+   31.578542,
+   74.304122
+  ],
+  [
+   31.578401,
+   74.304151
+  ],
+  [
+   31.578444,
+   74.304379
+  ],
+  [
+   31.57846,
+   74.304377
+  ],
+  [
+   31.578483,
+   74.304543
+  ],
+  [
+   31.578499,
+   74.30454
+  ],
+  [
+   31.578698,
+   74.305857
+  ],
+  [
+   31.578775,
+   74.305843
+  ],
+  [
+   31.578761,
+   74.305755
+  ],
+  [
+   31.578942,
+   74.305715
+  ],
+  [
+   31.578951,
+   74.305739
+  ],
+  [
+   31.579401,
+   74.305643
+  ],
+  [
+   31.579415,
+   74.305725
+  ],
+  [
+   31.579497,
+   74.305712
+  ],
+  [
+   31.579246,
+   74.303985
+  ],
+  [
+   31.578921,
+   74.304044
+  ],
+  [
+   31.578885,
+   74.303795
+  ],
+  [
+   31.578963,
+   74.303776
+  ],
+  [
+   31.578942,
+   74.303652
+  ],
+  [
+   31.57886,
+   74.303665
+  ],
+  [
+   31.578853,
+   74.303634
+  ],
+  [
+   31.578885,
+   74.303618
+  ],
+  [
+   31.578871,
+   74.303583
+  ],
+  [
+   31.578846,
+   74.303588
+  ],
+  [
+   31.578842,
+   74.303543
+  ],
+  [
+   31.578867,
+   74.303537
+  ]
+ ],
+ "glb": "models/data_darbar.glb",
+ "glbFar": "models/data_darbar_far.glb",
+ "tris": 46018,
+ "trisFar": 422,
+ "bytes": 284488,
+ "bytesFar": 13216,
+ "budget": "normal",
+ "modelTop": 44.0,
+ "assumptions": [
+  "The dossier gives no heading; 80.4 degrees, the footprint long axis, is used with the entrance at +Y.",
+  "Deck 6 m above the street: estimated from the drone view of the two-storey north front; no published level.",
+  "Gallery roofs 5.5 m above the deck, scaled from one courtyard photo.",
+  "Minaret tips 44 m above ground, fitted from two photos using the 46.3 m spacing of the OSM minaret feet; the dossier has no published height.",
+  "Two minarets, following the JAABE paper and photos; Wikipedia's four is not followed.",
+  "Minaret cones use the dossier gold; photos show them pale, the JAABE paper says gold leaf.",
+  "Mosque scale taken from a person standing near the glazing in the head-on photo.",
+  "The shell roof behind the front arc is not visible in any photo; a low form lofted to the rear of the OSM hall is assumed.",
+  "Rear and side walls of the mosque hall are plain: no photo found.",
+  "Tomb plan 24 by 22 m and position from the JAABE master plan and the drone view; the plan is not to scale, and the tomb was moved a few metres west to stand clear of the south gallery.",
+  "The annex south of the south arm uses the OSM outline with its west edge pulled back to clear the tomb fence; its elevation is plain.",
+  "All four tomb sides are built like the photographed ones: two corner towers and five cusped arches.",
+  "Jali infill placed in alternate tomb bays; one close photo shows jali in some bays but the exact pattern is unknown.",
+  "Dome radius 3.2 m and finial height scaled from the tomb front photo.",
+  "Skylight and sunken-panel positions come from the JAABE master plan, checked against the drone view; sizes approximate.",
+  "North and east gallery fronts are not visible in the photos and are built like the south gallery; the 25 north and 11 east bay counts come from that bay width.",
+  "South gallery has 19 bays counted in the drone view; court side galleries nine bays each and cross arms estimated.",
+  "North and south gate pavilions take their plan from the OSM ring; their elevations are the plainest arch form, no photo found.",
+  "South and east street fronts are simplified to rows of blind arches; north front to two window rows.",
+  "East entrance inscriptions are a coarse texture of abstract brush strokes in the photographed colours and positions; they deliberately spell nothing, because a low-resolution copy of sacred text would be wrong.",
+  "Tomb signboards stay plain green with border lines; their verse is not modelled.",
+  "Iwan mosaic is a stylised blue and gold repeat, not the real pattern; the two spandrel roundels are placed from the head-on photo.",
+  "Skylight colour is sampled from the drone view; the fine grid on them is a guess, the lattice is too small to resolve in any photo.",
+  "Canvas blinds are put in all tomb arches as in the two front photos; other sides are unphotographed.",
+  "Minaret shafts are plain white: the grey bands of an earlier version had no photo support and were removed.",
+  "Flag on the entrance mast is plain green and white, without crescent and star; size scaled from the entrance photo.",
+  "Deck colour follows the drone view (near white); the dossier sample #878A8E is treated as a shaded reading.",
+  "Trees are simple stand-ins for the planting seen in the drone view.",
+  "Rooftop plant, the green street tarpaulins, security barriers and the reported 2026 expansion are left out."
+ ]
+}

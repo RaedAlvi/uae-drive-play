@@ -1,0 +1,146 @@
+{
+ "id": "army_museum",
+ "name": "Pakistan Army Museum (public exterior only)",
+ "lat": 33.5865771,
+ "lon": 73.0542897,
+ "headingDeg": 3.0,
+ "height": 16.1,
+ "suppress": [
+  [
+   33.5868684,
+   73.0539876
+  ],
+  [
+   33.5868091,
+   73.0539843
+  ],
+  [
+   33.586808,
+   73.0540121
+  ],
+  [
+   33.5867098,
+   73.0540067
+  ],
+  [
+   33.5867138,
+   73.0539035
+  ],
+  [
+   33.5865017,
+   73.0538918
+  ],
+  [
+   33.5864985,
+   73.0539764
+  ],
+  [
+   33.5863614,
+   73.0539689
+  ],
+  [
+   33.586356,
+   73.0541108
+  ],
+  [
+   33.5862737,
+   73.0541063
+  ],
+  [
+   33.5862634,
+   73.0543723
+  ],
+  [
+   33.5863369,
+   73.0543764
+  ],
+  [
+   33.5863294,
+   73.0545709
+  ],
+  [
+   33.5864533,
+   73.0545779
+  ],
+  [
+   33.5864487,
+   73.0546953
+  ],
+  [
+   33.5866704,
+   73.0547077
+  ],
+  [
+   33.5866764,
+   73.054553
+  ],
+  [
+   33.5867453,
+   73.0545568
+  ],
+  [
+   33.5867439,
+   73.0545917
+  ],
+  [
+   33.5868469,
+   73.0545975
+  ],
+  [
+   33.5868521,
+   73.0544642
+  ],
+  [
+   33.5868251,
+   73.0544627
+  ],
+  [
+   33.5868283,
+   73.0543824
+  ],
+  [
+   33.5868463,
+   73.0543835
+  ],
+  [
+   33.5868515,
+   73.0542526
+  ],
+  [
+   33.5868341,
+   73.0542517
+  ],
+  [
+   33.5868373,
+   73.0541701
+  ],
+  [
+   33.5868613,
+   73.0541714
+  ]
+ ],
+ "glb": "models/army_museum.glb",
+ "glbFar": "models/army_museum_far.glb",
+ "tris": 12828,
+ "trisFar": 262,
+ "bytes": 85936,
+ "bytesFar": 7172,
+ "budget": "normal",
+ "modelTop": 16.09,
+ "assumptions": [
+  "Front bearing set to 3 degrees, not the dossier's 93: 93 is the long axis, and the north edge of the OSM outline has the end, centre and recess pattern of the head-on photo.",
+  "Scale from the head-on photo tied to the 56.6 m OSM front (about 0.05 m per pixel). Height 12 m to the blocking course, column tops 9.4 m: estimates, no published height.",
+  "The front is built symmetric about the mid point of its OSM width; the OSM trace of the central section sits about 2.4 m to the west of that axis.",
+  "Current grey rendered finish taken from the recent head-on photo; an older oblique photo shows red brick end blocks with cast letters, treated as superseded.",
+  "Depth of the columns behind the front row (about 2.8 m at the inner pair, 6 m at the end pair) inferred from apparent height in one wide-angle photo.",
+  "Rear and side elevations were not photographed: plain grey render with plinth, string course and cornice, no windows invented.",
+  "The rear outline is the OSM footprint, including its projecting east, west and south arms.",
+  "Glazed barrel roof: shape from the interior atrium photo; its plan position (centre of the outline), 22 by 17 m size and 3.4 m rise are estimates.",
+  "Two rooftop heads left of the axis: only their tops show in one photo; position and size estimated.",
+  "Statue: size from photos, figure simplified to massing. Sits at the top of the steps per the head-on photo; a close photo may place it slightly lower.",
+  "Field guns on the lawn: red-wheeled type read from one small view; form simplified. Position about 3.4 m ahead of the plinth, estimated.",
+  "Courtyard aircraft and vehicles (Dawn) are not modelled: the aircraft photos show them under the glazed atrium, not visible outside. Tanks and the old anti-aircraft gun are absent from the recent front photo.",
+  "Urdu line above the English sign left off: unreadable at photo resolution. Crescent and swords on the dark windows simplified.",
+  "Night glow colours are estimated; no night photo found."
+ ]
+}

@@ -83,7 +83,7 @@ function setup() {
     const t = e.target.closest("[data-k],[data-tap],[data-full]"); if (!t) return;
     e.preventDefault();
     if (t.dataset.tap) { send("keydown", t.dataset.tap); send("keyup", t.dataset.tap); t.classList.add("down"); setTimeout(() => t.classList.remove("down"), 140); if (navigator.vibrate) navigator.vibrate(8); return; }
-    if (t.dataset.full) { const d = document.documentElement; (document.fullscreenElement ? document.exitFullscreen() : (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d))?.catch?.(() => {}); try { screen.orientation.lock("landscape").catch(() => {}); } catch (_) {} return; }
+    if (t.dataset.full) { const d = document.documentElement; (document.fullscreenElement ? document.exitFullscreen() : (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d))?.catch?.(() => {}); if (!document.documentElement.classList.contains("pk")) try { screen.orientation.lock("landscape").catch(() => {}); } catch (_) {} return; }   // Pakistan is playable upright, so full screen must not turn the phone
     try { tc.setPointerCapture(e.pointerId); } catch (_) {}
     held.set(e.pointerId, t.dataset.k); press(t.dataset.k, t);
     if (navigator.vibrate) navigator.vibrate(6);

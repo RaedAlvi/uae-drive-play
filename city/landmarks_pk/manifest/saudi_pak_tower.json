@@ -1,0 +1,46 @@
+{
+ "id": "saudi_pak_tower",
+ "name": "Saudi Pak Tower",
+ "lat": 33.7148536,
+ "lon": 73.0634542,
+ "headingDeg": 147.2,
+ "height": 72.0,
+ "suppress": [
+  [
+   33.7144969,
+   73.0635342
+  ],
+  [
+   33.7146469,
+   73.0638003
+  ],
+  [
+   33.7152093,
+   73.0633832
+  ],
+  [
+   33.7150538,
+   73.0631051
+  ]
+ ],
+ "glb": "models/saudi_pak_tower.glb",
+ "glbFar": "models/saudi_pak_tower_far.glb",
+ "tris": 10622,
+ "trisFar": 120,
+ "bytes": 49024,
+ "bytesFar": 2852,
+ "budget": "normal",
+ "modelTop": 73.2,
+ "assumptions": [
+  "Tower plan is about 41 by 26 m, read from the Esri roof; the OSM outline (31 m wide) is narrower than the roof, so the tower overhangs it on both long sides.",
+  "Shaft top 64.5 m and module 19.3 m fitted to the architect's photo at 72 m total height (dossier); floor lines are not modelled because the shafts read as blind stone.",
+  "Podium 48 by 35 m in plan and 15 m high, positions along its long side mapped linearly from the architect's photo (perspective ignored).",
+  "Roof storey plan and position, the courtyard size and its depth are estimates from the Esri tile and one photo.",
+  "The SW face is taken as the deep jali stack and the SE face as the shallow arched strip, from reading two photos against the Esri orientation.",
+  "The NE and NW faces were not seen by day; their central strips are drawn as glazing with 19 plain floor bars between the same shafts, the NW side has no podium.",
+  "Podium NE side copies the SW side; its SE end portal and windows are the plainest match to the two side photos, not seen head-on.",
+  "Stone hex #D6C8AE from day photos, replacing the dossier's night estimate #C9A676; blue tile hex is a photo estimate.",
+  "The roof disc is plain green with a blue rim; the company emblem and the podium sign lettering are not reproduced.",
+  "Jali is simplified to a square grid inside the pointed arch; the true pattern is finer and geometric."
+ ]
+}

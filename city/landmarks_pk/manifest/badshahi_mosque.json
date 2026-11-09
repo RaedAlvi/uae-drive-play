@@ -1,0 +1,135 @@
+{
+ "id": "badshahi_mosque",
+ "name": "Badshahi Mosque",
+ "lat": 31.5881146,
+ "lon": 74.3101447,
+ "headingDeg": 79.1,
+ "height": 59.2,
+ "suppress": [
+  [
+   31.58872,
+   74.309017
+  ],
+  [
+   31.588693,
+   74.30903
+  ],
+  [
+   31.588674,
+   74.309085
+  ],
+  [
+   31.587199,
+   74.309402
+  ],
+  [
+   31.587173,
+   74.30942
+  ],
+  [
+   31.587175,
+   74.309475
+  ],
+  [
+   31.587205,
+   74.30949
+  ],
+  [
+   31.587503,
+   74.311182
+  ],
+  [
+   31.58747,
+   74.311198
+  ],
+  [
+   31.587463,
+   74.311224
+  ],
+  [
+   31.587489,
+   74.311274
+  ],
+  [
+   31.587531,
+   74.311264
+  ],
+  [
+   31.587536,
+   74.311207
+  ],
+  [
+   31.588166,
+   74.311058
+  ],
+  [
+   31.588188,
+   74.311191
+  ],
+  [
+   31.588386,
+   74.311145
+  ],
+  [
+   31.588365,
+   74.311009
+  ],
+  [
+   31.588846,
+   74.310899
+  ],
+  [
+   31.589067,
+   74.310868
+  ],
+  [
+   31.589048,
+   74.310822
+  ],
+  [
+   31.589025,
+   74.310816
+  ],
+  [
+   31.588739,
+   74.309133
+  ],
+  [
+   31.588774,
+   74.309084
+  ],
+  [
+   31.58877,
+   74.309051
+  ]
+ ],
+ "glb": "models/badshahi_mosque.glb",
+ "glbFar": "models/badshahi_mosque_far.glb",
+ "tris": 70050,
+ "trisFar": 1212,
+ "bytes": 452872,
+ "bytesFar": 18772,
+ "budget": "hero",
+ "modelTop": 59.2,
+ "assumptions": [
+  "Site plinth 5.5 m (22 gateway steps at about 0.25 m); only an uncited 6 m figure exists. Heights in the dossier are taken as above the courtyard; total model top is plinth plus 53.75 m.",
+  "Domes use the published sizes (bulge 21.49 and 16.51 m, base 19.81 and 15.7 m, dome 14.94 and 9.75 m, neck 4.57 and 2.9 m, pinnacle 7.32 and 5.79 m). The neck is read as standing on the hall roof, dome height as running to the lotus hem, and the pinnacle as the brass part above the lotus; tips land about 44.6 and 36.2 m above the court, checked against the view from the fort. The head-on court photo alone reads about 15 percent narrower; this is not resolved.",
+  "Lotus cap sizes (4.55 and 3.45 m radius) and the bulb profile are traced from the fort photo. Dome centres are 14.6 m behind the hall front because the published bulb would otherwise break through the iwan; no source gives the position.",
+  "Great iwan crown placed at the published 18.08 m above the court (head-on photo reads about 17.3 m). Its depth (5 m) is an estimate. All arches are one pointed four-centred curve fitted to photos, with a scalloped edge on the great arch and the gate iwans.",
+  "Gate passage 4.2 m by 5.6 m is fitted to both gate photos and treated as one tunnel; its interior is not photographed and is plain.",
+  "East iwan panels and niches follow two low-resolution east photos; their ornament is reduced to plain panels.",
+  "Stair cheeks are solid red sandstone with a coping, 0.7 m thick and 1 m above the treads, estimated from one side photo; only the upper end is visible, so the rest is the same plain section.",
+  "Outer plinth is plain buff like the wall above: photos show buff or weathered buff at the few visible points and no separate brown band. The corner piers below court level follow the OSM nubs and are otherwise unverified.",
+  "The four hall turrets are about 27 m to the tip: rear pair measured the same as front pair from the head-on photo (perspective ratio 0.75).",
+  "Dalan bay count split as 24 north, 24 south, 10 each side of the gate, 6 each side of the hall to total the published 80; every second bay is an open arch, the others blind niches with a dark window, as far as photos show.",
+  "Dalan depth 5.9 m, from outer OSM line to published 161 m court. Dalan outer windows sit on the same bays as the court arches, as they read through in the view from the Alamgiri Gate; the outer sill height is an estimate.",
+  "Prayer hall is flush with the outer west wall and projects 19 m into the courtyard between the west ranges (OSM ring, aerial photo); its back and end elevations were not photographed and are plain blind arcading.",
+  "Hall interior, gate passage and dome interiors are not modelled; openings end in shaded recesses. The aisle behind dalan arches is modelled.",
+  "Gate towers, kiosks and side-block heights fitted to the head-on gate photo (no published figures); east gallery of 11 domelets reaches the published 19.81 m, and the tower tips reach about 22.6 m, so that 19.81 m is read as excluding the corner towers.",
+  "Gate placed 2.2 m outward of the east wall with 11 m projecting into the court (OSM stair nub, photo). The 22 steps wrap three sides at 0.4 m treads, so side flights extend about 9 m beyond the OSM stair block.",
+  "Ornament is simplified to real raised panels and marble-lined frames; inscriptions and floral inlay are drawn as plain cartouches.",
+  "Exterior plastered buff colour read from a few photos; sandstone tint adjusted upward from the dossier thumbnail sample. Night lighting is an estimate; no published scheme.",
+  "The tank is built dry with a marble floor and a small fountain stand, as in the one close photo; its balustrade post spacing of 0.9 m is counted from that photo.",
+  "Hazuri Bagh, Baradari, Iqbal tomb and Samadhi are outside this model."
+ ]
+}

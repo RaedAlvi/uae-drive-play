@@ -1,0 +1,79 @@
+{
+ "id": "rawalpindi_cricket_stadium",
+ "name": "Rawalpindi Cricket Stadium",
+ "lat": 33.6515031,
+ "lon": 73.0760505,
+ "headingDeg": 109.0,
+ "height": 48.0,
+ "suppress": [
+  [
+   33.6528087,
+   73.0757465
+  ],
+  [
+   33.6526438,
+   73.0756658
+  ],
+  [
+   33.6525431,
+   73.0752881
+  ],
+  [
+   33.6526316,
+   73.074903
+  ],
+  [
+   33.6515204,
+   73.0746023
+  ],
+  [
+   33.6508427,
+   73.0744813
+  ],
+  [
+   33.6501406,
+   73.0769678
+  ],
+  [
+   33.651844,
+   73.0777049
+  ],
+  [
+   33.6519875,
+   73.0771585
+  ],
+  [
+   33.6523996,
+   73.0771878
+  ]
+ ],
+ "glb": "models/rawalpindi_cricket_stadium.glb",
+ "glbFar": "models/rawalpindi_cricket_stadium_far.glb",
+ "tris": 40458,
+ "trisFar": 606,
+ "bytes": 263104,
+ "bytesFar": 16748,
+ "budget": "normal",
+ "modelTop": 48.0,
+ "assumptions": [
+  "Stand plan: eight OSM stand ways plus two short blocks either side of the pavilion that OSM omits but the satellite shows.",
+  "Terrace rake, 0.42 m per row, 11 lower and 9 upper rows (5 upper on the north and north-east stands): row counts estimated from satellite lines; stand top about 11 m, fitted to the field-side photo.",
+  "Pavilion height 20.5 m, scaled from the photo using OSM width; individual level heights are read from photos and approximate.",
+  "Pavilion identified as the OSM largest stand on the south side: its plan matches the satellite flat roof and the seating bands.",
+  "One press photo with this pavilion is captioned Pindi Club Ground; its architecture matches the stadium photos and it was used for gangway and level counts.",
+  "Media Box 17 m, derived from the visible side wall on the satellite; floors and glazing bands are the plainest plausible form.",
+  "Six masts: bases read from satellite mast images and shadows, about 60 degrees apart; 44 m lamp height fitted to photo; the head is a single LED panel, the real cluster layout is not visible.",
+  "Sponsor panel on each mast is a plain coloured box, no lettering.",
+  "Two video screens at stand junctions, read from satellite shadows and white top edges; screen height and frame are estimates.",
+  "White strip behind the north and north-east stands treated as a flat band; whether it is canopy or roof is unknown.",
+  "No photo of any outer face or entrance was found (three web searches, 9 Nov 2026): rear walls of the stands are plain walls with piers, and no gates are modelled.",
+  "Outer face colour of the whole bowl is a guess, taken from the pale stand end walls in RWPCS3; it is not sampled from an outer face.",
+  "Pavilion rear wall is plain with no windows, doors or floor bands because none is documented. Its colour is the same guess as the bowl.",
+  "On the satellite a dark strip about 3 m wide lies just outside the pavilion's white edge strip; whether it is the wall seen at a lean, a recess or a lean-to is unknown, and it is not modelled.",
+  "Pavilion roof: pale inner part, darker outer band 5.5 m wide and white edge strip follow satellite tones and widths, placed against the OSM rear line. The band is modelled level with the roof; any change of level is unknown. The strip is modelled as a coping 1.45 m tall, height a guess.",
+  "Pavilion column spacing 3.0 degrees (about 4.7 m at the column line), measured from the field-side photo using the gangways as scale.",
+  "Pitch axis bearing 8 estimated from worn strips on the satellite; the sight screens stand in front of pavilion and Media Box as in the photos.",
+  "Colours sampled by eye from satellite and photos; 2025 seat colours follow the satellite dark blocks with white star patterns.",
+  "Roof hut and flag mast sized from photos. Rear cells behind the south-east stands are plain boxes from the satellite grid; parked vehicles and vegetation are left out."
+ ]
+}

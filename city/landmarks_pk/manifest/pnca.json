@@ -1,0 +1,76 @@
+{
+ "id": "pnca",
+ "name": "Pakistan National Council of the Arts and National Art Gallery",
+ "lat": 33.7304029,
+ "lon": 73.0911249,
+ "headingDeg": 235.0,
+ "height": 21.5,
+ "suppress": [
+  [
+   33.7308089,
+   73.0902706
+  ],
+  [
+   33.7296311,
+   73.0910377
+  ],
+  [
+   33.7297337,
+   73.0912308
+  ],
+  [
+   33.7297382,
+   73.0913381
+  ],
+  [
+   33.7300728,
+   73.0920141
+  ],
+  [
+   33.7301486,
+   73.0920301
+  ],
+  [
+   33.7304966,
+   73.0916868
+  ],
+  [
+   33.7305388,
+   73.0916959
+  ],
+  [
+   33.730568,
+   73.0916225
+  ],
+  [
+   33.7305412,
+   73.0915795
+  ],
+  [
+   33.7312015,
+   73.0910592
+  ]
+ ],
+ "glb": "models/pnca.glb",
+ "glbFar": "models/pnca_far.glb",
+ "tris": 11953,
+ "trisFar": 200,
+ "bytes": 85512,
+ "bytesFar": 6232,
+ "budget": "plain",
+ "modelTop": 21.6,
+ "assumptions": [
+  "Main front bearing 235 degrees is taken from the Esri plan and the portal photos; the dossier had none.",
+  "All heights are estimates from door and window proportions in the photos: main parapet 17 m, portal 15.5 m, twin towers 21.5 m; no measured height exists.",
+  "The second tower is placed by symmetry with the first, supported by matching roof hatches on the Esri plan; photos show it only at a distance.",
+  "A lower wall seen just left of the portal in one photo is not modelled as a separate forward wing because the plan does not confirm it.",
+  "The dashed dark squares in the stone bands and the stair aisle through the seating are left out at this budget.",
+  "Roof outlines come from a leaning satellite image shifted forward by 7.5 m; wall positions may be 3 to 8 m out.",
+  "Window positions on the rear and side walls are a plain regular grid because no photo shows those sides.",
+  "Brick colour is sampled from news and book photos; the dossier had no eye-level value.",
+  "The blocks are placed flat at one ground level although the sources say the site is a small hillock; the seating is shown rising 3.6 m from the stage.",
+  "The stage house and low screen walls are read only from the Esri plan; their heights are guesses.",
+  "The court walls beyond the one photographed bay repeat that bay.",
+  "Temporary banners and the veiled figure sculptures are left out."
+ ]
+}

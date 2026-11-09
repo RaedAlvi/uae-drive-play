@@ -1,0 +1,88 @@
+{
+ "id": "lok_virsa",
+ "name": "Lok Virsa Museum (Pakistan National Museum of Ethnology)",
+ "lat": 33.6890181,
+ "lon": 73.0724795,
+ "headingDeg": 195.0,
+ "height": 10.4,
+ "suppress": [
+  [
+   33.6888712,
+   73.0714315
+  ],
+  [
+   33.6887519,
+   73.0714782
+  ],
+  [
+   33.688201,
+   73.072165
+  ],
+  [
+   33.688175,
+   73.07229
+  ],
+  [
+   33.688166,
+   73.073366
+  ],
+  [
+   33.6887966,
+   73.073743
+  ],
+  [
+   33.6888665,
+   73.0737667
+  ],
+  [
+   33.6890306,
+   73.073648
+  ],
+  [
+   33.6892283,
+   73.0730734
+  ],
+  [
+   33.6892498,
+   73.0729863
+  ],
+  [
+   33.689356,
+   73.072491
+  ],
+  [
+   33.6893997,
+   73.0717208
+  ],
+  [
+   33.6892579,
+   73.0715813
+  ],
+  [
+   33.6891146,
+   73.071507
+  ]
+ ],
+ "glb": "models/lok_virsa.glb",
+ "glbFar": "models/lok_virsa_far.glb",
+ "tris": 2838,
+ "trisFar": 134,
+ "bytes": 37320,
+ "bytesFar": 8216,
+ "budget": "plain",
+ "modelTop": 10.41,
+ "assumptions": [
+  "No published height: halls 8 m to the parapet and link roofs 5.6 m, scaled from the door heights in one ground photo; door height itself is estimated.",
+  "Roof zones and monitors are read from Esri imagery, corrected by the 5 to 10 m offset measured between the image and the OSM ring; monitor rises of 1 to 2.2 m are guesses.",
+  "The south facade layout (four steps, three timber doors, brick band with blue lines, cream fascia, arched pair at the far end) comes from one oblique photo; bay widths are estimates and no shop sign or lettering is modelled.",
+  "The photo is assumed to show the OSM south run between footprint vertices 9 and 10, viewed from the east end, facing the paved court; the run is straight in OSM though imagery shows a small recess near its middle.",
+  "All other walls are plain cream: no photo shows the north, east or west sides of the main strip.",
+  "Wall and trim colours are sampled by eye from one sunny photo; roof, seating and terracotta are the low-confidence dossier values.",
+  "Amphitheatre: arc and stage edge from OSM and Esri; seating follows the OSM arc from a bowl centre read off Esri; 14 rows, 0.36 m rise, 9 m inner radius, rim wall and grey rim canopy height are guesses, and no photo was found.",
+  "OSM ways 474392125, 126 and 127 are plain flat blocks 4.5 to 6 m high because the suppress ring hides them; heights and wall colour are guesses. The far block at the end of the court has peach walls from the photo, assumed to be way 125 or 126. Way 474392122 is not built: Esri shows open paving there.",
+  "The two red-roofed pavilions are simple gables; the first has no OSM outline, so its 18 by 9 m size and long axis are read from Esri, and all wall and ridge heights are guesses.",
+  "Ground is taken as flat across the suppress ring, which is the convex hull of the modelled buildings.",
+  "Left out because their position or form is unconfirmed: the Heritage Museum gate (photos exist but its location on the site is not established), the pillared porch with the Urdu sign, the brick craft-village buildings, roof plant and statues.",
+  "Bearing 195 for the front is the dossier value, low confidence."
+ ]
+}

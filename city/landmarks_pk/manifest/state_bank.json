@@ -1,0 +1,48 @@
+{
+ "id": "state_bank",
+ "name": "State Bank of Pakistan, Islamabad",
+ "lat": 33.7221003,
+ "lon": 73.0948501,
+ "headingDeg": 148.7,
+ "height": 20.4,
+ "suppress": [
+  [
+   33.7221846,
+   73.0944629
+  ],
+  [
+   33.7224246,
+   73.0949402
+  ],
+  [
+   33.722016,
+   73.0952373
+  ],
+  [
+   33.7217759,
+   73.09476
+  ]
+ ],
+ "glb": "models/state_bank.glb",
+ "glbFar": "models/state_bank_far.glb",
+ "tris": 5812,
+ "trisFar": 428,
+ "bytes": 40856,
+ "bytesFar": 8688,
+ "budget": "plain",
+ "modelTop": 20.46,
+ "assumptions": [
+  "The dossier footprint covers only the domed part of a longer range; the satellite shows the block carrying on to the south-east and the office tower is a separate building, so neither is modelled here.",
+  "Wall height 11 m is an estimate from the street photo, using the car roof as the horizon and a 4 m bay, not a published figure.",
+  "Dome apex 20.4 m and collar height are fitted to the photos with the satellite dome diameter of about 29 m.",
+  "The dome centre was taken from a leaning satellite image and corrected by eye, so it may be off by a metre or two.",
+  "The south-west street front is inferred from the road, forecourt and fountain in the satellite and the Margalla hills on the left of the photo.",
+  "North-west and north-east faces repeat the slit rhythm of the street front; no photo shows them head on.",
+  "The south-east face is a plain wall because the real building continues there.",
+  "The ground-floor row of the central block is hidden behind the gate in every photo and is a plain glazed row.",
+  "The porch is read only from a pale slab in the satellite; its height and two-post support are guesses.",
+  "The dark south-east roof strip is drawn flush with the deck; whether it is a lower roof or a dark covering is unknown.",
+  "The dark and white honeycomb cells on the dome follow the recent street photo in layout, with about 10 dark rows on a white cap; the 1970 photos show it plain white.",
+  "Rooftop water tanks and the sentry posts seen in the street photo are left out as temporary or security items."
+ ]
+}

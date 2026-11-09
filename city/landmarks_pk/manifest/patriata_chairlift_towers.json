@@ -1,0 +1,48 @@
+{
+ "id": "patriata_chairlift_towers",
+ "name": "Patriata (New Murree) chairlift and gondola",
+ "lat": 33.8741836,
+ "lon": 73.4579392,
+ "headingDeg": 129.6,
+ "height": 517.3,
+ "suppress": [
+  [
+   33.8743549,
+   73.4578026
+  ],
+  [
+   33.8742111,
+   73.4577126
+  ],
+  [
+   33.8740943,
+   73.4579809
+  ],
+  [
+   33.8742382,
+   73.4580709
+  ]
+ ],
+ "glb": "models/patriata_chairlift_towers.glb",
+ "glbFar": "models/patriata_chairlift_towers_far.glb",
+ "tris": 59436,
+ "trisFar": 2256,
+ "bytes": 325224,
+ "bytesFar": 19984,
+ "budget": "normal",
+ "modelTop": 517.34,
+ "assumptions": [
+  "The dossier footprint is the rope line, so the origin is moved to the bottom station and the OSM footprint is not used to suppress or flatten anything; only a small area under the bottom station is flattened.",
+  "Tower and station bases are set on the game's own baked terrain (SRTM); the OSM peak tag and published top heights were not used.",
+  "Tower heights are unpublished: each rope height is the lowest that keeps a carrier 2.5 m (chair) or 3.5 m (cabin) above the SRTM ground, from 10 m and 13 m minimum and capped at 22 m. Where SRTM terrain still crowds a span the carrier is left out rather than drawn into the hill.",
+  "Chairlift tower head proportions are measured from one head-on Dawn photo assuming a 5 m rope gauge.",
+  "Gondola section towers keep the chair-tower head (a far view, pt3, shows a similar pale two-level head) with a second crossarm, along-line girders, braces and catwalks taken from the blue steelwork in gtp1, which is a station; the line towers themselves have no close photo, so these are inferred. The 6 m gauge and 8-wheel sheave trains are estimates.",
+  "The 12 pylons mapped in OSM are built, plus one tower on each section at an unlabelled OSM way vertex (33.8697545, 73.4679366 and 33.8599832, 73.4796615) because the terrain needs a support there, and further towers at the highest ground of any span where the rope would otherwise enter the SRTM hill: all inferred, not mapped as pylons.",
+  "Stations: gtp1 shows open sky over the blue sheave structure on a brick deck, and the Dunya News February 2017 stills show cabins on an open paved forecourt with green canopies, green pyramid roofs and white tube rails, so stations are open with those features. Which station those stills show is not stated; they are applied to all four. The bottom and chair stations have no photo at all: their machinery uses the chair tower colour and the canopy and deck are transferred from the cabin station. Layouts, canopy size and pavilion positions are plain guesses.",
+  "Chair count about 68 at 36 m spacing (the close photo shows plates numbered up to 60); cabin count and 165 m spacing are derived from the OSM capacity of 500 per hour.",
+  "Fleet: cabins were repainted several times (orange and green in Dunya News February 2017, black with blue trim in Dawn 2019, white in other photos, orange again in the visitor photo nac1). All are drawn orange as the most recent photo; sequence and dates of repaints are not published. Roundel drawn plain with a green mark, no logo copied.",
+  "Cabin size is not published: end face about 2.5 m wide by 2.05 m tall, a ratio read from level views (nac1, dawn1, gr1); dny1, shot from below, looks taller. Glass and paint colours are judged by eye from the photos.",
+  "A maroon tower on one travel page is a different lift (filed as Murree Chair Lift) and was not used.",
+  "No night lighting: the dossier has no source for any."
+ ]
+}

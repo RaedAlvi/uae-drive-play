@@ -1,0 +1,181 @@
+{
+ "id": "emporium_mall",
+ "name": "Emporium Mall",
+ "lat": 31.4670729,
+ "lon": 74.2659156,
+ "headingDeg": 74.2,
+ "height": 60.0,
+ "suppress": [
+  [
+   31.467762,
+   74.265356
+  ],
+  [
+   31.467805,
+   74.265485
+  ],
+  [
+   31.467775,
+   74.265513
+  ],
+  [
+   31.467781,
+   74.265573
+  ],
+  [
+   31.467806,
+   74.265555
+  ],
+  [
+   31.467859,
+   74.26586
+  ],
+  [
+   31.467863,
+   74.266074
+  ],
+  [
+   31.467932,
+   74.266425
+  ],
+  [
+   31.467846,
+   74.266455
+  ],
+  [
+   31.46789,
+   74.266666
+  ],
+  [
+   31.467643,
+   74.266742
+  ],
+  [
+   31.467681,
+   74.266878
+  ],
+  [
+   31.467451,
+   74.266966
+  ],
+  [
+   31.467226,
+   74.267042
+  ],
+  [
+   31.466978,
+   74.267128
+  ],
+  [
+   31.466883,
+   74.267142
+  ],
+  [
+   31.466857,
+   74.267039
+  ],
+  [
+   31.466705,
+   74.267092
+  ],
+  [
+   31.466584,
+   74.266982
+  ],
+  [
+   31.466477,
+   74.266565
+  ],
+  [
+   31.466388,
+   74.266335
+  ],
+  [
+   31.466298,
+   74.266033
+  ],
+  [
+   31.466343,
+   74.266018
+  ],
+  [
+   31.466288,
+   74.265792
+  ],
+  [
+   31.466191,
+   74.265579
+  ],
+  [
+   31.466051,
+   74.265217
+  ],
+  [
+   31.466431,
+   74.265019
+  ],
+  [
+   31.46655,
+   74.26523
+  ],
+  [
+   31.466622,
+   74.265187
+  ],
+  [
+   31.466585,
+   74.26497
+  ],
+  [
+   31.466879,
+   74.264887
+  ],
+  [
+   31.467078,
+   74.264845
+  ],
+  [
+   31.467172,
+   74.264954
+  ],
+  [
+   31.467233,
+   74.264932
+  ],
+  [
+   31.46723,
+   74.264813
+  ],
+  [
+   31.467618,
+   74.264685
+  ]
+ ],
+ "glb": "models/emporium_mall.glb",
+ "glbFar": "models/emporium_mall_far.glb",
+ "tris": 2038,
+ "trisFar": 186,
+ "bytes": 29868,
+ "bytesFar": 11728,
+ "budget": "plain",
+ "modelTop": 60.0,
+ "assumptions": [
+  "Overall top 60 m is the single OSM tag. The photo camera, fitted only from plan corners, independently gives the hotel parapet about 57 m, so the parapet is 56.5 m with a plant box to 60 m.",
+  "The dossier heading (long axis, front not confirmed) is kept as the model frame; the photos and design elevations show the public fronts face west and south.",
+  "Volumes are the OSM ring partitioned by eye on one Esri satellite image; internal divisions can be out by several metres and satellite lean was removed with an estimate.",
+  "Heights of the hotel, south west block, west wing, south wing, shoulder, dark end block, undersides and canopy are measured on one photo with a camera fitted to seven plan corners (2 px residual). The horizon line is estimated from people and vehicles, about plus or minus 1.5 m on these heights.",
+  "The south west block and south wing rooflines slope in the model because the measured corners differ; part of that could be photo distortion. Their north corners were not seen and follow the measured slope.",
+  "West low wing, core and north wing heights were not visible in the photo and are guesses; the east wing height is measured only at its dark south end.",
+  "The dark block right of the raised corner in the photo is modelled as the south end of the east wing, the only volume on the plan that can project there; what it is used for is unknown. Its walls are assumed dark all round.",
+  "The OSM south east corner beyond the dark block is a 6 m service yard: the satellite shows yard clutter and the photo shows nothing above that height there.",
+  "Cladding colour is sampled from the sunlit south faces on the satellite image (warm cast removed), not from the dusk photo; hotel and dark block tones are set relative to it, darker as in the photo.",
+  "Slot window size and density follow the photo but every position is scattered; the hotel window rows are regular with random gaps.",
+  "Hotel ground floor glazing and 10 m underside come from design renders, not from a finished photo.",
+  "Light well depth in the hotel (floor at 28 m) is a guess; only its opening is visible on the satellite image.",
+  "The link between the hotel and the west wing is dark cladding: the design elevation drew glass but the photo shows none on its west side.",
+  "North and east elevations are plain because no photo of the finished sides was found.",
+  "Main entrance: the folded canopy heights, the recess and the two white columns are read from one distant photo. The recess depth (about 16 m) is estimated, and only two columns can be seen, so no others were added.",
+  "The raised east corner is a fin behind the facade: the sweep comes from the photo, its thickness of about 10 m is a guess.",
+  "Signage is left out: the logos belong to the owner and are not modelled."
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "id": "wazir_khan_mosque",
+ "name": "Wazir Khan Mosque",
+ "lat": 31.5832053,
+ "lon": 74.3236111,
+ "headingDeg": 91.4,
+ "height": 32.6,
+ "suppress": [
+  [
+   31.5834469,
+   74.3231626
+  ],
+  [
+   31.5829881,
+   74.3231495
+  ],
+  [
+   31.5829692,
+   74.3240535
+  ],
+  [
+   31.5829876,
+   74.3240541
+  ],
+  [
+   31.5829808,
+   74.3243827
+  ],
+  [
+   31.5834027,
+   74.3243947
+  ],
+  [
+   31.5834096,
+   74.3240661
+  ],
+  [
+   31.583428,
+   74.3240666
+  ]
+ ],
+ "glb": "models/wazir_khan_mosque.glb",
+ "glbFar": "models/wazir_khan_mosque_far.glb",
+ "tris": 30516,
+ "trisFar": 886,
+ "bytes": 191468,
+ "bytesFar": 15624,
+ "budget": "hero",
+ "modelTop": 32.61,
+ "assumptions": [
+  "Courtyard floor set 1.6 m above the chowk: the dossier lists plinth height as unknown, the value is read from the portal steps in the aerial photo.",
+  "Top of minaret finials at 32.61 m above the chowk; stage heights are fitted to a crop of the aerial photo with a 5 m shaft width assumed.",
+  "Central dome drawn 8.4 m wide and side domes 7.0 m wide: the dossier diameters (7.01 and 5.87 m) are taken as inner values, outer sizes fitted to the courtyard photo.",
+  "Hall roof 9.4 m and pishtaq top 15.4 m above the courtyard, fitted to head-on photos; pishtaq width 14.6 m fitted from the courtyard photo at the 40 m facade scale.",
+  "Portal screen 14.7 m wide from the plan, top at 16.0 m fitted from head-on photos; dimensions are not published.",
+  "Twelve hujra bays on the north and south court walls and eight on the east, placed from the plan piers, match the published count of 32.",
+  "North facade bays (18) and rear (west) wall detail were not seen; north repeats the east shop arcade pattern, west is plain brick with the mihrab bulge shown on the plan.",
+  "South outer wall is plain brick because houses stand against it (Gulf News).",
+  "Roof kiosks: two modelled on the rear of the portal block from the aerial photo; a further pair, if any, was not visible.",
+  "Minaret shaft panel layout is read from the two best-seen shafts and repeated on all eight faces of all four.",
+  "Tile colours and patterns are approximations painted procedurally from named colours and photos; inscriptions are unreadable stand-in strokes, not real text.",
+  "Chowk paving, low wall and the small platform are simplified; the chowk is modelled at street level because the game has one ground height at the origin.",
+  "Tomb marker and kiosk footprint come from the plan, their heights are estimates; the Calligraphers Bazaar interior is not modelled, the shops are represented on the facades."
+ ]
+}

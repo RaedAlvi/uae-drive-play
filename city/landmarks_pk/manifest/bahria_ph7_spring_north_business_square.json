@@ -1,0 +1,95 @@
+{
+ "id": "bahria_ph7_spring_north_business_square",
+ "name": "Bahria Town Phase 7: Spring North and Business Square",
+ "lat": 33.5168985,
+ "lon": 73.1081948,
+ "headingDeg": 118.0,
+ "height": 24.6,
+ "suppress": [
+  [
+   33.5158028,
+   73.1118874
+  ],
+  [
+   33.5156221,
+   73.1102436
+  ],
+  [
+   33.5155287,
+   73.1086371
+  ],
+  [
+   33.5157779,
+   73.107449
+  ],
+  [
+   33.5163341,
+   73.1064745
+  ],
+  [
+   33.5172695,
+   73.105824
+  ],
+  [
+   33.5182662,
+   73.1055251
+  ],
+  [
+   33.5194165,
+   73.1054652
+  ],
+  [
+   33.5192806,
+   73.1061862
+  ],
+  [
+   33.5186652,
+   73.1067784
+  ],
+  [
+   33.5175632,
+   73.1074694
+  ],
+  [
+   33.5171303,
+   73.1077955
+  ],
+  [
+   33.5169836,
+   73.1083877
+  ],
+  [
+   33.5169621,
+   73.1098769
+  ],
+  [
+   33.5168834,
+   73.1115206
+  ]
+ ],
+ "glb": "models/bahria_ph7_spring_north_business_square.glb",
+ "glbFar": "models/bahria_ph7_spring_north_business_square_far.glb",
+ "tris": 8454,
+ "trisFar": 372,
+ "bytes": 70116,
+ "bytesFar": 5828,
+ "budget": "plain",
+ "modelTop": 24.6,
+ "assumptions": [
+  "The model covers the OSM Square Commercial polygon only; Spring North has no boundary in any source, and the Clock Tower and the fast food cluster stand about 1.4 km away, so neither is here.",
+  "Identifying this polygon as Business Square follows the dossier's inference.",
+  "Only Bahria Heights 5 has an OSM outline; all other block outlines are traced by eye from Esri imagery and carry roof lean, so a few metres of error is likely.",
+  "Heights: crescent row 16.5 m to the gable apex from a storey count on listing photos (4.5 m arcade, two window floors, attic gable), with storey heights estimated.",
+  "Other standalone blocks are set from Esri shadow length relative to Heights 5; roughly 2 m either way.",
+  "Heights 5 is 21.7 m to the parapet and 24.6 m to the pavilion peaks, scaled from the developer's render against the 120.8 m OSM length; no as-built photo was found.",
+  "Facades of blocks not seen in photos reuse the crescent row's language (cream arcade, sand stucco, grey window modules); some may be unfinished or a different colour.",
+  "Low strip blocks along the south road are drawn as two storeys from short Esri shadows; their facades are unseen.",
+  "Colours are estimated by eye from listing photos and satellite imagery; none is published. One crescent unit has pinker roofs in Esri, which is not reproduced.",
+  "Gables are set on block corners matching the Esri red roof squares; their pitch and the 2.4 m rise are estimates.",
+  "Heights 5 round arches, the balustrade across them, and its four pavilions a side follow the developer render and Esri; no as-built facade photo was found.",
+  "Red awnings over the top window row are shown on gabled blocks, as in the crescent photos.",
+  "Arcades wrap every side of every block; photos only confirm the street sides.",
+  "Roads, parking, medians, trees and street lights are left to the game's own systems, so no ground slab covers them; only the crescent's brick forecourt is modelled.",
+  "Blocks visibly under construction in Esri are shown finished and flat-roofed."
+ ]
+}

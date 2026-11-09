@@ -1,0 +1,129 @@
+{
+ "id": "liaquat_bagh",
+ "name": "Liaquat National Bagh and BB Shaheed memorial",
+ "lat": 33.6060931,
+ "lon": 73.0639883,
+ "headingDeg": 110.0,
+ "height": 20.6,
+ "suppress": [
+  [
+   33.6054213,
+   73.062475
+  ],
+  [
+   33.6052211,
+   73.0629642
+  ],
+  [
+   33.6052354,
+   73.063505
+  ],
+  [
+   33.6053784,
+   73.0640715
+  ],
+  [
+   33.6054999,
+   73.0647324
+  ],
+  [
+   33.6055634,
+   73.0651037
+  ],
+  [
+   33.6055669,
+   73.0656441
+  ],
+  [
+   33.6060003,
+   73.065625
+  ],
+  [
+   33.606179,
+   73.0654533
+  ],
+  [
+   33.6064936,
+   73.0651272
+  ],
+  [
+   33.6066866,
+   73.0648096
+  ],
+  [
+   33.606901,
+   73.0643547
+  ],
+  [
+   33.6071798,
+   73.0634621
+  ],
+  [
+   33.6072529,
+   73.0632595
+  ],
+  [
+   33.6069532,
+   73.0631811
+  ],
+  [
+   33.6067024,
+   73.0631066
+  ],
+  [
+   33.6067038,
+   73.062849
+  ],
+  [
+   33.6068324,
+   73.0624302
+  ],
+  [
+   33.6064825,
+   73.0622754
+  ],
+  [
+   33.606354,
+   73.0626942
+  ],
+  [
+   33.606354,
+   73.0629347
+  ],
+  [
+   33.6056858,
+   73.0626054
+  ]
+ ],
+ "glb": "models/liaquat_bagh.glb",
+ "glbFar": "models/liaquat_bagh_far.glb",
+ "tris": 53315,
+ "trisFar": 4510,
+ "bytes": 326112,
+ "bytesFar": 89240,
+ "budget": "normal",
+ "modelTop": 20.62,
+ "assumptions": [
+  "Park ground level taken as the origin; the lawn is a 12 cm slab on the OSM polygon.",
+  "Feature positions other than the park outline, hall footprint and memorial node were traced from zoom 19 satellite imagery and shifted 21 px west, 6 px south to meet OSM.",
+  "Overhead tank position is the octagonal roof beside the tanker parking; the Dawn caption does not state it.",
+  "Tank height about 20.5 m, gallery at 5.75 m, arches 9.5 m tall, fitted from one photo and a 9.5 m satellite diameter; arches on all eight faces are inferred from the three visible.",
+  "Tank panels, sign and face orientation fitted to one photo; the WASA sign is a blue disc in a white ring with a white drop and a blank caption board, lettering omitted. Brick tile and plaster scars are hand-painted from the photo; scar shapes and which faces carry them are approximate.",
+  "Hall height 12 m (fascia 3 m, recessed walls 9 m) estimated from the Dawn tanker station photo against the shed; hall footprint is the OSM candidate.",
+  "Hall south front: the three white zigzag screens and the door positions are read from the satellite view only; the elevation has not been photographed.",
+  "Hall skylights are drawn as a regular 7 by 6 grid approximating the satellite pattern.",
+  "Tanker shed: 9 gabled bays, 34.6 m by 8.5 m, eaves 3.6 m, ridge 4.75 m, from the satellite and the photo; logos are plain discs, banners omitted.",
+  "Office block, domed building, white shed, small houses and nursery shade are plain massing from the satellite with guessed heights. The office is now 7 m with no windows because no elevation source exists. The solar array is a satellite reading. The domes on the domed building are read from overhead only, so dome height and profile are guesses.",
+  "Chinar position is the large isolated tree on the south-east lawn, chosen because the photo shows it standing in open lawn; the caption does not state it.",
+  "Chinar plinth 4.1 m wide and 0.34 m high, irregular whitewash, red band, butterfly and limb layout are read from one photo by proportion, with the plinth width itself estimated. The crown top is cropped in the photo: no height is published, so 18.8 m is a guess held below the tank.",
+  "Akhara pit is the orange earth patch among the trees; the compound outline and gate side are assumed, the gate form is from the photo, signboard lettering omitted.",
+  "Round feature at the path junction: a white-rimmed ring seen from above only; form and height unknown.",
+  "Memorial: Dawn 2024 shows a cream and rose diaper-tiled wall with portrait banners and pasted posters at the site. Wall length 8 m, height 3.4 m, returns, tile scale and poster layout are assumed. The tile pattern is read by eye. The portrait is a plain red panel and posters are blank colours. Press says the promised monument was never built, so none is implied.",
+  "Memorial position: the wall stands 3 m inside the OSM node so that its step and returns stay on the park slab; the node itself is under 1 m from the park edge.",
+  "Plaque: Wikipedia records an Urdu plaque meaning Place of Martyrdom. No usable photo was opened, so its size and position are assumed and ruled lines stand in for the text. An Atlas Obscura user note mentions a perimeter wall commemorating both leaders: no design source exists, so the tiled wall is the only commemorative wall modelled.",
+  "Boundary wall and railing follow the akhara gate photo. Dawn (news/683477) places the assassination site outside a park gate on Liaquat Road, so a gate is modelled beside the memorial; its exact position and width are assumed. A second gate on the Murree Road side is assumed, placed by the metro stop and the east path; no source fixes it. Gate form is copied from the akhara gate, leaves shown open.",
+  "Police 15: Dawn says a Police 15 office stands at the front of the park. OSM way 498809441, Rescue 15 on Murree Road inside the park polygon, is taken to be it. Footprint is OSM; height 6.6 m and plain massing are guesses, no markings or signs are invented.",
+  "Trees: positions and canopy radii come from satellite canopy detection; species and heights are not known. Form variety (height, lean, fork, leaf tone) is generic and seeded, based on the Dawn lawn photo. Sapling and shrub positions are approximate.",
+  "Lawn colour and bare patches are from the Dawn lawn photo; extra bare patch positions are approximate. Slab walk: three staggered rows of about 0.7 by 0.9 m slabs, by eye."
+ ]
+}
