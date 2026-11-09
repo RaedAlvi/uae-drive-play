@@ -1537,7 +1537,7 @@ function renderMenu(tab, routeId) {
   menuTab = tab || menuTab; if (routeId) { menuRoute = D.routes.find(r => r.id === routeId); menuVariant = "fast"; }
   document.getElementById("menu").hidden = false;
   const tabs = ["missions", "free", "live", "look", "tolls", "help"].filter(t => t !== "tolls" || !CITY.noTolls).map(t => `<button class="${menuTab === t ? "on" : ""}" onclick="renderMenu('${t}')">${{ missions: "Missions", free: "Free roam", live: "Any A to B", look: "Look & feel", tolls: "Salik & Darb", help: "How to play" }[t]}</button>`).join("");
-  let h = CITY.title ? `<h1>${CITY.title}</h1><p class="sub">${CITY.sub}</p>${CITY.credit ? `<p class="sub" style="font-size:11px;opacity:.65">${CITY.credit}</p>` : ""}<div class="tabs">${tabs}</div>` : `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}<a class="btn" href="index.html" title="The earlier map-style driving world">Classic map mode</a></div>`;
+  let h = CITY.title ? `<h1>${CITY.title}</h1><p class="sub">${CITY.sub}</p>${CITY.credit ? `<p class="sub" style="font-size:11px;opacity:.65">${CITY.credit}</p>` : ""}<div class="tabs">${tabs}</div>` : `<h1>UAE Drive</h1><p class="sub">The real Dubai and Abu Dhabi in 3D: every street, junction and toll gate from OpenStreetMap, with buildings, palms, traffic and the landmarks built in.</p><div class="tabs">${tabs}</div>`;
   if (menuTab === "missions") h += menuRoute ? briefing(menuRoute) : missionList();
   else if (menuTab === "free") h += freeRoam();
   else if (menuTab === "live") h += liveForm();
