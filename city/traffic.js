@@ -38,6 +38,10 @@ const PKZ = {
   rural: { f: 0.6, band: 6, ring: 300, despawn: 340, behind: 160, dmax: 180, share: 0.6 },
   motor: { f: 0.75, band: 34, ring: 400, despawn: 560, behind: 260, dmax: 420, share: 0.8 },
 };
+// Raed played it and asked for half the traffic: this scales the moving vehicles and the kerbside ones together.
+const PK_TRAFFIC = 0.5;
+for (const z of Object.values(PKZ)) { z.f *= PK_TRAFFIC; z.band = Math.max(2, Math.round(z.band * PK_TRAFFIC)); }
+
 // The bazaar boxes used for frontage in tileworker.js (PK_SHOP): Raja Bazaar, Saddar, and the Committee Chowk stretch
 const PK_SHOP_BOX = [[73.045, 33.605, 73.066, 33.622], [73.043, 33.589, 73.063, 33.603], [73.066, 33.6335, 73.076, 33.6415]];
 const pkShop = (lat, lon) => PK_SHOP_BOX.some(b => lon > b[0] && lon < b[2] && lat > b[1] && lat < b[3]);
@@ -390,6 +394,7 @@ export class Traffic {
     const z = L.zone, shop = L.shop, cleared = shop && pkCleared(L.lat, L.lon);
     const step = shop ? [10, 13] : z === "rwp" ? [34, 40] : z === "isb" ? (L.c < 3 ? [0, 0] : [60, 70]) : z === "mur" ? [42, 50] : z === "bah" ? [90, 70] : z === "gt" ? [52, 60] : [0, 0];
     if (!step[0]) return;
+    step[0] /= PK_TRAFFIC; step[1] /= PK_TRAFFIC;      // kerbside vehicles thin out with the moving traffic
     const R = pkRng(Math.round(L.pts[0]) + L.n, Math.round(L.pts[1]));
     const byName = {}; this.types.forEach((t, i) => { byName[t.name] = i; });
     const mixOK = i => i != null && (this.types[i].mix[z] || 0) > 0;
